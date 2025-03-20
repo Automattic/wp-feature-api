@@ -49,11 +49,17 @@ function wp_feature_api_init() {
 	add_action( 'admin_enqueue_scripts', 'wp_feature_api_enqueue_admin_scripts' );
 }
 
+/**
+ * Enqueues admin scripts.
+ *
+ * @since 0.1.0
+ * @return void
+ */
 function wp_feature_api_enqueue_admin_scripts() {
 	if ( ! is_admin() ) {
 		return;
 	}
-	wp_enqueue_script( 'wp_features_api_script', WP_FEATURE_API_PLUGIN_URL . 'build/index.js', array(), '1.0' );
+	wp_enqueue_script( 'wp_feature_api_script', WP_FEATURE_API_PLUGIN_URL . 'build/index.js', array(), '1.0', true );
 }
 
 /**

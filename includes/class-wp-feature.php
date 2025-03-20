@@ -363,8 +363,8 @@ class WP_Feature {
 		 * @param string|array|callable $permissions The feature permissions.
 		 * @param WP_Feature           $feature     The feature object.
 		 */
-		$permissions = apply_filters( 'wp_feature_permissions', $this->permissions, $this );
-		$permissions = apply_filters( $this->get_filter_id() . '_permissions', $permissions, $this );
+		$permissions = apply_filters( 'wp_feature_permissions', $this->permissions );
+		$permissions = apply_filters( $this->get_filter_id() . '_permissions', $permissions );
 
 		return $permissions;
 	}
