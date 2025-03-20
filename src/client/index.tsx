@@ -1,3 +1,1 @@
-if (window) {
-	window.alert('ok');
-}
+console.log( 'Hello, world!' );
