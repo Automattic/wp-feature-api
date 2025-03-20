@@ -1,17 +1,10 @@
 <?xml version="1.0"?>
-<ruleset name="WordPress Features API">
-	<description>WordPress Features API PHP_CodeSniffer ruleset.</description>
-
-	<!-- Exclude paths -->
-	<exclude-pattern>/vendor/*</exclude-pattern>
-	<exclude-pattern>/node_modules/*</exclude-pattern>
-	<exclude-pattern>/tests/*</exclude-pattern>
-	<exclude-pattern>/tests/bootstrap.php</exclude-pattern>
+<ruleset name="WordPress Features API Tests">
+	<description>WordPress Features API PHP_CodeSniffer ruleset for test files.</description>
 
 	<!-- Include the WordPress standard -->
 	<rule ref="WordPress">
 		<!-- Add any rules you want to exclude here -->
-		<!-- <exclude name="WordPress.Files.FileName.InvalidClassFileName" /> -->
 		<exclude name="WordPress.Arrays.MultipleStatementAlignment.DoubleArrowNotAligned" />
 		<exclude name="Generic.Formatting.MultipleStatementAlignment.NotSameWarning" />
 	</rule>
@@ -26,8 +19,8 @@
 	<rule ref="Generic.CodeAnalysis.UnusedFunctionParameter" />
 	<rule ref="Generic.Commenting.Todo" />
 
-	<!-- Check for PHP cross-version compatibility -->
-	<config name="testVersion" value="7.0-" />
+	<!-- Check for PHP cross-version compatibility - tests can use PHP 7.4 features -->
+	<config name="testVersion" value="7.4-" />
 	<rule ref="PHPCompatibilityWP" />
 
 	<!-- Set tab width -->
@@ -37,8 +30,8 @@
 	<arg value="ps" />
 	<arg name="colors" />
 
-	<!-- Scan all files in directory -->
-	<file>.</file>
+	<!-- Scan only test files -->
+	<file>./tests</file>
 
 	<!-- Specifying extensions to check -->
 	<arg name="extensions" value="php" />

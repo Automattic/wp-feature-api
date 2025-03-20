@@ -250,7 +250,12 @@ class WP_Feature {
 		// Callback must be callable or null.
 		$this->callback = is_callable( $args['callback'] ) || null === $args['callback'] ? $args['callback'] : null;
 
-		// Permissions can be string, array, or callable.
+		/**
+		 * Permissions can be string, array, or callable.
+		 *
+		 * A string is assumed a role.
+		 * An array is assumed capabilities
+		 */
 		$this->permissions = $args['permissions'];
 
 		// Filter must be callable or null.
@@ -363,8 +368,8 @@ class WP_Feature {
 		 * @param string|array|callable $permissions The feature permissions.
 		 * @param WP_Feature           $feature     The feature object.
 		 */
-		$permissions = apply_filters( 'wp_feature_permissions', $this->permissions, $this );
-		$permissions = apply_filters( $this->get_filter_id() . '_permissions', $permissions, $this );
+		$permissions = apply_filters( 'wp_feature_permissions', $this->permissions );
+		$permissions = apply_filters( $this->get_filter_id() . '_permissions', $permissions );
 
 		return $permissions;
 	}
