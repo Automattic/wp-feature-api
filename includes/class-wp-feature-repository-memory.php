@@ -23,18 +23,6 @@ class WP_Feature_Repository_Memory implements WP_Feature_Repository_Interface {
 	private $features = array();
 
 	/**
-	 * Constructor.
-	 *
-	 * @since 0.1.0
-	 * @param array $features Optional. Initial features to store. Default empty array.
-	 */
-	public function __construct( $features = array() ) {
-		foreach ( $features as $feature ) {
-			$this->save( $feature );
-		}
-	}
-
-	/**
 	 * Saves a feature to the repository.
 	 *
 	 * @since 0.1.0

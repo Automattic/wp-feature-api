@@ -31,13 +31,13 @@ class WP_Feature_Registry {
 	private $repository = null;
 
 	/**
-	 * In-memory cache of fetched features.
-	 * Caches IDs only. Features are fetched from the repository when needed.
+	 * In-memory cache of feature IDs.
+	 * Features are fetched from the repository when needed.
 	 *
 	 * @since 0.1.0
 	 * @var array
 	 */
-	private $feature_cache = array();
+	private $feature_ids = array();
 
 	/**
 	 * Private constructor to prevent direct instantiation.
@@ -90,8 +90,6 @@ class WP_Feature_Registry {
 	 * @return bool True if the feature was registered, false otherwise.
 	 */
 	public function register( $feature ) {
-
-		// Convert array to WP_Feature if necessary.
 		if ( is_array( $feature ) ) {
 			if ( ! isset( $feature['id'] ) ) {
 				return false;
@@ -100,29 +98,24 @@ class WP_Feature_Registry {
 			$feature = new WP_Feature( $feature['id'], $feature );
 		}
 
-		// Ensure the feature is a WP_Feature instance.
 		if ( ! $feature instanceof WP_Feature ) {
 			return false;
 		}
 
-		// Get the feature ID.
 		$feature_id = $feature->get_id();
 
-		// Check if the feature is already registered in the repository.
 		if ( $this->repository->find( $feature_id ) ) {
 			return false;
 		}
 
-		// Save the feature to the repository.
 		$saved = $this->repository->save( $feature );
 
 		if ( ! $saved ) {
 			return false;
 		}
 
-		// Update the cache if we're successful.
-		if ( ! in_array( $feature_id, $this->feature_cache, true ) ) {
-			$this->feature_cache[] = $feature_id;
+		if ( ! in_array( $feature_id, $this->feature_ids, true ) ) {
+			$this->feature_ids[] = $feature_id;
 		}
 
 		/**
@@ -144,26 +137,18 @@ class WP_Feature_Registry {
 	 * @return bool True if the feature was unregistered, false otherwise.
 	 */
 	public function unregister( $feature ) {
-		// Get the feature ID.
 		$feature_id = $feature instanceof WP_Feature ? $feature->get_id() : $feature;
 
-		// Check if the feature exists in the repository.
 		$feature_obj = $this->repository->find( $feature_id );
 
 		if ( ! $feature_obj ) {
 			return false;
 		}
 
-		// Remove the feature from the repository.
-		$deleted = $this->repository->delete( $feature_id );
+		$removed = $this->remove( $feature_id );
 
-		if ( ! $deleted ) {
+		if ( ! $removed ) {
 			return false;
-		}
-
-		// Clear the cache entry.
-		if ( isset( $this->feature_cache[ $feature_id ] ) ) {
-			unset( $this->feature_cache[ $feature_id ] );
 		}
 
 		/**
@@ -186,20 +171,7 @@ class WP_Feature_Registry {
 	 * @return WP_Feature|null The feature if found, null otherwise.
 	 */
 	public function find( $feature_id ) {
-		// Check if the feature is in the cache.
-		if ( isset( $this->feature_cache[ $feature_id ] ) ) {
-			return $this->feature_cache[ $feature_id ];
-		}
-
-		// Check the repository.
-		$feature = $this->repository->find( $feature_id );
-
-		if ( $feature ) {
-			// Cache the feature.
-			$this->feature_cache[ $feature_id ] = $feature;
-		}
-
-		return $feature;
+		return $this->repository->find( $feature_id );
 	}
 
 	/**
@@ -210,46 +182,72 @@ class WP_Feature_Registry {
 	 * @return array The matching features.
 	 */
 	public function get( $query = null ) {
-		// If no query is provided, get all features from the repository.
 		if ( null === $query ) {
-			$features = $this->repository->get_all();
-
-			// Update the cache with all features.
-			foreach ( $features as $feature ) {
-				$this->feature_cache[ $feature->get_id() ] = $feature;
-			}
-
-			return $features;
+			return $this->repository->get_all();
 		}
 
-		// Convert array to WP_Feature_Query if necessary.
 		if ( is_array( $query ) ) {
 			$query = new WP_Feature_Query( $query );
 		}
 
-		// Ensure the query is a WP_Feature_Query instance.
 		if ( ! $query instanceof WP_Feature_Query ) {
 			return array();
 		}
 
-		// Query the repository.
-		$features = $this->repository->query( $query );
-
-		// Update the cache with the results.
-		foreach ( $features as $feature ) {
-			$this->feature_cache[ $feature->get_id() ] = $feature;
-		}
-
-		return $features;
+		return $this->repository->query( $query );
 	}
 
 	/**
-	 * Clears the feature cache.
+	 * Clears the feature ID cache.
 	 *
 	 * @since 0.1.0
 	 * @return void
 	 */
 	public function clear_cache() {
-		$this->feature_cache = array();
+		$this->feature_ids = array();
+	}
+
+	/**
+	 * Gets all registered feature IDs.
+	 *
+	 * @since 0.1.0
+	 * @return array List of registered feature IDs.
+	 */
+	public function get_registered_ids() {
+		return $this->feature_ids;
+	}
+
+	/**
+	 * Removes a feature ID from the cache.
+	 *
+	 * @since 0.1.0
+	 * @param string $feature_id The feature ID to remove.
+	 * @return void
+	 */
+	private function remove_from_cache( $feature_id ) {
+		$index = array_search( $feature_id, $this->feature_ids, true );
+		if ( false !== $index ) {
+			unset( $this->feature_ids[ $index ] );
+			$this->feature_ids = array_values( $this->feature_ids );
+		}
+	}
+
+	/**
+	 * Removes a feature from the repository and cache.
+	 *
+	 * @since 0.1.0
+	 * @param string $feature_id The feature ID to remove.
+	 * @return bool True if the feature was removed, false otherwise.
+	 */
+	private function remove( $feature_id ) {
+		$deleted = $this->repository->delete( $feature_id );
+
+		if ( ! $deleted ) {
+			return false;
+		}
+
+		$this->remove_from_cache( $feature_id );
+
+		return true;
 	}
 }
