@@ -2,7 +2,7 @@
 /**
  * PHPUnit bootstrap file
  *
- * @package Gutenberg
+ * @package WordPress\Features_API
  */
 
 // Debug settings for parity with WordPress Core's PHPUnit tests.
@@ -22,7 +22,7 @@ if ( ! defined( 'LOCAL_WP_ENVIRONMENT_TYPE' ) ) {
 	define( 'LOCAL_WP_ENVIRONMENT_TYPE', 'local' );
 }
 
-define( 'WP_FEATURE_API_PLUGIN_DIR', dirname( dirname(__FILE__) ) . '/' );
+define( 'WP_FEATURE_API_PLUGIN_DIR', dirname( __DIR__ ) . '/' );
 
 // Require composer dependencies.
 require_once dirname( __DIR__ ) . '/vendor/autoload.php';
@@ -77,7 +77,7 @@ function fail_if_died( $message ) {
 		$message = $message->get_error_message();
 	}
 
-	throw new Exception( 'WordPress died: ' . $message );
+	throw new Exception( 'WordPress died: ' . esc_html( $message ) );
 }
 tests_add_filter( 'wp_die_handler', 'fail_if_died' );
 

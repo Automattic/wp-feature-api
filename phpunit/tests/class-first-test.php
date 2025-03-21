@@ -1,11 +1,9 @@
 <?php
-
 /**
- * Test the block WP_Duotone_Gutenberg class.
+ * Initial Test Class.
  *
- * @package Gutenberg
+ * @package WordPress\Features_API
  */
-
 class WP_First_Test extends WP_UnitTestCase {
 	protected static $admin_id;
 	protected static $post_id;

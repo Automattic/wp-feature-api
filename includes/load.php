@@ -1,4 +1,9 @@
 <?php
+/**
+ * WordPress Feature API Loading
+ *
+ * @package WordPress\Features_API
+ */
 
 // Include the WP_Feature_Registry class.
 require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-registry.php';
