@@ -37,7 +37,7 @@ const store = createReduxStore( STORE_NAME, {
 			},
 	},
 	selectors: {
-		getResgisteredFeatures: createRegistrySelector( ( select ) => () => {
+		getRegisteredFeatures: createRegistrySelector( ( select ) => () => {
 			return select( coreStore ).getEntityRecords(
 				ENTITY_KIND,
 				ENTITY_NAME
