@@ -24,6 +24,14 @@ define( 'WP_FEATURE_API_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WP_FEATURE_API_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
 /**
+ * Define this constant as true in wp-config.php to load the demo plugin.
+ * Example: define( 'WP_FEATURE_API_LOAD_DEMO', true );
+ */
+if ( ! defined( 'WP_FEATURE_API_LOAD_DEMO' ) ) {
+	define( 'WP_FEATURE_API_LOAD_DEMO', true );
+}
+
+/**
  * Initializes the WordPress Features API.
  *
  * @since 0.1.0
@@ -32,11 +40,16 @@ define( 'WP_FEATURE_API_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 function wp_feature_api_init() {
 	require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/load.php';
 
-	// Register REST routes on rest_api_init.
-	add_action( 'rest_api_init', 'wp_feature_api_register_rest_routes' );
+	// Register REST routes on init.
+	add_action( 'init', 'wp_feature_api_register_rest_routes' );
 
 	// enqueue admin scripts.
 	add_action( 'admin_enqueue_scripts', 'wp_feature_api_enqueue_admin_scripts' );
+
+	// Load demo plugin if enabled.
+	if ( WP_FEATURE_API_LOAD_DEMO ) {
+		wp_feature_api_load_demo_plugin();
+	}
 }
 
 /**
@@ -59,8 +72,49 @@ function wp_feature_api_enqueue_admin_scripts() {
  * @return void
  */
 function wp_feature_api_register_rest_routes() {
-	$controller = new WP_REST_Features_Controller();
+	$controller = new WP_REST_Feature_Controller();
 	$controller->register_routes();
+}
+
+/**
+ * Loads the WP Feature API Demo plugin.
+ *
+ * @since 0.1.0
+ * @return void
+ */
+function wp_feature_api_load_demo_plugin() {
+	$demo_plugin_file = WP_FEATURE_API_PLUGIN_DIR . 'demo/wp-feature-api-demo/wp-feature-api-demo.php';
+
+	if ( file_exists( $demo_plugin_file ) ) {
+		require_once $demo_plugin_file;
+
+		// Notify admin that demo plugin is loaded if in admin area.
+		if ( is_admin() ) {
+			add_action( 'admin_notices', 'wp_feature_api_demo_loaded_notice' );
+		}
+	}
+}
+
+/**
+ * Displays an admin notice when the demo plugin is loaded.
+ *
+ * @since 0.1.0
+ * @return void
+ */
+function wp_feature_api_demo_loaded_notice() {
+	?>
+	<div class="notice notice-info is-dismissible">
+		<p>
+			<?php
+			printf(
+				/* translators: %s: WP_FEATURE_API_LOAD_DEMO constant */
+				esc_html__( 'WordPress Feature API Demo plugin is loaded. To disable it, set %s to false in your wp-config.php file.', 'wp-feature-api' ),
+				'<code>WP_FEATURE_API_LOAD_DEMO</code>'
+			);
+			?>
+		</p>
+	</div>
+	<?php
 }
 
 // Initialize the plugin.

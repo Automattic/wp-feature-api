@@ -317,3 +317,18 @@ add_filter('wp_feature_rest_response', function($response, $feature) {
     return $response;
 }, 10, 2);
 ```
+
+## WP REST Aliases
+
+The REST API already shares a lot of the same functionality we are trying to expose in the Feature API. We can leverage this to some extent to avoid duplicating functionality by defining aliases.
+
+If a feature is registered with a `rest_alias` that corresponds to a REST route, then the feature will use any properties of the rest route as its own properties, such as the callback, args, schema, and permissions.
+
+```php
+wp_register_feature("posts", [
+    "id" => "posts",
+    "is_rest_alias" => true,
+    "description" => "Query and get WordPress post objects.",
+	"type" => "resource",
+]);
+```

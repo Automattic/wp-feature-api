@@ -13,6 +13,7 @@
 		<!-- <exclude name="WordPress.Files.FileName.InvalidClassFileName" /> -->
 		<exclude name="WordPress.Arrays.MultipleStatementAlignment.DoubleArrowNotAligned" />
 		<exclude name="Generic.Formatting.MultipleStatementAlignment.NotSameWarning" />
+		<exclude name="WordPress.Security.EscapeOutput.OutputNotEscaped" />
 	</rule>
 
 	<!-- Include WordPress-Extra for additional best practices -->

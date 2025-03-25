@@ -34,6 +34,6 @@
     "format": "@php ./vendor/squizlabs/php_codesniffer/bin/phpcbf --report=summary,source",
     "lint": "@php ./vendor/squizlabs/php_codesniffer/bin/phpcs --report=summary,source",
     "lint:errors": "@lint -n",
-    "serve": "npx @wp-now/wp-now start --php=7.2"
+    "serve": "npx @wp-now/wp-now start --php=7.2 --port=8881"
   }
 }
