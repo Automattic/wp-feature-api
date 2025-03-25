@@ -11,7 +11,7 @@ import { store as coreStore } from '@wordpress/core-data';
 import { __ } from '@wordpress/i18n';
 
 const DEFAULT_STATE = {};
-const STORE_NAME = 'features-api';
+const STORE_NAME = 'feature-api';
 const ENTITY_KIND = 'root';
 const ENTITY_NAME = 'features';
 
