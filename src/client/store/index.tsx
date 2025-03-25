@@ -59,6 +59,13 @@ const store = createReduxStore( STORE_NAME, {
 		),
 	},
 	resolvers: {
+		getRegisteredFeatures:
+			() =>
+			async ( { registry } ) => {
+				return registry
+					.resolveSelect( coreStore )
+					.getEntityRecords( ENTITY_KIND, ENTITY_NAME );
+			},
 		getRegisteredFeature:
 			( id ) =>
 			async ( { registry } ) => {
