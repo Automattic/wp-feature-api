@@ -39,6 +39,14 @@ class WP_Feature_Registry {
 	 */
 	private $features = array();
 
+
+	/**
+	 * @todo: keep track of categories
+	 * this will be important for use in inference using an LLM to narrow down the features by category.
+	 * should categories contain descriptions?
+	 */
+	private $categories = array();
+
 	/**
 	 * Private constructor to prevent direct instantiation.
 	 * Sets the repository to use for the registry.

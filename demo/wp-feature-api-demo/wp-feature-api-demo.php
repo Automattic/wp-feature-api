@@ -19,10 +19,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-if ( ! function_exists( 'wp_register_feature' ) ) {
-	add_action( 'admin_notices', 'wp_feature_api_demo_missing_notice' );
-	return;
+/**
+ * Initialize the WordPress Feature API Demo plugin.
+ *
+ * @since 0.1.0
+ * @return void
+ */
+function wp_feature_api_demo_init() {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/demo-features.php';
+
+	if ( ! function_exists( 'wp_register_feature' ) ) {
+		add_action( 'admin_notices', 'wp_feature_api_demo_missing_notice' );
+		return;
+	}
 }
+
+add_action( 'plugins_loaded', 'wp_feature_api_demo_init', 20 );
+
 
 /**
  * Display an admin notice if the WordPress Feature API plugin is not active.
@@ -45,15 +58,3 @@ function wp_feature_api_demo_missing_notice() {
 	</div>
 	<?php
 }
-
-/**
- * Initialize the WordPress Feature API Demo plugin.
- *
- * @since 0.1.0
- * @return void
- */
-function wp_feature_api_demo_init() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/demo-features.php';
-}
-
-add_action( 'plugins_loaded', 'wp_feature_api_demo_init', 20 );
