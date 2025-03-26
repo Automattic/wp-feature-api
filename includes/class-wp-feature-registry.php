@@ -40,11 +40,12 @@ class WP_Feature_Registry {
 	private $features = array();
 
 	/**
-	 * @todo: keep track of categories
-	 * this will be important for use in inference using an LLM to narrow down the features by category.
-	 * should categories contain descriptions?
+	 * The categories collection.
+	 *
+	 * @since 0.1.0
+	 * @var WP_Feature_Categories
 	 */
-	private $categories = array();
+	private $categories = null;
 
 	/**
 	 * Private constructor to prevent direct instantiation.
@@ -55,6 +56,8 @@ class WP_Feature_Registry {
 	private function __construct() {
 		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/interface-wp-feature-repository.php';
 		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-repository-memory.php';
+		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-category.php';
+		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-categories.php';
 
 		$default_repository = new WP_Feature_Repository_Memory();
 		$repository = apply_filters( 'wp_feature_repository', $default_repository );
@@ -73,6 +76,7 @@ class WP_Feature_Registry {
 		}
 
 		$this->repository = $repository;
+		$this->categories = new WP_Feature_Categories();
 		$this->cache_clear();
 	}
 
@@ -126,6 +130,8 @@ class WP_Feature_Registry {
 		 */
 		do_action( 'wp_feature_registered', $feature );
 
+		$this->categories->update_for_feature( $feature );
+
 		return true;
 	}
 
@@ -155,6 +161,8 @@ class WP_Feature_Registry {
 		if ( ! $removed ) {
 			return false;
 		}
+
+		$this->categories->remove_for_feature( $feature_obj );
 
 		/**
 		 * Fires after a feature is unregistered.
@@ -227,6 +235,38 @@ class WP_Feature_Registry {
 		}
 
 		return $this->repository->query( $query );
+	}
+
+	/**
+	 * Gets all registered categories.
+	 *
+	 * @since 0.1.0
+	 * @return array Array of categories with their descriptions and feature counts.
+	 */
+	public function get_categories() {
+		$categories = array();
+		foreach ( $this->categories->get_all() as $category ) {
+			$categories[ $category->get_slug() ] = $category->to_array();
+		}
+
+		/**
+		 * Filters the complete list of registered categories.
+		 *
+		 * @since 0.1.0
+		 * @param array $categories Array of registered categories.
+		 */
+		return apply_filters( 'wp_feature_categories', $categories );
+	}
+
+	/**
+	 * Gets a feature category by its ID.
+	 *
+	 * @since 0.1.0
+	 * @param string $id The category ID.
+	 * @return WP_Feature_Category|null The category if found, null otherwise.
+	 */
+	public function get_category( $id ) {
+		return $this->categories->get( $id );
 	}
 
 	/**

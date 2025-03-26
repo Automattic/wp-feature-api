@@ -80,6 +80,42 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 			)
 		);
 
+		// Register GET endpoint for retrieving feature categories.
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/categories',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_categories' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+					'schema'              => WP_Feature_Category::get_schema(),
+				),
+			)
+		);
+
+		// Register GET endpoint for retrieving a single feature category.
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/categories/(?P<id>[\w-]+)',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_category' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+					'args'                => array(
+						'id' => array(
+							'description'       => __( 'Unique identifier for the feature category.', 'wp-feature-api' ),
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+							'validate_callback' => 'rest_validate_request_arg',
+						),
+					),
+					'schema' => WP_Feature_Category::get_schema(),
+				),
+			)
+		);
+
 		// Get features after they've been registered.
 		$features = wp_feature_registry()->get();
 		foreach ( $features as $feature ) {
@@ -502,5 +538,36 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 				'schema' => array( $feature, 'get_output_schema' ),
 			)
 		);
+	}
+
+	/**
+	 * Retrieves the feature categories.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function get_categories( $request ) {
+		$categories = wp_feature_registry()->get_categories();
+		return rest_ensure_response( $categories );
+	}
+
+	/**
+	 * Retrieves a single feature category.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function get_category( $request ) {
+		$id = $request['id'];
+		$category = wp_feature_registry()->get_category( $id );
+
+		if ( ! $category ) {
+			return new WP_Error( 'rest_feature_category_not_found', __( 'Feature category not found.', 'wp-feature-api' ), array( 'status' => 404 ) );
+		}
+		return rest_ensure_response( $category->to_array() );
 	}
 }
