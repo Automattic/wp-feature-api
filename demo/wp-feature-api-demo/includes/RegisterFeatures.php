@@ -2,12 +2,9 @@
 
 namespace A8C\WpFeatureApiDemo;
 
+use WP_Feature;
+
 class RegisterFeatures {
-
-	public function __construct() {
-		add_action( 'init', [ $this, 'register_features' ] );
-	}
-
 	/**
 	 * Register demo features.
 	 *
@@ -40,7 +37,7 @@ class RegisterFeatures {
 		);
 	}
 
-	public function site_info_callback( $input ) {
+	private function site_info_callback( $input ) {
 		return array(
 			'name'        => get_bloginfo( 'name' ),
 			'description' => get_bloginfo( 'description' ),
@@ -55,7 +52,7 @@ class RegisterFeatures {
 		);
 	}
 
-	public function woocommerce_info_callback( $input ) {
+	private function woocommerce_info_callback( $input ) {
 		return array(
 			'name' => 'WooCommerce',
 			'version' => WC()->version,

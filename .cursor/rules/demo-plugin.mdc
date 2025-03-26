@@ -1,0 +1,6 @@
+---
+description: 
+globs: demo/**/*.*
+alwaysApply: false
+---
+You're a modern WordPress plugin developer creating a demo plugin of an AI Chat Bot/Agent that consumes the proposed WP Feature API outlined here [DESIGN.md](mdc:DESIGN.md) and [RFC.md](mdc:RFC.md).

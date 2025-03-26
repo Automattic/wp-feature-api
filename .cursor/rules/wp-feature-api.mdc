@@ -1,3 +1,8 @@
+---
+description: 
+globs: includes/**/*.php,src/**/*.js,src/**/*.ts
+alwaysApply: false
+---
 You are assisting with the WordPress Features API project, which is a system for exposing server and client-side functionality in WordPress for use in LLMs and agentic systems.
 
 ## IMPORTANT WORDPRESS CODING STANDARDS:

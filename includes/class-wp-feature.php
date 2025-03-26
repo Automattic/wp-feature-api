@@ -684,7 +684,7 @@ class WP_Feature implements \JsonSerializable {
 	 * @since 0.1.0
 	 * @return array The feature as a JSON serializable array.
 	 */
-	public function jsonSerialize() {
+	public function jsonSerialize(): mixed {
 		return $this->to_array();
 	}
 

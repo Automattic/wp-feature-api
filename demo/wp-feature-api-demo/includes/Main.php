@@ -15,7 +15,8 @@ class Main {
 			add_action( 'admin_notices', [ $this, 'missing_notice' ] );
 		}
 
-		new RegisterFeatures();
+		$features = new RegisterFeatures();
+		add_action( 'init', [ $features, 'register_features' ] );
 	}
 
 	/**
