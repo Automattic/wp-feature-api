@@ -731,7 +731,10 @@ class WP_Feature implements \JsonSerializable {
 		}
 
 		if ( isset( $rest_alias['args'] ) ) {
-			$this->input_schema = $rest_alias['args'];
+			$this->input_schema = array(
+				'type' => 'object',
+				'properties' => $rest_alias['args'],
+			);
 		}
 
 		if ( isset( $rest_alias['schema'] ) ) {
