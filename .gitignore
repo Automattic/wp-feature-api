@@ -3,6 +3,7 @@
 .vscode
 vendor
 node_modules
+mcp-proxy/dist
 build
 build-module
 build-style
