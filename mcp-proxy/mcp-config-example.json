@@ -1,0 +1,13 @@
+{
+	"mcpServers": {
+		"feature-api": {
+			"command": "node",
+			"args": [ "REPO_PATH/wp-feature-api/mcp-proxy/dist/index.js" ],
+			"env": {
+				"WP_API_USERNAME": "USERNAME",
+				"WP_API_PASSWORD": "PASSWORD",
+				"WP_API_URL": "http://WEBSITE.URL"
+			}
+		}
+	}
+}
