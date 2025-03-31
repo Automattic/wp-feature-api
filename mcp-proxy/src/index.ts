@@ -85,7 +85,7 @@ async function initialize() {
 	// Tool handlers
 	server.setRequestHandler( CallToolRequestSchema, async ( request ) => {
 		const { name, arguments: args } = request.params;
-		const feature = features.find( ( _feature ) => feature.id === name );
+		const feature = features.find( ( _feature ) => _feature.id === name );
 		if ( ! feature ) {
 			return {
 				error: 'Feature not found',
@@ -97,8 +97,12 @@ async function initialize() {
 			params: args,
 		} );
 		return {
-			type: 'text',
-			text: JSON.stringify( answer ),
+			content: [
+				{
+					type: 'text',
+					text: JSON.stringify( answer, null, 2 ),
+				},
+			],
 		};
 	} );
 
@@ -110,5 +114,5 @@ async function initialize() {
 }
 
 // Log startup message to stderr (not stdout which is used for MCP)
-process.stderr.write( 'Starting MCP ping server...\n' );
+process.stderr.write( 'Starting MCP feature api server...\n' );
 initialize();

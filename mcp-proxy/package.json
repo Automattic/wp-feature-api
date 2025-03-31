@@ -1,7 +1,7 @@
 {
-	"name": "mcp-ping-server",
+	"name": "wp-mcp-proxy",
 	"version": "1.0.0",
-	"description": "Simple MCP server that responds with pong to ping",
+	"description": "A proxy server exposing the WordPress feature API as MCP tools",
 	"main": "dist/index.js",
 	"scripts": {
 		"build": "tsc",
