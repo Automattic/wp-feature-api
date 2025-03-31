@@ -336,7 +336,7 @@ class WP_Feature implements \JsonSerializable {
 	 * @return array The feature input schema.
 	 */
 	public function get_input_schema() {
-		$transformer_class = apply_filters( 'wp_feature_input_schema_transformer', null, $this );
+		$transformer_class = apply_filters( 'wp_feature_input_schema_adapter', null, $this );
 		$transformer = WP_Feature_Schema_Adapter::make( $transformer_class, $this->input_schema );
 		return $transformer->transform();
 	}
@@ -348,7 +348,7 @@ class WP_Feature implements \JsonSerializable {
 	 * @return array The feature output schema.
 	 */
 	public function get_output_schema() {
-		$transformer_class = apply_filters( 'wp_feature_output_schema_transformer', null, $this );
+		$transformer_class = apply_filters( 'wp_feature_output_schema_adapter', null, $this );
 		$transformer = WP_Feature_Schema_Adapter::make( $transformer_class, $this->output_schema );
 		return $transformer->transform();
 	}
