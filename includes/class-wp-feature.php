@@ -425,10 +425,11 @@ class WP_Feature implements \JsonSerializable {
 	 * Runs the feature.
 	 *
 	 * @since 0.1.0
-	 * @param array $context The context to run the feature with.
+	 * @param object $rest_request The context to run the feature with.
 	 * @return mixed The result of running the feature.
 	 */
-	public function run( $context = array() ) {
+	public function run( $rest_request ) {
+		$context = $rest_request->get_param( 'context' );
 		/**
 		 * Filters the context before running a feature.
 		 *
@@ -473,7 +474,6 @@ class WP_Feature implements \JsonSerializable {
 		do_action( $this->get_filter_id() . '_before_run', $context, $this );
 		// Run the feature callback.
 
-		$rest_request = new WP_REST_Request( $this->get_rest_method(), $context );
 		$result = call_user_func( $this->callback, $rest_request );
 
 		/**

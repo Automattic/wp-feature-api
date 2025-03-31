@@ -494,8 +494,7 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 				array(
 					'methods'             => $feature->get_rest_method(),
 					'callback'            => function ( $request ) use ( $feature ) {
-						$context = $request->get_param( 'context' );
-						$result = $feature->run( $context );
+						$result = $feature->run( $request );
 						return rest_ensure_response( $result );
 					},
 					'permission_callback' => array( $feature, 'get_permission_callback' ),
