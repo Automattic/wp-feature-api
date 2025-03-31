@@ -189,7 +189,7 @@ class WP_Feature implements \JsonSerializable {
 	 * @param array  $args The feature arguments.
 	 */
 	public function __construct( $id, $args = array() ) {
-		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-schema-transformer.php';
+		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-schema-adapter.php';
 
 		if ( empty( $id ) || ! is_string( $id ) ) {
 			_doing_it_wrong(
@@ -337,7 +337,7 @@ class WP_Feature implements \JsonSerializable {
 	 */
 	public function get_input_schema() {
 		$transformer_class = apply_filters( 'wp_feature_input_schema_transformer', null, $this );
-		$transformer = WP_Feature_Schema_Transformer::make( $transformer_class, $this->input_schema );
+		$transformer = WP_Feature_Schema_Adapter::make( $transformer_class, $this->input_schema );
 		return $transformer->transform();
 	}
 
@@ -349,7 +349,7 @@ class WP_Feature implements \JsonSerializable {
 	 */
 	public function get_output_schema() {
 		$transformer_class = apply_filters( 'wp_feature_output_schema_transformer', null, $this );
-		$transformer = WP_Feature_Schema_Transformer::make( $transformer_class, $this->output_schema );
+		$transformer = WP_Feature_Schema_Adapter::make( $transformer_class, $this->output_schema );
 		return $transformer->transform();
 	}
 

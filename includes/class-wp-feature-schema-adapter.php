@@ -13,7 +13,7 @@
  *
  * @since 0.1.0
  */
-class WP_Feature_Schema_Transformer {
+class WP_Feature_Schema_Adapter {
 	/**
 	 * The schema to transform.
 	 *
