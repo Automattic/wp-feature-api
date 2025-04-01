@@ -8,6 +8,7 @@ import { store as coreStore } from '@wordpress/core-data';
  */
 import { ENTITY_KIND, ENTITY_NAME } from './constants';
 import { receiveFeatures, receiveFeature } from './actions';
+import { store } from './index';
 
 export function getRegisteredFeatures() {
 	return async ( { dispatch, registry } ) => {
@@ -20,6 +21,12 @@ export function getRegisteredFeatures() {
 
 export function getRegisteredFeature( id ) {
 	return async ( { dispatch, registry } ) => {
+		const featureAlreadyExists = !! registry
+			.select( store )
+			.getRegisteredFeature( id );
+		if ( featureAlreadyExists ) {
+			return;
+		}
 		const feature = await registry
 			.resolveSelect( coreStore )
 			.getEntityRecord( ENTITY_KIND, ENTITY_NAME, id );
