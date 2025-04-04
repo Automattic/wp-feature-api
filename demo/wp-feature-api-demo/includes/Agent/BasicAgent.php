@@ -91,7 +91,6 @@ class BasicAgent {
 		if( $last_message->has_tool_call() ) {
 			$function = $last_message->get_function();
 			$feature = $this->feature_from_tool_call( $function );
-			print_r( [$feature, $function] );
 			$result = $this->make_feature_call( $feature, $function );
 
 			if( is_wp_error( $result ) ) {
