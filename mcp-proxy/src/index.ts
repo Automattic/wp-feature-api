@@ -23,27 +23,30 @@ export interface WpFeature {
 	input_schema: Object;
 }
 
-// Create an MCP server
-const server = new Server(
-	{
-		name: 'feature-api',
-		version: '1.0.0',
-	},
-	{
-		capabilities: { tools: {} },
-	}
-);
-
-// Start receiving messages on stdin and sending messages on stdout
-const transport = new StdioServerTransport();
-
 async function initialize() {
+	process.stderr.write( 'Starting initialization...\n' );
 	const features = ( await wpRequest( 'wp/v2/features' ) ) as WpFeature[];
-	// console.log( features );
-	// const tools = features.filter( ( feature ) => feature.type === 'tool' );
+	process.stderr.write(
+		`Retrieved ${ features.length } features from WordPress\n`
+	);
+
+	// Create an MCP server
+	const server = new Server(
+		{
+			name: 'feature-api',
+			version: '1.0.0',
+		},
+		{
+			capabilities: { tools: {} },
+		}
+	);
+
+	// Start receiving messages on stdin and sending messages on stdout
+	const transport = new StdioServerTransport();
 
 	// Tool definitions
 	server.setRequestHandler( ListToolsRequestSchema, async () => {
+		process.stderr.write( 'Received ListToolsRequest\n' );
 		return {
 			tools: features.map( ( tool ) => {
 				let properties: {
@@ -107,12 +110,19 @@ async function initialize() {
 	} );
 
 	// Connect to the transport
-	server.connect( transport ).catch( ( error ) => {
-		process.stderr.write( `Error starting MCP server: ${ error }\n` );
-		process.exit( 1 );
-	} );
-}
+	server
+		.connect( transport )
+		.then( () => {
+			process.stderr.write(
+				'MCP server connected to transport successfully\n'
+			);
+		} )
+		.catch( ( error ) => {
+			process.stderr.write( `Error starting MCP server: ${ error }\n` );
+			process.exit( 1 );
+		} );
 
-// Log startup message to stderr (not stdout which is used for MCP)
-process.stderr.write( 'Starting MCP feature api server...\n' );
+	// Log startup message to stderr (not stdout which is used for MCP)
+	process.stderr.write( 'Starting MCP feature api server...\n' );
+}
 initialize();
