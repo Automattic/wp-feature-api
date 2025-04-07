@@ -218,7 +218,7 @@ final class WP_Feature_Categories {
 		foreach ( $feature_categories as $category ) {
 			$result = $this->remove( $category );
 			if ( $result ) {
-				$category_obj->decrement_count();
+				$category->decrement_count();
 			}
 		}
 	}

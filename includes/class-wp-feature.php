@@ -189,6 +189,8 @@ class WP_Feature implements \JsonSerializable {
 	 * @param array  $args The feature arguments.
 	 */
 	public function __construct( $id, $args = array() ) {
+		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-schema-adapter.php';
+
 		if ( empty( $id ) || ! is_string( $id ) ) {
 			_doing_it_wrong(
 				__METHOD__,
@@ -334,7 +336,9 @@ class WP_Feature implements \JsonSerializable {
 	 * @return array The feature input schema.
 	 */
 	public function get_input_schema() {
-		return $this->input_schema;
+		$transformer_class = apply_filters( 'wp_feature_input_schema_adapter', null, $this );
+		$transformer = WP_Feature_Schema_Adapter::make( $transformer_class, $this->input_schema );
+		return $transformer->transform();
 	}
 
 	/**
@@ -344,7 +348,9 @@ class WP_Feature implements \JsonSerializable {
 	 * @return array The feature output schema.
 	 */
 	public function get_output_schema() {
-		return $this->output_schema;
+		$transformer_class = apply_filters( 'wp_feature_output_schema_adapter', null, $this );
+		$transformer = WP_Feature_Schema_Adapter::make( $transformer_class, $this->output_schema );
+		return $transformer->transform();
 	}
 
 	/**
@@ -617,7 +623,7 @@ class WP_Feature implements \JsonSerializable {
 		 * @param array      $input        The input to validate.
 		 * @param WP_Feature $feature      The feature object.
 		 */
-		$schema = apply_filters( 'wp_feature_input_schema_validate', $this->input_schema, $input, $this );
+		$schema = apply_filters( 'wp_feature_input_schema_validate', $this->get_input_schema(), $input, $this );
 		$schema = apply_filters( $this->get_filter_id() . '_input_schema_validate', $schema, $input, $this );
 
 		return rest_validate_value_from_schema( $input, $schema );
@@ -659,9 +665,8 @@ class WP_Feature implements \JsonSerializable {
 			'type'          => $this->type,
 			'meta'          => $this->meta,
 			'categories'    => $this->categories,
-			'input_schema'  => $this->input_schema,
-			'output_schema' => $this->output_schema,
-			'permissions'   => $this->permissions,
+			'input_schema'  => $this->get_input_schema(),
+			'output_schema' => $this->get_output_schema(),
 			'location'      => $this->get_location(),
 		);
 
@@ -684,7 +689,7 @@ class WP_Feature implements \JsonSerializable {
 	 * @since 0.1.0
 	 * @return array The feature as a JSON serializable array.
 	 */
-	public function jsonSerialize() {
+	public function jsonSerialize(): array {
 		return $this->to_array();
 	}
 
@@ -786,7 +791,7 @@ class WP_Feature implements \JsonSerializable {
 			sprintf(
 				/* translators: %1$s: Feature name, %2$s: HTTP method */
 				__( 'REST API alias of feature (%1$s) does not support the method %2$s.', 'wp-feature-api' ),
-				$feature->get_id(),
+				$this->get_id(),
 				$method
 			),
 			array( 'status' => 405 )
