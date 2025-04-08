@@ -7,7 +7,7 @@ class BootstrapAssets {
 
 	public function init() {
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
-		add_action( 'admin_footer', [ $this, 'create_root_container' ] );
+		add_action( 'admin_footer', [ $this, 'create_root_container' ], 100 );
 	}
 
     public function enqueue_scripts() {
@@ -21,17 +21,10 @@ class BootstrapAssets {
             true
         );
 
-		wp_enqueue_style(
-			'wp-components-css',
-			includes_url('css/dist/components/style.min.css'),
-			array(),
-			false
-		);
-
         wp_enqueue_style(
             'wp-feature-api-demo',
             WP_FEATURE_API_DEMO_URL . 'build/style-index.css',
-            [],
+            ['wp-components'],
             $asset_file['version']
         );
     }

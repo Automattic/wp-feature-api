@@ -23,8 +23,8 @@ class Main {
 		if ( $api_key ) {
 			(new BootstrapAssets())->init();
 			// Initialize the Chat Controller
-			$chat_controller = new ChatController();
-			add_action( 'rest_api_init', [ $chat_controller, 'register_routes' ] );
+			// $chat_controller = new ChatController();
+			// add_action( 'rest_api_init', [ $chat_controller, 'register_routes' ] );
 		}
 	}
 

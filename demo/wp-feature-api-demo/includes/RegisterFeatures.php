@@ -2,9 +2,14 @@
 
 namespace A8C\WpFeatureApiDemo;
 
-use WP_Feature;
-
 class RegisterFeatures {
+
+	private $features = array(
+		Features\Resources\SiteInfo::class,
+		Features\Resources\WooCommerceInfo::class,
+		Features\Tools\SEO::class,
+	);
+
 	public function init() {
 		add_action( 'init', [ $this, 'register_features' ] );
 	}
@@ -16,59 +21,9 @@ class RegisterFeatures {
 	 * @return void
 	 */
 	public function register_features() {
-		/** Global Features */
-		wp_register_feature(
-			array(
-				'id'          => 'demo/site-info',
-				'name'        => __( 'Site Information', 'wp-feature-api-demo' ),
-				'description' => __( 'Get basic information about the WordPress site. This includes the name, description, URL, version, language, timezone, date format, time format, active plugins, and active theme.', 'wp-feature-api-demo' ),
-				'type'        => WP_Feature::TYPE_RESOURCE,
-				'categories'  => array( 'demo', 'site', 'information' ),
-				'callback'    => [ $this, 'site_info_callback' ],
-			)
-		);
-		wp_register_feature(
-			array(
-				'id'          => 'demo/woocommerce-info',
-				'name'        => __( 'WooCommerce Information', 'wp-feature-api-demo' ),
-				'description' => __( 'Get basic information about the configuration of WooCommerce. This includes the currency, country, language, timezone, date format, and time format.', 'wp-feature-api-demo' ),
-				'type'        => WP_Feature::TYPE_RESOURCE,
-				'categories'  => array( 'demo', 'woocommerce', 'information' ),
-				'callback'    => function() {
-					return array(
-						'version' => WC()->version,
-						'currency' => get_woocommerce_currency(),
-					);
-				},
-				'is_eligible' => function () {
-					return function_exists( 'WC' );
-				},
-			)
-		);
-
-		/**
-		 * SEO Page Features
-		 */
-		wp_register_feature(
-			array(
-				'id'          => 'demo/post-info',
-				'name'        => __( 'Post Information', 'wp-feature-api-demo' ),
-			)
-		);
-	}
-
-	private function site_info_callback( $input ) {
-		return array(
-			'name'        => get_bloginfo( 'name' ),
-			'description' => get_bloginfo( 'description' ),
-			'url'         => home_url(),
-			'version'     => get_bloginfo( 'version' ),
-			'language'    => get_bloginfo( 'language' ),
-			'timezone'    => wp_timezone_string(),
-			'date_format' => get_option( 'date_format' ),
-			'time_format' => get_option( 'time_format' ),
-			'active_plugins' => get_option( 'active_plugins' ),
-			'active_theme' => get_option( 'stylesheet' ),
-		);
+		foreach ( $this->features as $feature ) {
+			$feature_class = new $feature();
+			$feature_class();
+		}
 	}
 }
