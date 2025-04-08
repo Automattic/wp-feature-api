@@ -21,12 +21,15 @@ class BootstrapAssets {
             true
         );
 
-		wp_enqueue_style(
-			'wp-components-css',
-			includes_url('css/dist/components/style.min.css'),
-			array(),
-			false
-		);
+		// Only enqueue wp-components CSS if it's not already loaded by core (e.g., on editor screens), otherwise things will not render correctly.
+		if ( ! wp_style_is( 'wp-components', 'enqueued' ) ) {
+			wp_enqueue_style(
+				'wp-components-css',
+				includes_url('css/dist/components/style.min.css'),
+				array(),
+				false
+			);
+		}
 
         wp_enqueue_style(
             'wp-feature-api-demo',
