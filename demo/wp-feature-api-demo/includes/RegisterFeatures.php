@@ -57,7 +57,7 @@ class RegisterFeatures {
 		);
 	}
 
-	private function site_info_callback( $input ) {
+	public function site_info_callback( $input ) {
 		return array(
 			'name'        => get_bloginfo( 'name' ),
 			'description' => get_bloginfo( 'description' ),

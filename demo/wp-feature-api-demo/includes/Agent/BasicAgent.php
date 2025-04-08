@@ -130,7 +130,7 @@ class BasicAgent {
 			];
 
 			// additionalProperties is always present. So 1 is considered empty.
-			if ( count( $parameters ) > 1 ) {
+			if ( is_array( $parameters ) && count( $parameters ) > 1 ) {
 				$function['parameters'] = $parameters;
 			} else {
 				$function['parameters'] = [
