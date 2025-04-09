@@ -1,7 +1,12 @@
 /**
  * WordPress dependencies
  */
-import { createReduxStore, register, dispatch } from '@wordpress/data';
+import {
+	createReduxStore,
+	register,
+	dispatch,
+	resolveSelect,
+} from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
 import { __ } from '@wordpress/i18n';
 
@@ -22,6 +27,11 @@ export const store = createReduxStore( STORE_NAME, {
 } );
 
 register( store );
+
+// get registered client features
+resolveSelect( STORE_NAME ).getRegisteredFeatures();
+
+// get registered server features
 dispatch( coreStore )?.addEntities( [
 	{
 		name: ENTITY_NAME,
