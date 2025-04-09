@@ -13,11 +13,11 @@ import type { Feature } from '../types';
  */
 export const navigate: Feature = {
 	id: 'core/navigate',
-	name: __( 'Navigate Browser' ), // Assuming i18n domain
+	name: __( 'Navigate Browser' ),
 	description: __( 'Navigates the browser to a specified URL.' ),
 	type: 'tool',
-	location: 'client', // Explicitly mark as client-side
-	categories: [ 'core', 'navigation' ], // Suggesting categories
+	location: 'client',
+	categories: [ 'core', 'navigation' ],
 	input_schema: {
 		type: 'object',
 		properties: {
