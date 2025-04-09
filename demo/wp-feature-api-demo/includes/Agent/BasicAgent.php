@@ -306,10 +306,10 @@ class BasicAgent {
 			}
 
 			return [
-				'type' => 'function',
+				'type'     => 'function',
 				'function' => $function,
 			];
-		}, $client_features );
+		}, $features );
 
 		return array_values( array_filter( $mapped ) );
 	}
