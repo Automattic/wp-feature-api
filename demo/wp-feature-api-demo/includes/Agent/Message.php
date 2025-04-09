@@ -26,9 +26,16 @@ class Message {
 	}
 
 	public function to_array(): array {
+		$content = $this->content ?? '';
+
+		// The assisnt is asking us to execute a client side tool call, so there is no message.
+		if ( $this->role === 'assistant' && ! empty( $this->tool_calls ) ) {
+			$content = null;
+		}
+
 		return [
 			'role' => $this->role,
-			'content' => $this->content ?? '',
+			'content' => $content,
 			'tool_calls' => $this->tool_calls,
 			'tool_call_id' => $this->tool_call_id,
 			'feature' => $this->feature,

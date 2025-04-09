@@ -57,8 +57,8 @@ export const ToolCall = ( { text: json }: MessageProps ) => {
 };
 
 export const FeatureTool = ( { message }: { message: Message } ) => {
-	const { content, feature } = message;
-	const data = JSON.parse( content );
+	const { content } = message;
+	const data = content ? JSON.parse( content ) : null;
 	const [ isExpanded, setIsExpanded ] = useState( false );
 
 	return (

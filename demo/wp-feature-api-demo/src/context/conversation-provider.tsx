@@ -9,9 +9,10 @@ import {
 } from '@wordpress/element';
 
 export type Message = {
-	content: string;
+	content: string | null;
 	role: 'user' | 'assistant' | 'tool';
 	tool_calls: any[];
+	tool_call_id?: string;
 	feature?: WP_Feature;
 };
 
@@ -27,6 +28,13 @@ interface ConversationContextType {
 	addMessage: ( message: Message ) => void;
 	clearMessages: () => void;
 }
+
+export type ClientAction = {
+	type: 'execute_feature';
+	id: string;
+	args?: any;
+	tool_call_id?: string;
+};
 
 const ConversationContext = createContext<
 	ConversationContextType | undefined

@@ -4,12 +4,6 @@
 import { useState } from '@wordpress/element';
 import { Button, Spinner } from '@wordpress/components';
 import { arrowRight } from '@wordpress/icons';
-import apiFetch from '@wordpress/api-fetch';
-
-/**
- * Internal dependencies
- */
-import type { Message } from './context/conversation-provider';
 
 /**
  * Internal dependencies
@@ -17,7 +11,6 @@ import type { Message } from './context/conversation-provider';
 import {
 	UserMessage,
 	AssistantMessage,
-	ToolCall,
 	PendingAssistantMessage,
 	FeatureTool,
 } from './components/chat-message';
@@ -25,40 +18,31 @@ import {
 	ConversationProvider,
 	useConversation,
 } from './context/conversation-provider';
+import { useClientActionHandler } from './hooks/use-client-action-handler';
+import { useMessageHandler } from './hooks/use-message-handler';
 
 const ChatAppContent = () => {
 	const { messages, addMessage, clearMessages } = useConversation();
 	const [ inputValue, setInputValue ] = useState( '' );
 	const [ isLoading, setIsLoading ] = useState( false );
 
-	const handleSendMessage = async () => {
+	const { handleClientAction } = useClientActionHandler(
+		addMessage,
+		setIsLoading
+	);
+	const { sendMessage } = useMessageHandler(
+		addMessage,
+		setIsLoading,
+		handleClientAction
+	);
+
+	const handleSendMessage = () => {
 		if ( ! inputValue.trim() || isLoading ) {
 			return;
 		}
 
 		setInputValue( '' );
-		setIsLoading( true );
-
-		try {
-			const response = await apiFetch< { messages: Message[] } >( {
-				path: '/wp/v2/demo-chat',
-				method: 'POST',
-				data: {
-					message: inputValue,
-				},
-			} );
-
-			if ( response.messages ) {
-				for ( const message of response.messages ) {
-					addMessage( message );
-				}
-			}
-		} catch ( error ) {
-			// Handle error appropriately
-			console.error( 'Failed to get response:', error );
-		} finally {
-			setIsLoading( false );
-		}
+		sendMessage( inputValue );
 	};
 
 	return (
@@ -81,7 +65,7 @@ const ChatAppContent = () => {
 								return (
 									<UserMessage
 										key={ index }
-										text={ message.content }
+										text={ message.content ?? '' }
 									/>
 								);
 							case 'tool':
@@ -124,6 +108,7 @@ const ChatAppContent = () => {
 						icon={ isLoading ? null : arrowRight }
 					>
 						{ isLoading ? (
+							// @ts-expect-error: Spinner is not returning the correct type.
 							<Spinner />
 						) : (
 							<span className="screen-reader-text">Send</span>
