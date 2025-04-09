@@ -3,14 +3,14 @@
  */
 import { useCallback } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
-// Removed unused import: import { select } from '@wordpress/data';
+import { select } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import { useClientFeature } from '../../../../src/client/hooks/use-client-feature';
 import type { Message, ClientAction } from '../context/conversation-provider';
-// Removed unused import: import { store as featureStore } from '../../../../src/client/store';
+import { store as featureStore } from '../../../../src/client/store';
 
 /**
  * Custom hook to handle client actions from the server
@@ -80,26 +80,38 @@ export const useClientActionHandler = (
 
 			const { id: featureId, args, tool_call_id: toolCallId } = action;
 
+			const feature =
+				select( featureStore ).getRegisteredFeature( featureId );
+
+			// Determine if a result should be sent back based on output_schema,
+			// which might be optional for some distructive actions like navigation.
+			const expectsResult =
+				!! feature?.output_schema &&
+				Object.keys( feature.output_schema ).length > 0;
+
 			try {
-				// Use the execute function from the SDK hook
 				const executionResult = await executeClientFeature(
 					featureId,
 					args
 				);
 
-				if ( ! historyToUse ) {
-					addMessage( {
-						role: 'assistant',
-						content: `System Error: Could not send result for ${ featureId } back to server due to missing history.`,
-						tool_calls: [],
-					} );
+				if ( expectsResult ) {
+					if ( ! historyToUse ) {
+						addMessage( {
+							role: 'assistant',
+							content: `System Error: Could not send result for ${ featureId } back to server due to missing history.`,
+							tool_calls: [],
+						} );
+					} else {
+						sendToolResultToServer(
+							featureId,
+							toolCallId,
+							executionResult,
+							historyToUse
+						);
+					}
 				} else {
-					sendToolResultToServer(
-						featureId,
-						toolCallId,
-						executionResult,
-						historyToUse
-					);
+					setIsLoading( false );
 				}
 			} catch ( error ) {
 				// Error is logged within useFeatureExecutor, but we still need to stop loading

@@ -26,6 +26,7 @@
 		"@types/react": "^18.3.20",
 		"@types/react-dom": "^18.3.5",
 		"@wordpress/api-fetch": "^6.55.0",
+		"@wordpress/blocks": "^14.10.0",
 		"@wordpress/components": "^25.16.0",
 		"@wordpress/core-data": "^7.20.0",
 		"@wordpress/data": "^9.28.0",

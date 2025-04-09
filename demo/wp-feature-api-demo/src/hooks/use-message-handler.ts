@@ -45,10 +45,20 @@ export const useMessageHandler = (
 			try {
 				const clientFeatures = select( featureStore )
 					.getRegisteredFeatures()
-					.map( ( { id, description }: Feature ) => ( {
-						id,
-						description,
-					} ) );
+					.filter(
+						( feature: Feature ) => feature.location === 'client'
+					)
+					.map(
+						( {
+							id,
+							description,
+							input_schema: inputSchema,
+						}: Feature ) => ( {
+							id,
+							description,
+							input_schema: inputSchema || {},
+						} )
+					);
 
 				type ApiResponse = {
 					messages: Message[];

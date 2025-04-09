@@ -19,9 +19,9 @@ class BasicAgent {
 	private int $call_depth = 3;
 
 	/**
-	 * Store client-provided features
+	 * Stored client-provided WP Features
 	 *
-	 * @var array<string, array{id: string, description: string}>
+	 * @var array<string, array{id: string, description: string, input_schema?: array}>
 	 */
 	private array $client_features = [];
 
@@ -35,12 +35,12 @@ class BasicAgent {
 	/**
 	 * Constructor for the BasicAgent class
 	 *
-	 * @param array<array{id: string, description: string}> $client_features Client-provided features to be used by the agent.
+	 * @param array<array{id: string, description: string, input_schema?: array}> $client_features Client-provided features to be used by the agent.
 	 * @return self|WP_Error Returns self on success or WP_Error on failure.
 	 */
 	public function __construct( array $client_features = [] ) {
 		$this->messages = new Messages();
-		$this->client_features = $this->index_client_features( $client_features );
+		$this->client_features = $this->save_client_features( $client_features );
 		$api_key = Options::get_api_key();
 		if (empty($api_key)) {
 			return new WP_Error(
@@ -134,52 +134,16 @@ class BasicAgent {
 	 * @return void
 	 */
 	private function make_response_or_feature_call(): void {
-		$system = 'You are a helpful WordPress assistant in the dashboard that can use the following tools (both server-side PHP and client-side JS features) to help the user. If you are unsure what tool to call, just ask the user to clarify.';
+		$system = 'You are a helpful WordPress assistant in the dashboard that can use the following tools to resources to help the user. If you are unsure what tool to call, just ask the user to clarify.';
 
 		$response = $this->llm_request( $system );
 		$this->messages->add_response( $response );
 
 		$last_message = $this->messages->last_message();
 
+		// Check if the last message contains tool calls and process the first one
 		if ( ! empty( $last_message->tool_calls ) && is_array( $last_message->tool_calls ) ) {
-			$tool_call = $last_message->tool_calls[0];
-
-			if ( ! isset( $tool_call->id ) || ! isset( $tool_call->function ) || ! $tool_call->function instanceof CreateResponseToolCallFunction ) {
-				$this->messages->add_by( 'assistant', 'Received an invalid tool call structure from the AI.' );
-				return;
-			}
-
-			$tool_call_id = $tool_call->id;
-			$function = $tool_call->function;
-			$feature_name = $this->decode_id( $function->name );
-			$arguments = json_decode( $function->arguments, true );
-
-			if ( $this->is_client_feature( $feature_name ) ) {
-				$this->pending_client_action = [
-					'type' => 'execute_feature',
-					'id' => $feature_name,
-					'args' => $arguments,
-					'tool_call_id' => $tool_call_id,
-				];
-				return;
-			}
-
-			$feature = wp_feature_registry()->find( $feature_name );
-
-			if ( ! $feature ) {
-				$this->messages->add_by( 'assistant', "Sorry, I couldn't find a tool named '{$feature_name}'." );
-				return;
-			}
-
-			$result = $this->make_feature_call( $feature, $arguments );
-
-			if ( is_wp_error( $result ) ) {
-				$this->messages->add_by( 'assistant', $result->get_error_message() );
-			} else {
-				$this->messages->add_feature_result( $result, $feature );
-				$response = $this->make_tool_call();
-				$this->messages->add_response( $response );
-			}
+			$this->process_tool_call( $last_message->tool_calls[0] );
 		}
 	}
 
@@ -204,6 +168,63 @@ class BasicAgent {
 
 		return $this->llm_request( $system );
 	}
+
+	/**
+	 * Processes a tool call from the LLM response.
+	 *
+	 * Checks if the tool call corresponds to a client or server feature,
+	 * sets pending client action or executes the server feature accordingly.
+	 *
+	 * @todo Consider abstracting some part of the client chain here into the main WP Features API in the future
+	 *
+	 * @param object $tool_call The tool call object from the LLM response.
+	 * @return void
+	 */
+	private function process_tool_call( object $tool_call ): void {
+		// Validate tool call structure
+		if ( ! isset( $tool_call->id ) || ! isset( $tool_call->function ) || ! $tool_call->function instanceof CreateResponseToolCallFunction ) {
+			$this->messages->add_by( 'assistant', 'Received an invalid tool call structure from the AI.' );
+			return;
+		}
+
+		$tool_call_id = $tool_call->id;
+		$function = $tool_call->function;
+		$feature_name = $this->decode_id( $function->name );
+		$arguments = json_decode( $function->arguments, true );
+
+		if ( $this->is_client_feature( $feature_name ) ) {
+			$this->pending_client_action = [
+				'type'         => 'execute_feature',
+				'id'           => $feature_name,
+				'args'         => $arguments,
+				'tool_call_id' => $tool_call_id,
+			];
+			return;
+		}
+
+		// It's a server feature, find and execute it
+		$feature = wp_feature_registry()->find( $feature_name );
+
+		if ( ! $feature ) {
+			$this->messages->add_by( 'assistant', "Sorry, I couldn't find a tool named '{$feature_name}'." );
+			return;
+		}
+
+		// Execute the server feature
+		$result = $this->make_feature_call( $feature, $arguments );
+
+		// Handle the result
+		if ( is_wp_error( $result ) ) {
+			$this->messages->add_by( 'assistant', $result->get_error_message() );
+		} else {
+			// Add the feature result message
+			$this->messages->add_feature_result( $result, $feature );
+			// Make another LLM call to process the tool result
+			$response = $this->make_tool_call();
+			$this->messages->add_response( $response );
+		}
+	}
+
 
 	/**
 	 * Convert server features to tools for the LLM
@@ -246,7 +267,7 @@ class BasicAgent {
 	/**
 	 * Convert client features to tools for the LLM
 	 *
-	 * @param array<array{id: string, description: string}> $client_features The client features to convert.
+	 * @param array<array{id: string, description: string, input_schema?: array}> $client_features The client features to convert.
 	 * @return array<array{type: string, function: array}> The tools for the LLM.
 	 */
 	private function tools_from_client_features( array $client_features ): array {
@@ -256,16 +277,25 @@ class BasicAgent {
 			}
 
 			$compatible_name = $this->encode_id( $feature_data['id'] );
+			$parameters      = $feature_data['input_schema'] ?? null;
+
 			$function = [
-				'name' => $compatible_name,
+				'name'        => $compatible_name,
 				'description' => $feature_data['description'],
-				'strict' => $this->strict_schemas,
-				'parameters' => [
-					'type' => 'object',
-					'properties' => new \stdClass(),
-					'additionalProperties' => false,
-				],
+				'strict'      => $this->strict_schemas,
 			];
+
+			if ( is_array( $parameters ) && isset( $parameters['type'] ) && $parameters['type'] === 'object' && isset( $parameters['properties'] ) ) {
+				$function['parameters'] = $parameters;
+				$function['parameters']['additionalProperties'] = false;
+			} else {
+
+				$function['parameters'] = [
+					'type'                 => 'object',
+					'properties'           => new \stdClass(),
+					'additionalProperties' => false,
+				];
+			}
 
 			return [
 				'type' => 'function',
@@ -287,12 +317,12 @@ class BasicAgent {
 	}
 
 	/**
-	 * Allows for more efficient repeated lookup of features using the feature's ID.
+	 * Saves client features for efficient repeated lookup of features using the feature's ID.
 	 *
-	 * @param array<array{id: string, description: string}> $client_features An array of client feature definitions. Each feature must have an 'id'.
-	 * @return array<string, array{id: string, description: string}> An associative array where keys are feature IDs and values are the corresponding feature definitions.
+	 * @param array<array{id: string, description: string, input_schema?: array}> $client_features An array of client feature definitions. Each feature must have an 'id'.
+	 * @return array<string, array{id: string, description: string, input_schema?: array}> An associative array where keys are feature IDs and values are the corresponding feature definitions.
 	 */
-	private function index_client_features( array $client_features ): array {
+	private function save_client_features( array $client_features ): array {
 		$indexed = [];
 		foreach ( $client_features as $feature ) {
 			if ( isset( $feature['id'] ) && is_string( $feature['id'] ) ) {

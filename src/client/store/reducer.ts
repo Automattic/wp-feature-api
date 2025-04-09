@@ -40,9 +40,11 @@ function featuresById(
 		}
 		case RECEIVE_FEATURES: {
 			const newState = { ...state };
-			action.features.forEach( ( feature ) => {
-				newState[ feature.id ] = feature;
-			} );
+			if ( Array.isArray( action.features ) ) {
+				action.features.forEach( ( feature ) => {
+					newState[ feature.id ] = feature;
+				} );
+			}
 			return newState;
 		}
 		case REGISTER_FEATURE_CALLBACK: {
