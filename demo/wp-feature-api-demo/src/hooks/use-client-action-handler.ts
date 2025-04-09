@@ -3,13 +3,14 @@
  */
 import { useCallback } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
-import { select } from '@wordpress/data';
+// Removed unused import: import { select } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
+import { useClientFeature } from '../../../../src/client/hooks/use-client-feature';
 import type { Message, ClientAction } from '../context/conversation-provider';
-import { store as featureStore } from '../../../../src/client/store';
+// Removed unused import: import { store as featureStore } from '../../../../src/client/store';
 
 /**
  * Custom hook to handle client actions from the server
@@ -22,25 +23,7 @@ export const useClientActionHandler = (
 	addMessage: ( message: Message ) => void,
 	setIsLoading: ( isLoading: boolean ) => void
 ) => {
-	const executeClientFeatureCallback = useCallback(
-		async ( featureId: string, args: any ): Promise< unknown > => {
-			const callback =
-				select( featureStore ).getRegisteredFeatureCallback(
-					featureId
-				);
-
-			if ( typeof callback === 'function' ) {
-				try {
-					return await callback( args );
-				} catch ( error ) {
-					throw error;
-				}
-			}
-
-			return undefined;
-		},
-		[]
-	);
+	const { executeClientFeature } = useClientFeature();
 
 	const sendToolResultToServer = useCallback(
 		async (
@@ -98,7 +81,8 @@ export const useClientActionHandler = (
 			const { id: featureId, args, tool_call_id: toolCallId } = action;
 
 			try {
-				const executionResult = await executeClientFeatureCallback(
+				// Use the execute function from the SDK hook
+				const executionResult = await executeClientFeature(
 					featureId,
 					args
 				);
@@ -118,11 +102,18 @@ export const useClientActionHandler = (
 					);
 				}
 			} catch ( error ) {
+				// Error is logged within useFeatureExecutor, but we still need to stop loading
 				setIsLoading( false );
+				// Optionally add a user-facing error message here too
+				addMessage( {
+					role: 'assistant',
+					content: `System Error: Failed to execute client feature '${ featureId }'.`,
+					tool_calls: [],
+				} );
 			}
 		},
 		[
-			executeClientFeatureCallback,
+			executeClientFeature,
 			sendToolResultToServer,
 			addMessage,
 			setIsLoading,
