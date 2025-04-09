@@ -145,9 +145,7 @@ export const useClientActionHandler = (
 					setIsLoading( false );
 				}
 			} catch ( error ) {
-				// Error is logged within useFeatureExecutor, but we still need to stop loading
 				setIsLoading( false );
-				// Optionally add a user-facing error message here too
 				addMessage( {
 					role: 'assistant',
 					content: `System Error: Failed to execute client feature '${ featureId }'.`,
