@@ -127,7 +127,6 @@ export const useClientActionHandler = (
 					setIsLoading( false );
 				}
 			} catch ( error ) {
-				// Error is logged within useFeatureExecutor, but we still need to stop loading
 				setIsLoading( false );
 				addMessage( {
 					role: 'assistant',
