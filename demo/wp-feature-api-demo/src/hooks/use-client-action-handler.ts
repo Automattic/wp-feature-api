@@ -3,14 +3,11 @@
  */
 import { useCallback } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
-import { select } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
-import { useClientFeature } from '../../../../src/client/hooks/use-client-feature';
 import type { Message, ClientAction } from '../context/conversation-provider';
-import { store as featureStore } from '../../../../src/client/store';
 
 /**
  * Custom hook to handle client actions from the server
@@ -23,7 +20,40 @@ export const useClientActionHandler = (
 	addMessage: ( message: Message ) => void,
 	setIsLoading: ( isLoading: boolean ) => void
 ) => {
-	const { executeClientFeature } = useClientFeature();
+	const executeClientFeature = useCallback(
+		async ( featureId: string, args: any ): Promise< unknown > => {
+			// Access store via global wp.data
+			// @todo We should probably export our feature store as a proper package and use that instead,
+			// this is to avoid double bundling by calling things from the root src/client/... files directly
+			const selector = ( window.wp as any )?.data?.select(
+				'feature-api'
+			);
+			const callback =
+				selector?.getRegisteredFeatureCallback?.( featureId );
+
+			if ( typeof callback !== 'function' ) {
+				// eslint-disable-next-line no-console
+				console.error(
+					`No callback registered for feature: ${ featureId }`
+				);
+				throw new Error(
+					`No callback registered for feature: ${ featureId }`
+				);
+			}
+
+			try {
+				return await callback( args );
+			} catch ( error ) {
+				// eslint-disable-next-line no-console
+				console.error(
+					`Error executing feature ${ featureId }:`,
+					error
+				);
+				throw error;
+			}
+		},
+		[]
+	);
 
 	const sendToolResultToServer = useCallback(
 		async (
@@ -80,11 +110,12 @@ export const useClientActionHandler = (
 
 			const { id: featureId, args, tool_call_id: toolCallId } = action;
 
-			const feature =
-				select( featureStore ).getRegisteredFeature( featureId );
+			const selector = ( window.wp as any )?.data?.select(
+				'feature-api'
+			);
+			const feature: any = selector?.getRegisteredFeature?.( featureId );
 
-			// Determine if a result should be sent back based on output_schema,
-			// which might be optional for some distructive actions like navigation.
+			// Determine if a result should be sent back based on output_schema
 			const expectsResult =
 				!! feature?.output_schema &&
 				Object.keys( feature.output_schema ).length > 0;
