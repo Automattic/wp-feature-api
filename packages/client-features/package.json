@@ -7,7 +7,8 @@
   "scripts": {
     "build": "wp-scripts build",
     "start": "wp-scripts start",
-    "lint:js": "wp-scripts lint-js"
+    "lint:js": "wp-scripts lint-js",
+    "clean": "rm -rf build build-types tsconfig.tsbuildinfo"
   },
   "dependencies": {
     "@wp-feature-api/client": "^1.0.0",

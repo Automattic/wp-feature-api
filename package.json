@@ -9,7 +9,7 @@
 	  "demo/*"
 	],
 	"scripts": {
-		"build": "wp-scripts build && npm run build:packages",
+		"build": "npm run build:packages && wp-scripts build",
 		"build:packages": "npm run build --workspaces --if-present",
 		"format": "wp-scripts format",
 		"lint:css": "wp-scripts lint-style",
@@ -25,7 +25,8 @@
 		"test:unit:php": "npm-run-all test:unit:php:setup test:unit:php:base",
 		"test:unit:php:debug": "npm-run-all test:unit:php:setup:debug test:unit:php:base",
 		"serve": "wp-env start --xdebug",
-		"wp-env": "wp-env"
+		"wp-env": "wp-env",
+		"clean": "npm run clean --workspaces --if-present && rm -rf build tsconfig.tsbuildinfo"
 	},
 	"keywords": [
 		"wordpress",
