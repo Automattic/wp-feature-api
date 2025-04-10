@@ -5,6 +5,7 @@
 /**
  * WordPress dependencies
  */
+import type { select } from '@wordpress/data';
 import { createSelector, createRegistrySelector } from '@wordpress/data';
 
 /**
@@ -27,20 +28,15 @@ export const getRegisteredFeature = (
 	id: string
 ): Feature | null => state.featuresById[ id ] || null;
 
-interface SelectInterface {
-	( storeName: string ): {
-		getRegisteredFeature: ( id: string ) => Feature | null;
-	};
-}
-
 // Return the feature callback
 export const getRegisteredFeatureCallback = createRegistrySelector(
-	( select: SelectInterface ) =>
+	( registrySelect: typeof select ) =>
 		(
 			state: FeaturesState,
 			id: string
 		): Feature[ 'callback' ] | undefined => {
-			const feature = select( STORE_NAME ).getRegisteredFeature( id );
+			const feature =
+				registrySelect( STORE_NAME ).getRegisteredFeature( id );
 			return feature?.callback;
 		}
 );
