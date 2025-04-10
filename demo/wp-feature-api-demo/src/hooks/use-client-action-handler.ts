@@ -7,7 +7,7 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * External dependencies
  */
-import { executeFeature, getFeatureDefinition } from '@wp-feature-api/client';
+import { executeFeature, getRegisteredFeature } from '@wp-feature-api/client';
 
 /**
  * Internal dependencies
@@ -97,7 +97,7 @@ export const useClientActionHandler = (
 			const { id: featureId, args, tool_call_id: toolCallId } = action;
 
 			// Determine if a result should be sent back based on output_schema
-			const feature = getFeatureDefinition( featureId );
+			const feature = getRegisteredFeature( featureId );
 			const expectsResult =
 				!! feature?.output_schema &&
 				Object.keys( feature.output_schema ).length > 0;

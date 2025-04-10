@@ -33,9 +33,19 @@ export function unregisterFeature( featureId: string ) {
  * @param {string} featureId The ID of the feature to retrieve.
  * @return {Feature | null} The feature definition object or null if not found.
  */
-export function getFeatureDefinition( featureId: string ): Feature | null {
+export function getRegisteredFeature( featureId: string ): Feature | null {
 	const feature = select( store )?.getRegisteredFeature( featureId );
 	return feature || null;
+}
+
+/**
+ * Retrieves all registered features.
+ *
+ * @return An array of all registered feature definition objects, or null if the store is not ready.
+ */
+export function getRegisteredFeatures(): Feature[] | null {
+	const features = select( store )?.getRegisteredFeatures();
+	return features || null;
 }
 
 /**

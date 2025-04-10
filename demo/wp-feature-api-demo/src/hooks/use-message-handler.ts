@@ -5,6 +5,11 @@ import { useCallback } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
+ * External dependencies
+ */
+import { getRegisteredFeatures } from '@wp-feature-api/client';
+
+/**
  * Internal dependencies
  */
 import type { Message, ClientAction } from '../context/conversation-provider';
@@ -40,14 +45,7 @@ export const useMessageHandler = (
 			} );
 
 			try {
-				// Access store via global wp.data
-				// @todo We should probably export our feature store as a proper package and use that instead,
-				// this is to avoid double bundling by calling things from the root src/client/... files directly
-				const selector = ( window.wp as any )?.data?.select(
-					'feature-api'
-				);
-				const registeredFeatures: any[] =
-					selector?.getRegisteredFeatures?.() || [];
+				const registeredFeatures = getRegisteredFeatures() || [];
 
 				const clientFeatures = registeredFeatures
 					.filter( ( feature ) => feature?.location === 'client' )

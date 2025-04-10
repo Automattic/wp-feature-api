@@ -4,5 +4,6 @@ export {
 	registerFeature,
 	unregisterFeature,
 	executeFeature,
-	getFeatureDefinition,
+	getRegisteredFeature,
+	getRegisteredFeatures,
 } from './api';
