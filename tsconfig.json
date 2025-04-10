@@ -5,7 +5,7 @@
   // Define references to the sub-projects
   "references": [
     { "path": "./packages/client" },
-    { "path": "./packages/core-features" },
+    { "path": "./packages/client-features" },
     { "path": "./demo/wp-feature-api-demo" }
     // Add other packages/apps here if they use TypeScript
   ]

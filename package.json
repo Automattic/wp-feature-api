@@ -5,11 +5,11 @@
 	"main": "src/index.js",
 	"private": true,
 	"workspaces": [
-		"packages/*",
-		"demo/*"
+	  "packages/*",
+	  "demo/*"
 	],
 	"scripts": {
-		"build": "wp-scripts build",
+		"build": "wp-scripts build && npm run build:packages",
 		"build:packages": "npm run build --workspaces --if-present",
 		"format": "wp-scripts format",
 		"lint:css": "wp-scripts lint-style",
@@ -38,7 +38,7 @@
 	"license": "GPL-2.0-or-later",
 	"dependencies": {
 		"@wp-feature-api/client": "^1.0.0",
-		"@wp-feature-api/core-features": "^1.0.0",
+		"@wp-feature-api/client-features": "^1.0.0",
 		"@wordpress/api-fetch": "^6.55.0",
 		"@wordpress/block-editor": "^14.16.0",
 		"@wordpress/blocks": "^14.10.0",

@@ -1,5 +1,5 @@
 {
-  "name": "@wp-feature-api/core-features",
+  "name": "@wp-feature-api/client-features",
   "version": "1.0.0",
   "description": "Core client-side features for WordPress Feature API",
   "main": "build/index.js",
