@@ -7,9 +7,9 @@ import { dispatch } from '@wordpress/data';
 import { store as blockEditorStore } from '@wordpress/block-editor';
 
 /**
- * Internal dependencies
+ * External dependencies
  */
-import type { Feature } from '../types';
+import type { Feature } from '@wp-feature-api/client';
 
 /**
  * Client-side feature to insert a paragraph block.

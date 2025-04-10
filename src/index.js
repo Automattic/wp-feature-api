@@ -1,4 +1,1 @@
-/**
- * Internal dependencies
- */
-import './client/index';
+console.log( 'hello world' );
