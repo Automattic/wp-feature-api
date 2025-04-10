@@ -19,9 +19,5 @@ export const coreFeatures = [
  * Registers all core features with the feature registry.
  */
 export function registerCoreFeatures() {
-	coreFeatures.forEach( ( feature ) => {
-		if ( feature ) {
-			registerFeature( feature );
-		}
-	} );
+	coreFeatures.filter( ( feature ) => !! feature ).forEach( registerFeature );
 }

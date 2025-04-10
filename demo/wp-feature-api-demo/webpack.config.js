@@ -18,12 +18,15 @@ module.exports = {
 				'../../packages/client'
 			),
 			'@wp-feature-api/client-features': path.resolve(
+<<<<<<< HEAD
 				__dirname,
 				'../../packages/client-features'
 			),
 			'@wp-feature-api/core-features': path.resolve(
+=======
+>>>>>>> ea6810e (settle on "@wp-feature-api/client-features" for the main features)
 				__dirname,
-				'../../packages/core-features'
+				'../../packages/client-features'
 			),
 		},
 	},
