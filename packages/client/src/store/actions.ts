@@ -7,9 +7,8 @@ import {
 	UNREGISTER_FEATURE,
 	RECEIVE_FEATURES,
 	REGISTER_FEATURE_CALLBACK,
+	STORE_NAME,
 } from './constants';
-
-import { store } from './index';
 import type { Feature } from '../types';
 
 // Action Creators
@@ -41,13 +40,33 @@ export function receiveFeatures( features: Feature[] ) {
 	};
 }
 
+interface RegistryInterface {
+	resolveSelect: ( storeName: string ) => {
+		getRegisteredFeature: ( id: string ) => Promise< Feature | undefined >;
+	};
+}
+
+interface DispatchInterface {
+	( action: {
+		type: string;
+		id: string;
+		callback: () => unknown | Promise< unknown >;
+	} ): void;
+}
+
 export function registerFeatureCallback(
 	id: string,
 	callback: () => unknown | Promise< unknown >
 ) {
-	return async ( { registry, dispatch } ) => {
+	return async ( {
+		registry,
+		dispatch,
+	}: {
+		registry: RegistryInterface;
+		dispatch: DispatchInterface;
+	} ) => {
 		const feature = await registry
-			.resolveSelect( store )
+			.resolveSelect( STORE_NAME )
 			.getRegisteredFeature( id );
 		if ( ! feature ) {
 			return;

@@ -42,6 +42,8 @@ export const navigate: Feature = {
 
 		let finalUrl = args.url;
 		try {
+			// Check for WordPress admin URL
+			// @ts-ignore - ajaxurl is a global variable provided by WordPress
 			if ( typeof ajaxurl !== 'string' ) {
 				throw new Error(
 					'Cannot determine WordPress admin URL (ajaxurl not found).'
