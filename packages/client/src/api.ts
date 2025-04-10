@@ -28,6 +28,17 @@ export function unregisterFeature( featureId: string ) {
 }
 
 /**
+ * Retrieves the definition of a registered feature.
+ *
+ * @param {string} featureId The ID of the feature to retrieve.
+ * @return {Feature | null} The feature definition object or null if not found.
+ */
+export function getFeatureDefinition( featureId: string ): Feature | null {
+	const feature = select( store )?.getRegisteredFeature( featureId );
+	return feature || null;
+}
+
+/**
  * Executes a registered feature.
  *
  * @param {string} featureId The ID of the feature to execute
@@ -47,6 +58,7 @@ export async function executeFeature(
 	try {
 		return await callback( args );
 	} catch ( error ) {
+		// eslint-disable-next-line no-console
 		console.error( `Error executing feature ${ featureId }:`, error );
 		throw error;
 	}
