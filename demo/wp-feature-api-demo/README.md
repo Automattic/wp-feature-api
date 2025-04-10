@@ -1,19 +1,19 @@
 # WordPress Feature API Demo Plugin
 
-This demo plugin showcases how to use the WordPress Feature API to register and use features in your WordPress plugins or themes.
+This demo plugin showcases how to use the WordPress Feature API, including registering both server-side and client-side features.
 
-## Installation
+## Installation & Setup
 
-1. In this directory, run `composer install && npm install && npm run build` to install dependencies and build the plugin.
-2. Start a WordPress instance, you may use `npm run serve` to start through wp-env
-3. Make sure you have the WordPress Feature API plugin installed and activated.
-    1. `WP_FEATURE_API_LOAD_DEMO` must be true, you'll see a notice in the admin dashboard.
+1. This demo is included in the main `wp-feature-api` repository. Follow the Installation instructions in the [main README.md](../../README.md).
+2. Ensure the main "WordPress Feature API" plugin is activated in your WordPress environment.
+3. The demo should load automatically (controlled by `WP_FEATURE_API_LOAD_DEMO` in the main plugin file). An admin notice will confirm it's active.
+4. Navigate to "Tools" -> "Feature API Demo" in the WordPress admin to see the demo chat interface.
 
 ## Usage Examples
 
 ### Using the REST API
 
-You can view the available features directly through the WordPress REST API:
+You can view the available server-side features directly through the WordPress REST API:
 
 ```
 GET: /wp-json/wp/v2/features
@@ -32,12 +32,12 @@ POST: /wp-json/wp/v2/features/[feature-id]
 
 ### Using Features Directly
 
-Some REST funnctionality is already built in, so you can use those features directly.
+Some REST functionality is already built in, so you can use those features directly.
 
 ```php
 // Get a post
 $site_info = wp_find_feature( 'resource-post' )->call([
-	'id' => 1,
+ 'id' => 1,
 ]);
 
 // Create a post
@@ -60,5 +60,13 @@ You can use this demo plugin as a template to create your own features. Simply a
 
 This plugin registers some example features under `RegisterFeatures`. Some are plugin dependent, like for WooCommerce, so make sure you've installed and plugin dependencies if you want to use those features.
 
--   `resource-demo/woocommerce-info`: Get basic information about the WooCommerce configuration.
--   `resource-demo/site-info`: Get basic global site information.
+- `resource-demo/woocommerce-info`: Get basic information about the WooCommerce configuration.
+- `resource-demo/site-info`: Get basic global site information.
+
+## Client-Side Features
+
+This demo utilizes the `@wp-feature-api/client` SDK package to interact with the Feature API on the frontend.
+
+### Registering a Custom Client Feature
+
+- `demo/log-message`: Logs a message to the browser console.
