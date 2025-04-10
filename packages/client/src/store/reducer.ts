@@ -32,14 +32,8 @@ function featuresById(
 	switch ( action.type ) {
 		case REGISTER_FEATURE:
 		case RECEIVE_FEATURE:
-			if ( ! action.feature ) {
-				return state;
-			}
 			return { ...state, [ action.feature.id ]: action.feature };
 		case UNREGISTER_FEATURE: {
-			if ( ! action.feature ) {
-				return state;
-			}
 			const newState = { ...state };
 			delete newState[ action.feature.id ];
 			return newState;
@@ -47,16 +41,13 @@ function featuresById(
 		case RECEIVE_FEATURES: {
 			const newState = { ...state };
 			if ( Array.isArray( action.features ) ) {
-				action.features.forEach( ( feature: Feature ) => {
+				action.features.forEach( ( feature ) => {
 					newState[ feature.id ] = feature;
 				} );
 			}
 			return newState;
 		}
 		case REGISTER_FEATURE_CALLBACK: {
-			if ( ! action.id || ! action.callback ) {
-				return state;
-			}
 			const feature = state[ action.id ];
 			if ( ! feature ) {
 				return state;
