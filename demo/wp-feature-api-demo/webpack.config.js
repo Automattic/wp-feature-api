@@ -21,6 +21,10 @@ module.exports = {
 				__dirname,
 				'../../packages/client-features'
 			),
+			'@wp-feature-api/core-features': path.resolve(
+				__dirname,
+				'../../packages/core-features'
+			),
 		},
 	},
 };

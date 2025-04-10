@@ -6,7 +6,7 @@ import { render, createElement } from '@wordpress/element';
 /**
  * External dependencies
  */
-import { registerFeature } from '@wp-feature-api/client';
+import { registerCoreFeatures } from '@wp-feature-api/core-features';
 
 /**
  * Internal dependencies
@@ -15,8 +15,8 @@ import { ChatApp } from './chat-app';
 import { logMessage } from './features/log-message';
 import './style.scss';
 
-// Register demo specific feature
-registerFeature( logMessage );
+// Register core features
+registerCoreFeatures();
 
 document.addEventListener( 'DOMContentLoaded', () => {
 	const container = document.getElementById( 'wp-feature-api-demo-root' );

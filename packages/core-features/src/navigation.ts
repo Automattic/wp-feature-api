@@ -4,9 +4,9 @@
 import { __ } from '@wordpress/i18n';
 
 /**
- * Internal dependencies
+ * External dependencies
  */
-import type { Feature } from '../types';
+import type { Feature } from '@wp-feature-api/client';
 
 /**
  * Client-side feature for browser navigation.
@@ -42,6 +42,8 @@ export const navigate: Feature = {
 
 		let finalUrl = args.url;
 		try {
+			// Check for WordPress admin URL
+			// @ts-ignore - ajaxurl is a global variable provided by WordPress
 			if ( typeof ajaxurl !== 'string' ) {
 				throw new Error(
 					'Cannot determine WordPress admin URL (ajaxurl not found).'
@@ -57,8 +59,10 @@ export const navigate: Feature = {
 					finalUrl = `${ location.origin }${ finalUrl }`;
 				} else {
 					// Assume relative to admin root
+					// @ts-ignore - ajaxurl is a global variable provided by WordPress
 					const adminBase = ajaxurl.substring(
 						0,
+						// @ts-ignore - ajaxurl is a global variable provided by WordPress
 						ajaxurl.lastIndexOf( '/' ) + 1
 					);
 					finalUrl = adminBase + finalUrl.replace( /^\/+/, '' );
