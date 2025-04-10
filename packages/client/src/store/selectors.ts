@@ -10,8 +10,9 @@ import { createSelector, createRegistrySelector } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { STORE_NAME } from './constants';
+import { store } from './index';
 import type { Feature, FeaturesState } from '../types';
+import { STORE_NAME } from './constants';
 
 // Select all features
 export const getRegisteredFeatures = createSelector(

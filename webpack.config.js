@@ -23,6 +23,8 @@ module.exports = {
 		...defaultConfig.resolve,
 		alias: {
 			...defaultConfig.resolve?.alias,
+			// Point directly to the source of the packages for the root build
+			// This allows the root DependencyExtractionWebpackPlugin to see the actual imports.
 			'@wp-feature-api/client': path.resolve(
 				__dirname,
 				'packages/client/src'

@@ -5,8 +5,8 @@
 	"main": "src/index.js",
 	"private": true,
 	"workspaces": [
-	  "packages/*",
-	  "demo/*"
+		"packages/*",
+		"demo/*"
 	],
 	"scripts": {
 		"build": "npm run build:packages && wp-scripts build",
@@ -38,8 +38,6 @@
 	"author": "Automattic",
 	"license": "GPL-2.0-or-later",
 	"dependencies": {
-		"@wp-feature-api/client": "^1.0.0",
-		"@wp-feature-api/client-features": "^1.0.0",
 		"@wordpress/api-fetch": "^6.55.0",
 		"@wordpress/block-editor": "^14.16.0",
 		"@wordpress/blocks": "^14.10.0",
@@ -48,7 +46,10 @@
 		"@wordpress/data": "^9.28.0",
 		"@wordpress/element": "^5.35.0",
 		"@wordpress/i18n": "^4.58.0",
+<<<<<<< HEAD
 		"node-fetch": "^3.3.2",
+=======
+>>>>>>> a1373a5 (Clean up remaining changes from moving packages)
 		"@wp-feature-api/client": "^1.0.0",
 		"@wp-feature-api/client-features": "^1.0.0"
 	},
