@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "Client-side SDK for WordPress Feature API",
   "main": "build/index.js",
-  "types": "build/index.d.ts",
+  "types": "build-types/index.d.ts",
   "scripts": {
-    "build": "wp-scripts build",
+    "build": "wp-scripts build && tsc --emitDeclarationOnly --outDir build",
     "start": "wp-scripts start",
     "lint:js": "wp-scripts lint-js"
   },
