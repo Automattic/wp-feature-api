@@ -3,7 +3,7 @@
 This package provides a library of standard, reusable client-side features for the WordPress Feature API.
 
 - Contains the actual implementation logic for common client-side actions within the WordPress frontend (e.g., interacting with the block editor, navigation).
-- Uses the main `@wp-feature-api/client` package (for the `Feature` type and the `registerFeature`).
+- Uses the main `@wp-feature-api/client` package (for the `Feature`, `registerFeature`, etc).
 - The main plugin's initialization script (`src/index.js`) imports and calls `registerCoreFeatures` to make these standard features available when the plugin loads.
 
 ## Usage

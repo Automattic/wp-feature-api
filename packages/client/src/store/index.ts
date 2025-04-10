@@ -12,20 +12,19 @@ import * as selectors from './selectors';
 import * as resolvers from './resolvers';
 import { STORE_NAME } from './constants';
 
-// Create a global variable to track if the store has been registered
-// This ensures we only register the store once across all imports
+// Create a global variable to track if the store has been registered, this ensures we only register the store once across all imports
+// if multiple plugins are using the Feature API.
+// TODO: We may want to expose the api over wp.featureApi.* in the future like WordPress does.
 declare global {
 	interface Window {
 		__WP_FEATURE_API_STORE_REGISTERED?: boolean;
 	}
 }
 
-// Check if the store is already registered
 const isStoreRegistered = () => {
 	return window.__WP_FEATURE_API_STORE_REGISTERED === true;
 };
 
-// Create the store
 export const store = createReduxStore( STORE_NAME, {
 	reducer,
 	actions,
@@ -33,17 +32,13 @@ export const store = createReduxStore( STORE_NAME, {
 	resolvers,
 } );
 
-// Only register the store if it's not already registered
 if ( ! isStoreRegistered() ) {
 	try {
 		register( store );
-		// Mark the store as registered
 		window.__WP_FEATURE_API_STORE_REGISTERED = true;
 
-		// Initialize the store
 		resolveSelect( STORE_NAME ).getRegisteredFeatures();
 	} catch ( e ) {
-		// If registration fails, it's likely because the store is already registered
 		window.__WP_FEATURE_API_STORE_REGISTERED = true;
 		// eslint-disable-next-line no-console
 		console.warn(

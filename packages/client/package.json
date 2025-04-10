@@ -6,7 +6,6 @@
   "types": "build-types/index.d.ts",
   "scripts": {
     "build": "wp-scripts build && tsc --emitDeclarationOnly --outDir build",
-    "start": "wp-scripts start",
     "lint:js": "wp-scripts lint-js",
     "clean": "rm -rf build build-types tsconfig.tsbuildinfo"
   },

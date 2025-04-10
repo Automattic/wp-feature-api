@@ -9,9 +9,6 @@ import { insertParagraphBlock, insertHeadingBlock } from './blocks';
  */
 import { registerFeature } from '@wp-feature-api/client';
 
-/**
- * Array of all core features
- */
 export const coreFeatures = [
 	navigate,
 	insertParagraphBlock,

@@ -8,7 +8,7 @@ This package provides the core client-side SDK for the WordPress Feature API. It
 - Manages the client-side feature registry and data store via `@wordpress/data`.
 - Exposes API functions for interacting with features:
   - `registerFeature(feature: Feature)`: Adds a client-side feature definition to the registry.
-- `executeFeature(featureId: string, args: any): Promise<unknown>`: Executes the callback of a registered client-side feature.
+  - `executeFeature(featureId: string, args: any): Promise<unknown>`: Executes the callback of a registered client-side feature.
 - Initializes the connection to the server-side feature registry via the REST API to discover features available on the server.
 
 ## Installation
