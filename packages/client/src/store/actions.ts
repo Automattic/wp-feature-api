@@ -45,13 +45,7 @@ export function registerFeatureCallback(
 	id: string,
 	callback: () => unknown | Promise< unknown >
 ) {
-	return async ( {
-		registry,
-		dispatch,
-	}: {
-		registry: any;
-		dispatch: any;
-	} ) => {
+	return async ( { registry, dispatch } ) => {
 		const feature = await registry
 			.resolveSelect( store )
 			.getRegisteredFeature( id );

@@ -5,13 +5,12 @@
 /**
  * WordPress dependencies
  */
-import type { select } from '@wordpress/data';
 import { createSelector, createRegistrySelector } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
-import { STORE_NAME } from './constants';
+import { store } from './index';
 import type { Feature, FeaturesState } from '../types';
 
 // Select all features
@@ -30,13 +29,12 @@ export const getRegisteredFeature = (
 
 // Return the feature callback
 export const getRegisteredFeatureCallback = createRegistrySelector(
-	( registrySelect: typeof select ) =>
+	( select ) =>
 		(
 			state: FeaturesState,
 			id: string
 		): Feature[ 'callback' ] | undefined => {
-			const feature =
-				registrySelect( STORE_NAME ).getRegisteredFeature( id );
+			const feature = select( store ).getRegisteredFeature( id );
 			return feature?.callback;
 		}
 );
