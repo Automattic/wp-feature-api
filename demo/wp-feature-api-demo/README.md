@@ -2,7 +2,7 @@
 
 This demo plugin showcases how to use the WordPress Feature API, including registering both server-side and client-side features.
 
-## Installation
+## Installation & Setup
 
 1. This demo is included in the main `wp-feature-api` repository. Follow the Installation instructions in the [main README.md](../../README.md).
 2. Ensure the main "WordPress Feature API" plugin is activated in your WordPress environment.
