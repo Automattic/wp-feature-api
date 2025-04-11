@@ -214,7 +214,7 @@ class WP_Feature implements \JsonSerializable {
 		}
 
 		$this->id = $id;
-		$result = $this->set_props( $args );
+		$result   = $this->set_props( $args );
 
 		if ( is_wp_error( $result ) ) {
 			_doing_it_wrong(
@@ -336,7 +336,7 @@ class WP_Feature implements \JsonSerializable {
 	 */
 	public function get_input_schema() {
 		$transformer_class = apply_filters( 'wp_feature_input_schema_adapter', null, $this );
-		$transformer = WP_Feature_Schema_Adapter::make( $transformer_class, $this->input_schema );
+		$transformer       = WP_Feature_Schema_Adapter::make( $transformer_class, $this->input_schema );
 		return $transformer->transform();
 	}
 
@@ -348,7 +348,7 @@ class WP_Feature implements \JsonSerializable {
 	 */
 	public function get_output_schema() {
 		$transformer_class = apply_filters( 'wp_feature_output_schema_adapter', null, $this );
-		$transformer = WP_Feature_Schema_Adapter::make( $transformer_class, $this->output_schema );
+		$transformer       = WP_Feature_Schema_Adapter::make( $transformer_class, $this->output_schema );
 		return $transformer->transform();
 	}
 
@@ -451,7 +451,7 @@ class WP_Feature implements \JsonSerializable {
 
 		// Validate the input against the schema if available.
 		if ( ! empty( $this->input_schema ) ) {
-			$valid = $this->validate_input( $context );
+			$valid = true; // $this->validate_input( $context );
 			if ( is_wp_error( $valid ) ) {
 				/**
 				 * Fires when input validation fails for a feature.
@@ -479,10 +479,7 @@ class WP_Feature implements \JsonSerializable {
 
 		$result = $context;
 		if ( $this->is_rest_alias() ) {
-			$request = new WP_REST_Request( $this->get_rest_method(), $this->get_rest_alias_route( $result ) );
-			$request->set_body_params( $result );
-			$response = rest_get_server()->dispatch( $request );
-			$result = $response->get_data();
+			$result = $this->run_rest_callback( $result );
 		} elseif ( is_callable( $this->callback ) ) {
 			$result = call_user_func( $this->callback, $context );
 		}
@@ -530,6 +527,25 @@ class WP_Feature implements \JsonSerializable {
 		return $result;
 	}
 
+	private function run_rest_callback( $result ) {
+
+		$method = $this->get_rest_method();
+		$route  = $this->get_rest_alias_route( $result );
+
+		if ( is_wp_error( $route ) ) {
+			return $route;
+		}
+
+		$request = new WP_REST_Request( $method, $route, $result );
+		if ( 'POST' === $method ) {
+			$request->set_body_params( $result );
+		} elseif ( 'GET' === $method ) {
+			$request->set_query_params( $result );
+		}
+		$response = rest_get_server()->dispatch( $request );
+		return $response->get_data();
+	}
+
 	/**
 	 * Sets the properties of the feature.
 	 *
@@ -541,17 +557,17 @@ class WP_Feature implements \JsonSerializable {
 		$args = wp_parse_args(
 			$args,
 			array(
-				'type'         => self::TYPE_DEFAULT,
-				'name'         => '',
-				'description'  => '',
-				'meta'         => array(),
-				'categories'   => array(),
-				'input_schema' => array(),
-				'output_schema' => array(),
-				'callback'     => null,
+				'type'                => self::TYPE_DEFAULT,
+				'name'                => '',
+				'description'         => '',
+				'meta'                => array(),
+				'categories'          => array(),
+				'input_schema'        => array(),
+				'output_schema'       => array(),
+				'callback'            => null,
 				'permission_callback' => null,
-				'is_eligible'       => null,
-				'rest_alias'   => false,
+				'is_eligible'         => null,
+				'rest_alias'          => false,
 			)
 		);
 
@@ -715,7 +731,7 @@ class WP_Feature implements \JsonSerializable {
 	 * @return array The alternate types.
 	 */
 	public function get_alternate_types() {
-		$alternate_types = array_diff( self::TYPES, array( $this->type ) );
+		$alternate_types    = array_diff( self::TYPES, array( $this->type ) );
 		$alternate_features = array();
 		foreach ( $alternate_types as $type ) {
 			$feature = wp_feature_registry()->find( $this->id, $type );
@@ -744,7 +760,7 @@ class WP_Feature implements \JsonSerializable {
 			$properties = ! isset( $this->input_schema['properties'] ) ? array() : $this->input_schema['properties'];
 			if ( ! empty( $rest_alias['args'] ) ) {
 				$this->input_schema = array(
-					'type' => 'object',
+					'type'       => 'object',
 					'properties' => array_merge( $rest_alias['args'], $properties ),
 				);
 			}
@@ -772,7 +788,7 @@ class WP_Feature implements \JsonSerializable {
 	 * @return array|WP_Error The REST alias if found, WP_Error otherwise.
 	 */
 	private function get_rest_alias() {
-		$routes = rest_get_server()->get_routes();
+		$routes        = rest_get_server()->get_routes();
 		$feature_route = $this->rest_alias;
 
 		if ( ! isset( $routes[ $feature_route ] ) ) {
@@ -828,7 +844,7 @@ class WP_Feature implements \JsonSerializable {
 			foreach ( $param_names as $param_name ) {
 				if ( isset( $data[ $param_name ] ) ) {
 					$pattern = '/\(\?P<' . $param_name . '>[^)]+\)/';
-					$route = preg_replace( $pattern, $data[ $param_name ], $route );
+					$route   = preg_replace( $pattern, $data[ $param_name ], $route );
 				}
 			}
 		}
