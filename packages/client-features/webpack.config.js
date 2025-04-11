@@ -31,6 +31,7 @@ module.exports = {
 	externals: {
 		'@wordpress/api-fetch': 'wp.apiFetch',
 		'@wordpress/block-editor': 'wp.blockEditor',
+		'@wordpress/editor': 'wp.editor',
 		'@wordpress/blocks': 'wp.blocks',
 		'@wordpress/data': 'wp.data',
 		'@wordpress/i18n': 'wp.i18n',

@@ -15,7 +15,7 @@ import type { Feature } from '@wp-feature-api/client';
  * Client-side feature to insert a paragraph block.
  */
 export const insertParagraphBlock: Feature = {
-	id: 'core/insert-paragraph-block',
+	id: 'blocks/insert-paragraph-block',
 	name: __( 'Insert Paragraph Block' ),
 	description: __(
 		'Inserts a new paragraph block after the current selection or at the end of the content.'
@@ -56,8 +56,6 @@ export const insertParagraphBlock: Feature = {
 			dispatch( blockEditorStore ).insertBlocks( newBlock );
 			return { success: true, blockType: 'core/paragraph' };
 		} catch ( error ) {
-			// eslint-disable-next-line no-console
-			console.error( 'Failed to insert paragraph block:', error );
 			throw new Error(
 				`Failed to insert paragraph block: ${
 					error instanceof Error ? error.message : String( error )
@@ -71,7 +69,7 @@ export const insertParagraphBlock: Feature = {
  * Client-side feature to insert a heading block.
  */
 export const insertHeadingBlock: Feature = {
-	id: 'core/insert-heading-block',
+	id: 'blocks/insert-heading-block',
 	name: __( 'Insert Heading Block' ),
 	description: __(
 		'Inserts a new heading block after the current selection or at the end of the content.'
@@ -125,10 +123,151 @@ export const insertHeadingBlock: Feature = {
 				level: headingLevel,
 			};
 		} catch ( error ) {
-			// eslint-disable-next-line no-console
-			console.error( 'Failed to insert heading block:', error );
 			throw new Error(
 				`Failed to insert heading block: ${
+					error instanceof Error ? error.message : String( error )
+				}`
+			);
+		}
+	},
+};
+
+/**
+ * Client-side feature to insert a quote block.
+ */
+export const insertQuoteBlock: Feature = {
+	id: 'blocks/insert-quote-block',
+	name: __( 'Insert Quote Block' ),
+	description: __( 'Inserts a new quote block.' ),
+	type: 'tool',
+	location: 'client',
+	categories: [ 'core', 'editor', 'blocks' ],
+	input_schema: {
+		type: 'object',
+		properties: {
+			value: {
+				type: 'string',
+				description: __(
+					'The main quote text (will be placed in an inner paragraph block).'
+				),
+			},
+			citation: {
+				type: 'string',
+				description: __( 'Optional citation for the quote.' ),
+			},
+		},
+		required: [ 'value', 'citation' ],
+	},
+	output_schema: {
+		type: 'object',
+		properties: {
+			success: { type: 'boolean' },
+			clientId: { type: 'string' },
+		},
+		required: [ 'success', 'clientId' ],
+	},
+	callback: ( args: { value: string; citation?: string } ) => {
+		if ( typeof args?.value !== 'string' ) {
+			throw new Error(
+				'Value argument is missing or invalid for quote block.'
+			);
+		}
+		try {
+			// Create the inner paragraph block for the quote content
+			const innerParagraph = createBlock( 'core/paragraph', {
+				content: args.value,
+			} );
+
+			// Create the main quote block with citation and the inner paragraph
+			const newBlock = createBlock(
+				'core/quote',
+				{
+					citation: args.citation,
+				},
+				[ innerParagraph ] // Pass the inner block(s) as the third argument
+			);
+			if ( ! newBlock ) {
+				throw new Error( 'Failed to create quote block.' );
+			}
+			dispatch( blockEditorStore ).insertBlocks( newBlock );
+			return { success: true, clientId: newBlock.clientId };
+		} catch ( error ) {
+			throw new Error(
+				`Failed to insert quote block: ${
+					error instanceof Error ? error.message : String( error )
+				}`
+			);
+		}
+	},
+};
+
+/**
+ * Client-side feature to insert a list block.
+ */
+export const insertListBlock: Feature = {
+	id: 'blocks/insert-list-block',
+	name: __( 'Insert List Block' ),
+	description: __( 'Inserts a new list block (ordered or unordered).' ),
+	type: 'tool',
+	location: 'client',
+	categories: [ 'core', 'editor', 'blocks' ],
+	input_schema: {
+		type: 'object',
+		properties: {
+			values: {
+				type: 'array',
+				items: { type: 'string' },
+				description: __(
+					'An array of strings for the list items (each will become an inner list-item block).'
+				),
+			},
+			ordered: {
+				type: 'boolean',
+				description: __(
+					'Whether the list should be ordered (numbered).'
+				),
+			},
+		},
+		required: [ 'values', 'ordered' ],
+	},
+	output_schema: {
+		type: 'object',
+		properties: {
+			success: { type: 'boolean' },
+			clientId: { type: 'string' },
+		},
+		required: [ 'success', 'clientId' ],
+	},
+	callback: ( args: { values: string[]; ordered?: boolean } ) => {
+		if ( ! Array.isArray( args?.values ) || args.values.length === 0 ) {
+			throw new Error(
+				'Values argument must be a non-empty array for list block.'
+			);
+		}
+		try {
+			// Create an array of inner list-item blocks
+			const innerListItemBlocks = args.values.map( ( itemValue ) => {
+				return createBlock( 'core/list-item', {
+					content: itemValue,
+				} );
+			} );
+
+			// Create the main list block with the ordered attribute and inner blocks
+			const newBlock = createBlock(
+				'core/list',
+				{
+					ordered: !! args.ordered,
+				},
+				innerListItemBlocks // Pass the inner list-item blocks
+			);
+			if ( ! newBlock ) {
+				throw new Error( 'Failed to create list block.' );
+			}
+			dispatch( blockEditorStore ).insertBlocks( newBlock );
+			return { success: true, clientId: newBlock.clientId };
+		} catch ( error ) {
+			throw new Error(
+				`Failed to insert list block: ${
 					error instanceof Error ? error.message : String( error )
 				}`
 			);

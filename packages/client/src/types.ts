@@ -5,7 +5,7 @@ export interface Feature {
 	type: 'resource' | 'tool';
 	meta?: Record< string, any >;
 	categories: string[];
-	input_schema: Record< string, any >;
+	input_schema?: Record< string, any >;
 	output_schema?: Record< string, any >;
 	location: 'server' | 'client';
 	callback?: ( args?: any ) => unknown | Promise< unknown >;

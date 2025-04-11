@@ -2,7 +2,13 @@
  * Internal dependencies
  */
 import { navigate } from './navigation';
-import { insertParagraphBlock, insertHeadingBlock } from './blocks';
+import {
+	insertParagraphBlock,
+	insertHeadingBlock,
+	insertQuoteBlock,
+	insertListBlock,
+} from './blocks';
+import { setTitle, previewPost } from './editor';
 
 /**
  * External dependencies
@@ -10,9 +16,16 @@ import { insertParagraphBlock, insertHeadingBlock } from './blocks';
 import { registerFeature } from '@wp-feature-api/client';
 
 export const coreFeatures = [
+	// Navigation
 	navigate,
+	// Block Insertion
 	insertParagraphBlock,
 	insertHeadingBlock,
+	insertQuoteBlock,
+	insertListBlock,
+	// Editor Actions
+	setTitle,
+	previewPost,
 ];
 
 /**
