@@ -120,3 +120,18 @@ function wp_feature_api_demo_loaded_notice() {
 
 // Initialize the plugin.
 add_action( 'plugins_loaded', 'wp_feature_api_init' );
+
+/**
+ * Runs the wp_feature_api_init action.
+ * This will run at the end of the rest_api_init action.
+ * This is required for the rest aliases to work.
+ *
+ * @todo: Find a better way to do this.
+ */
+add_action(
+	'rest_api_init',
+	function () {
+		do_action( 'wp_feature_api_init' );
+	},
+	PHP_INT_MAX // Make sure this runs last.
+);
