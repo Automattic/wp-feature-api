@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { createBlock } from '@wordpress/blocks';
-import { dispatch } from '@wordpress/data';
 import { store as blockEditorStore } from '@wordpress/block-editor';
 
 /**
@@ -40,7 +39,7 @@ export const insertParagraphBlock: Feature = {
 		},
 		required: [ 'success', 'blockType' ],
 	},
-	callback: ( args: { content: string } ) => {
+	callback: ( args: { content: string }, { data } ) => {
 		if ( typeof args?.content !== 'string' ) {
 			throw new Error(
 				'Content argument is missing or invalid for paragraph block.'
@@ -53,7 +52,7 @@ export const insertParagraphBlock: Feature = {
 			if ( ! newBlock ) {
 				throw new Error( 'Failed to create paragraph block.' );
 			}
-			dispatch( blockEditorStore ).insertBlocks( newBlock );
+			data.dispatch( blockEditorStore ).insertBlocks( newBlock );
 			return { success: true, blockType: 'core/paragraph' };
 		} catch ( error ) {
 			throw new Error(
@@ -100,7 +99,7 @@ export const insertHeadingBlock: Feature = {
 		},
 		required: [ 'success', 'blockType', 'level' ],
 	},
-	callback: ( args: { content: string; level?: number } ) => {
+	callback: ( args: { content: string; level?: number }, { data } ) => {
 		if ( ! args?.content ) {
 			throw new Error( 'Content is required for heading block.' );
 		}
@@ -116,7 +115,7 @@ export const insertHeadingBlock: Feature = {
 			if ( ! newBlock ) {
 				throw new Error( 'Failed to create heading block.' );
 			}
-			dispatch( blockEditorStore ).insertBlocks( newBlock );
+			data.dispatch( blockEditorStore ).insertBlocks( newBlock );
 			return {
 				success: true,
 				blockType: 'core/heading',
@@ -166,30 +165,28 @@ export const insertQuoteBlock: Feature = {
 		},
 		required: [ 'success', 'clientId' ],
 	},
-	callback: ( args: { value: string; citation?: string } ) => {
+	callback: ( args: { value: string; citation?: string }, { data } ) => {
 		if ( typeof args?.value !== 'string' ) {
 			throw new Error(
 				'Value argument is missing or invalid for quote block.'
 			);
 		}
 		try {
-			// Create the inner paragraph block for the quote content
 			const innerParagraph = createBlock( 'core/paragraph', {
 				content: args.value,
 			} );
 
-			// Create the main quote block with citation and the inner paragraph
 			const newBlock = createBlock(
 				'core/quote',
 				{
 					citation: args.citation,
 				},
-				[ innerParagraph ] // Pass the inner block(s) as the third argument
+				[ innerParagraph ]
 			);
 			if ( ! newBlock ) {
 				throw new Error( 'Failed to create quote block.' );
 			}
-			dispatch( blockEditorStore ).insertBlocks( newBlock );
+			data.dispatch( blockEditorStore ).insertBlocks( newBlock );
 			return { success: true, clientId: newBlock.clientId };
 		} catch ( error ) {
 			throw new Error(
@@ -238,32 +235,30 @@ export const insertListBlock: Feature = {
 		},
 		required: [ 'success', 'clientId' ],
 	},
-	callback: ( args: { values: string[]; ordered?: boolean } ) => {
+	callback: ( args: { values: string[]; ordered?: boolean }, { data } ) => {
 		if ( ! Array.isArray( args?.values ) || args.values.length === 0 ) {
 			throw new Error(
 				'Values argument must be a non-empty array for list block.'
 			);
 		}
 		try {
-			// Create an array of inner list-item blocks
 			const innerListItemBlocks = args.values.map( ( itemValue ) => {
 				return createBlock( 'core/list-item', {
 					content: itemValue,
 				} );
 			} );
 
-			// Create the main list block with the ordered attribute and inner blocks
 			const newBlock = createBlock(
 				'core/list',
 				{
 					ordered: !! args.ordered,
 				},
-				innerListItemBlocks // Pass the inner list-item blocks
+				innerListItemBlocks
 			);
 			if ( ! newBlock ) {
 				throw new Error( 'Failed to create list block.' );
 			}
-			dispatch( blockEditorStore ).insertBlocks( newBlock );
+			data.dispatch( blockEditorStore ).insertBlocks( newBlock );
 			return { success: true, clientId: newBlock.clientId };
 		} catch ( error ) {
 			throw new Error(

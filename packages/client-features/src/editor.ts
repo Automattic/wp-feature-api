@@ -18,7 +18,7 @@ export const setTitle: Feature = {
 	description: __( 'Updates the title of the current post in the editor.' ),
 	type: 'tool',
 	location: 'client',
-	categories: [ 'core', 'editor' ],
+	categories: [ 'client', 'editor' ],
 	input_schema: {
 		type: 'object',
 		properties: {
@@ -62,7 +62,7 @@ export const savePost: Feature = {
 	description: __( 'Triggers the save action for the current post.' ),
 	type: 'tool',
 	location: 'client',
-	categories: [ 'core', 'editor' ],
+	categories: [ 'client', 'editor' ],
 	output_schema: {
 		type: 'object',
 		properties: {
@@ -70,7 +70,7 @@ export const savePost: Feature = {
 		},
 		required: [ 'success' ],
 	},
-	callback: ( _args: any, { data } ) => {
+	callback: ( _args, { data } ) => {
 		try {
 			data.dispatch( editorStore ).savePost();
 			return { success: true };
@@ -103,7 +103,7 @@ export const getEditorContent: Feature = {
 		},
 		required: [ 'content' ],
 	},
-	callback: ( _args: any, { data } ) => {
+	callback: ( _args, { data } ) => {
 		const content = data.select( editorStore ).getCurrentPost().content;
 		return { content };
 	},
