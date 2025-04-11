@@ -205,7 +205,7 @@ class WP_Feature_Schema_Adapter {
 
 		foreach ( array_keys( $this->rules ) as $rule_name ) {
 			$rule_method = 'rule_' . $rule_name;
-			if ( method_exists( $this, $rule_method ) ) {
+			if ( method_exists( $this, $rule_method ) && true === $this->rules[ $rule_name ] ) {
 				$this->transformed_schema = call_user_func( array( $this, $rule_method ), $rule_name, $this->transformed_schema );
 			}
 		}
