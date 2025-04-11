@@ -8,7 +8,7 @@ import {
 	insertQuoteBlock,
 	insertListBlock,
 } from './blocks';
-import { setTitle, previewPost } from './editor';
+import { setTitle, savePost, getEditorContent } from './editor';
 
 /**
  * External dependencies
@@ -25,7 +25,8 @@ export const coreFeatures = [
 	insertListBlock,
 	// Editor Actions
 	setTitle,
-	previewPost,
+	savePost,
+	getEditorContent,
 ];
 
 /**

@@ -1,3 +1,6 @@
+/**
+ * WordPress dependencies
+ */
 export interface Feature {
 	id: string;
 	name: string;
@@ -8,7 +11,10 @@ export interface Feature {
 	input_schema?: Record< string, any >;
 	output_schema?: Record< string, any >;
 	location: 'server' | 'client';
-	callback?: ( args?: any ) => unknown | Promise< unknown >;
+	callback?: (
+		args: any,
+		context: { data: { dispatch: Function; select: Function } }
+	) => unknown | Promise< unknown >;
 }
 
 export interface FeaturesState {

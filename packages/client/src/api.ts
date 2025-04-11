@@ -51,9 +51,9 @@ export function getRegisteredFeatures(): Feature[] | null {
 /**
  * Executes a registered feature.
  *
- * @param {string} featureId The ID of the feature to execute
- * @param {any}    args      Arguments to pass to the feature callback
- * @return {Promise<unknown>} The result of the feature execution
+ * @param featureId The ID of the feature to execute
+ * @param args      Arguments to pass to the feature callback
+ * @return The result of the feature execution
  */
 export async function executeFeature(
 	featureId: string,
@@ -66,7 +66,10 @@ export async function executeFeature(
 	}
 
 	try {
-		return await callback( args );
+		// Passes the select and dispatch functions to the callback, allowing
+		// for context and manipulation of the WordPress data store.
+		const data = { select, dispatch };
+		return await callback( args, { data } );
 	} catch ( error ) {
 		// eslint-disable-next-line no-console
 		console.error( `Error executing feature ${ featureId }:`, error );

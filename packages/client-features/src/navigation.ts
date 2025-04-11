@@ -12,9 +12,9 @@ import type { Feature } from '@wp-feature-api/client';
  * Client-side feature for browser navigation.
  */
 export const navigate: Feature = {
-	id: 'core/navigate',
+	id: 'tool-navigate',
 	name: __( 'Navigate Browser' ),
-	description: __( 'Navigates the browser to a specified URL.' ),
+	description: __( 'Navigates the browser to a specified URL in WordPress.' ),
 	type: 'tool',
 	location: 'client',
 	categories: [ 'core', 'navigation' ],
