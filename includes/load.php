@@ -19,3 +19,8 @@ require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/rest-api/class-wp-rest-featur
 require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/rest-api/class-wp-rest-feature-controller.php';
 // Include core features.
 require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/default-wp-features.php';
+
+// Register core features.
+require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/core_features/class-site-features.php';
+require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/core_features/class-user-features.php';
+require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/core_features/class-posts-features.php';
