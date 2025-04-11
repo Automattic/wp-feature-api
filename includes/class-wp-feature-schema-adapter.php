@@ -383,10 +383,17 @@ class WP_Feature_Schema_Adapter {
 					unset( $data['properties'][ $property_key ]['required'] );
 				} else {
 					// Make non-required properties nullable.
-					$current_type                                = isset( $property_value['type'] ) ? $property_value['type'] : 'string';
-					$types                                       = is_array( $current_type ) ? $current_type : array( $current_type );
-					$types[]                                     = 'null';
-					$data['properties'][ $property_key ]['type'] = array_values( array_unique( $types ) );
+					$current_type = isset( $property_value['type'] ) ? $property_value['type'] : 'string';
+					$types        = is_array( $current_type ) ? $current_type : array( $current_type );
+					// $types[]                                     = 'null';
+					// remove null from types
+					$types                                       = array_filter(
+						$types,
+						function ( $type ) {
+							return 'null' !== $type;
+						}
+					);
+					$data['properties'][ $property_key ]['type'] = $types[0];
 				}
 			}
 
