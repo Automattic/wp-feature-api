@@ -13,9 +13,7 @@ import {
  * Internal dependencies
  */
 import { wpRequest } from './wordpress-api';
-import * as fs from 'fs';
-import * as path from 'path';
-
+import { log } from './utils';
 // Suppress Node.js TLS verification warnings
 process.emitWarning = function () {};
 
@@ -34,14 +32,6 @@ export interface WpFeature {
 		};
 		required?: string[];
 	};
-}
-
-const logFile = path.join( __dirname, '../mcp-proxy.log' );
-function log( message: string ) {
-	const timestamp = new Date().toISOString();
-	const logMessage = `${ timestamp }: ${ message }\n`;
-	fs.appendFileSync( logFile, logMessage );
-	// process.stderr.write(logMessage);
 }
 
 async function initialize() {

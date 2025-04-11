@@ -3,8 +3,11 @@
  */
 // @ts-ignore Import errors will be resolved at runtime
 import fetch from 'node-fetch';
-import * as fs from 'fs';
-import * as path from 'path';
+
+/**
+ * Internal dependencies
+ */
+import { log } from './utils';
 
 /**
  * WordPress API request function with basic auth support
@@ -16,14 +19,6 @@ import * as path from 'path';
  * @param {string} options.baseUrl - Base URL for the WordPress site (defaults to env.WP_API_URL)
  * @return {Promise<any>} API response as JSON
  */
-const logFile = path.join( __dirname, '../mcp-proxy.log' );
-function log( message: string ) {
-	const timestamp = new Date().toISOString();
-	const logMessage = `${ timestamp }: ${ message }\n`;
-	fs.appendFileSync( logFile, logMessage );
-	// process.stderr.write(logMessage);
-}
-
 export async function wpRequest(
 	endpoint: string,
 	options: {
