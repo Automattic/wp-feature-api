@@ -3,6 +3,8 @@
  */
 // @ts-ignore Import errors will be resolved at runtime
 import fetch from 'node-fetch';
+import * as fs from 'fs';
+import * as path from 'path';
 
 /**
  * WordPress API request function with basic auth support
@@ -14,6 +16,14 @@ import fetch from 'node-fetch';
  * @param {string} options.baseUrl - Base URL for the WordPress site (defaults to env.WP_API_URL)
  * @return {Promise<any>} API response as JSON
  */
+const logFile = path.join( __dirname, '../mcp-proxy.log' );
+function log( message: string ) {
+	const timestamp = new Date().toISOString();
+	const logMessage = `${ timestamp }: ${ message }\n`;
+	fs.appendFileSync( logFile, logMessage );
+	// process.stderr.write(logMessage);
+}
+
 export async function wpRequest(
 	endpoint: string,
 	options: {
@@ -34,6 +44,8 @@ export async function wpRequest(
 		);
 	}
 
+	log( `env: ${ JSON.stringify( process.env ) }` );
+
 	// Get auth credentials from environment variables
 	const username = process.env.WP_API_USERNAME;
 	const password = process.env.WP_API_PASSWORD;
@@ -50,7 +62,11 @@ export async function wpRequest(
 	);
 
 	// Build URL with query params for GET requests
-	let url = `${ baseUrl }/wp-json/${ endpoint }`;
+	let url = `${ baseUrl.replace( /\/$/, '' ) }/wp-json/${ endpoint.replace(
+		/^\//,
+		''
+	) }`;
+	log( `Requesting url: ${ url }` );
 
 	const headers: Record< string, string > = {
 		Authorization: `Basic ${ auth }`,
@@ -65,6 +81,8 @@ export async function wpRequest(
 		method,
 		headers,
 	};
+
+	log( `Params: ${ JSON.stringify( params ) }` );
 
 	// Handle GET vs POST requests
 	if ( method === 'GET' && Object.keys( params ).length ) {

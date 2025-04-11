@@ -13,6 +13,11 @@ import {
  * Internal dependencies
  */
 import { wpRequest } from './wordpress-api';
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Suppress Node.js TLS verification warnings
+process.emitWarning = function () {};
 
 export interface WpFeature {
 	id: string;
@@ -20,109 +25,175 @@ export interface WpFeature {
 	description: string;
 	type: 'tool' | 'resource';
 	categories: string[];
-	input_schema: Object;
+	input_schema: {
+		properties?: {
+			[ key: string ]: {
+				type: string;
+				description: string;
+			};
+		};
+		required?: string[];
+	};
+}
+
+const logFile = path.join( __dirname, '../mcp-proxy.log' );
+function log( message: string ) {
+	const timestamp = new Date().toISOString();
+	const logMessage = `${ timestamp }: ${ message }\n`;
+	fs.appendFileSync( logFile, logMessage );
+	// process.stderr.write(logMessage);
 }
 
 async function initialize() {
-	process.stderr.write( 'Starting initialization...\n' );
-	const features = ( await wpRequest( 'wp/v2/features' ) ) as WpFeature[];
-	process.stderr.write(
-		`Retrieved ${ features.length } features from WordPress\n`
-	);
+	log( 'Starting initialization...' );
+	const features = ( await wpRequest( 'wp/v2/Features' ) ) as WpFeature[];
+	log( `Retrieved ${ features.length } features from WordPress\n` );
 
 	// Create an MCP server
 	const server = new Server(
 		{
-			name: 'feature-api',
-			version: '1.0.0',
+			name: 'my-website-features-api',
+			version: '1.0.1',
 		},
 		{
-			capabilities: { tools: {} },
+			capabilities: {
+				tools: {},
+				resources: {},
+				prompts: {},
+			},
 		}
 	);
 
 	// Start receiving messages on stdin and sending messages on stdout
 	const transport = new StdioServerTransport();
 
-	// Tool definitions
-	server.setRequestHandler( ListToolsRequestSchema, async () => {
-		process.stderr.write( 'Received ListToolsRequest\n' );
-		return {
-			tools: features.map( ( tool ) => {
-				let properties: {
-					[ key: string ]: { type: string; description: string };
-				} = {};
-				properties = Object.entries( tool.input_schema || {} ).reduce(
-					(
-						acc: {
-							[ key: string ]: {
-								type: string;
-								description: string;
-							};
-						},
-						[ key, value ]: [
-							string,
-							{ type: string; description: string },
-						]
-					) => {
-						acc[ key ] = {
-							type: value.type,
-							description: value.description,
-						};
-						return acc;
-					},
-					{}
-				);
-				return {
-					name: tool.id,
-					description: tool.description,
-					inputSchema: {
-						type: 'object',
-						properties,
-					},
-				};
-			} ),
+	// Create a wrapper for request handlers that adds logging
+	const withLogging =
+		( schema: string, handler: Function ) => async ( request: any ) => {
+			log(
+				`Received ${ schema } request: ${ JSON.stringify( request ) }`
+			);
+			const response = await handler( request );
+			log( `${ schema } response: ${ JSON.stringify( response ) }` );
+			return response;
 		};
-	} );
+
+	// Tool definitions
+	server.setRequestHandler(
+		ListToolsRequestSchema,
+		withLogging( 'ListTools', async () => {
+			log( 'Processing ListToolsRequest' );
+			return {
+				tools: features.map( ( tool ) => {
+					let properties: {
+						[ key: string ]: { type: string; description: string };
+					} = {};
+					properties = Object.entries(
+						tool.input_schema?.properties || {}
+					).reduce(
+						(
+							acc: {
+								[ key: string ]: {
+									type: string;
+									description: string;
+								};
+							},
+							[ key, value ]: [
+								string,
+								{ type: string; description: string },
+							]
+						) => {
+							acc[ key ] = {
+								type: value.type,
+								description: value.description,
+							};
+							return acc;
+						},
+						{}
+					);
+					return {
+						name: tool.id,
+						description: tool.description,
+						inputSchema: {
+							type: 'object',
+							properties,
+							required: tool.input_schema?.required || [],
+						},
+					};
+				} ),
+			};
+		} )
+	);
 
 	// Tool handlers
-	server.setRequestHandler( CallToolRequestSchema, async ( request ) => {
-		const { name, arguments: args } = request.params;
-		const feature = features.find( ( _feature ) => _feature.id === name );
-		if ( ! feature ) {
-			return {
-				error: 'Feature not found',
-			};
-		}
+	server.setRequestHandler(
+		CallToolRequestSchema,
+		withLogging(
+			'CallTool',
+			async ( request: { params: { name: string; arguments: any } } ) => {
+				const { name, arguments: args } = request.params;
+				const feature = features.find(
+					( _feature ) => _feature.id === name
+				);
+				log(
+					`Try to run feature: ${ JSON.stringify(
+						feature,
+						null,
+						2
+					) }`
+				);
+				if ( ! feature ) {
+					return {
+						error: 'Feature not found',
+					};
+				}
 
-		const answer = await wpRequest( `wp/v2/features/${ name }/run`, {
-			method: feature.type === 'tool' ? 'POST' : 'GET',
-			params: args,
-		} );
-		return {
-			content: [
-				{
-					type: 'text',
-					text: JSON.stringify( answer, null, 2 ),
-				},
-			],
-		};
-	} );
+				log(
+					`Calling feature: ${ name } with args: ${ JSON.stringify(
+						args
+					) }`
+				);
+
+				const answer = await wpRequest(
+					`wp/v2/features/${ name }/run`,
+					{
+						method: feature.type === 'tool' ? 'POST' : 'GET',
+						params: args,
+					}
+				);
+
+				log(
+					`Feature ${ name } returned: ${ JSON.stringify(
+						answer,
+						null,
+						2
+					) }`
+				);
+
+				return {
+					content: [
+						{
+							type: 'text',
+							text: JSON.stringify( answer, null, 2 ),
+						},
+					],
+				};
+			}
+		)
+	);
 
 	// Connect to the transport
 	server
 		.connect( transport )
 		.then( () => {
-			process.stderr.write(
-				'MCP server connected to transport successfully\n'
-			);
+			log( 'MCP server connected to transport successfully' );
 		} )
 		.catch( ( error ) => {
-			process.stderr.write( `Error starting MCP server: ${ error }\n` );
+			log( `Error starting MCP server: ${ error }` );
 			process.exit( 1 );
 		} );
 
 	// Log startup message to stderr (not stdout which is used for MCP)
-	process.stderr.write( 'Starting MCP feature api server...\n' );
+	log( 'Starting MCP feature api server...' );
 }
 initialize();
