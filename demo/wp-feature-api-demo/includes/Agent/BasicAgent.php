@@ -20,17 +20,20 @@ class BasicAgent {
 
 	public function __construct() {
 		$this->messages = new Messages();
-		$api_key = Options::get_api_key();
+		$api_key        = Options::get_api_key();
 
-		if (empty($api_key)) {
+		if ( empty( $api_key ) ) {
 			return new WP_Error(
 				'missing_api_key',
-				__('OpenAI API key is not configured. Please set it in the Feature API Demo settings.', 'wp-feature-api-demo'),
-				['status' => 500]
+				__( 'OpenAI API key is not configured. Please set it in the Feature API Demo settings.', 'wp-feature-api-demo' ),
+				array( 'status' => 500 )
 			);
 		}
 
-		$this->client = OpenAI::client($api_key);
+		// Increase PHP execution time limit for long-running requests.
+		set_time_limit( 180 ); // Set to 3 minutes.
+
+		$this->client = OpenAI::client( $api_key );
 	}
 
 	public function get_messages() {
@@ -44,39 +47,42 @@ class BasicAgent {
 
 	public function run(): self {
 		$depth = $this->call_depth;
-		while( !$this->messages->assistant_has_responded() && $depth > 0 ) {
+		while ( ! $this->messages->assistant_has_responded() && $depth > 0 ) {
 			$this->make_response_or_feature_call();
-			$depth--;
+			--$depth;
 		}
 
 		return $this;
 	}
 
-	private function encode_id($input) {
-		return bin2hex($input);
+	private function encode_id( $input ) {
+		return bin2hex( $input );
 	}
 
-	private function decode_id($encoded) {
-		return hex2bin($encoded);
+	private function decode_id( $encoded ) {
+		return hex2bin( $encoded );
 	}
 
 	private function get_tools() {
 		$tools = wp_feature_registry()->get();
-		return $this->tools_from_features($tools);
+		return $this->tools_from_features( $tools );
 	}
 
 	private function llm_request( string $system ): CreateResponseMessage {
 		$messages = $this->messages->get_chat_messages();
-		$prompt = [
-			'model' => 'gpt-4o',
-			'messages' => [
-				['role' => 'system', 'content' => $system],
-				...$messages
-			],
-			'tools' => $this->get_tools(),
-		];
+		$prompt   = array(
+			'model'    => 'gpt-4o',
+			'messages' => array(
+				array(
+					'role'    => 'system',
+					'content' => $system,
+				),
+				...$messages,
+			),
+			'tools'    => $this->get_tools(),
+		);
 
-		$result = $this->client->chat()->create($prompt);
+		$result = $this->client->chat()->create( $prompt );
 		return $result->choices[0]->message;
 	}
 
@@ -88,23 +94,31 @@ class BasicAgent {
 
 		$last_message = $this->messages->last_message();
 
-		if( $last_message->has_tool_call() ) {
+		if ( $last_message->has_tool_call() ) {
 			$function = $last_message->get_function();
-			$feature = $this->feature_from_tool_call( $function );
-			$result = $this->make_feature_call( $feature, $function );
+			$feature  = $this->feature_from_tool_call( $function );
 
-			if( is_wp_error( $result ) ) {
-				$this->messages->add_by( 'assistant', $result->get_error_message() );
+			if ( $feature ) {
+				$result = $this->make_feature_call( $feature, $function );
+
+				if ( is_wp_error( $result ) ) {
+					$this->messages->add_by( 'assistant', $result->get_error_message() );
+				} else {
+					// Add the tool response with the correct tool_call_id
+					$this->messages->add_feature_result( $result, $feature, $last_message->tool_call_id );
+
+					// Make another request to handle the tool response
+					$response = $this->make_tool_call();
+					$this->messages->add_response( $response );
+				}
 			} else {
-				$this->messages->add_feature_result( $result, $feature );
-				$response = $this->make_tool_call();
-				$this->messages->add_response( $response );
+				$this->messages->add_by( 'assistant', 'Sorry, I could not find the requested feature.' );
 			}
 		}
 	}
 
 	private function feature_from_tool_call( CreateResponseToolCallFunction $function ): ?WP_Feature {
-		$feature_name = $this->decode_id($function->name);
+		$feature_name = $this->decode_id( $function->name );
 		return wp_feature_registry()->find( $feature_name );
 	}
 
@@ -120,30 +134,33 @@ class BasicAgent {
 	}
 
 	private function tools_from_features( array $features ) {
-		return array_map(function($feature) {
-			$compatible_name = $this->encode_id($feature->get_id());
-			$parameters = $feature->get_input_schema();
-			$function = [
-				'name' => $compatible_name,
-				'description' => $feature->get_description(),
-				'strict' => $this->strict_schemas,
-			];
+		return array_map(
+			function ( $feature ) {
+				$compatible_name = $this->encode_id( $feature->get_id() );
+				$parameters      = $feature->get_input_schema();
+				$function        = array(
+					'name'        => $compatible_name,
+					'description' => $feature->get_description(),
+					'strict'      => $this->strict_schemas,
+				);
 
-			// additionalProperties is always present. So 1 is considered empty.
-			if ( count( $parameters ) > 1 ) {
-				$function['parameters'] = $parameters;
-			} else {
-				$function['parameters'] = [
-					'type' => 'object',
-					'properties' => new \stdClass(),
-					'additionalProperties' => false,
-				];
-			}
+				// additionalProperties is always present. So 1 is considered empty.
+				if ( count( $parameters ) > 1 ) {
+					$function['parameters'] = $parameters;
+				} else {
+					$function['parameters'] = array(
+						'type'                 => 'object',
+						'properties'           => new \stdClass(),
+						'additionalProperties' => false,
+					);
+				}
 
-			return [
-				'type' => 'function',
-				'function' => $function,
-			];
-		}, $features);
+				return array(
+					'type'     => 'function',
+					'function' => $function,
+				);
+			},
+			$features
+		);
 	}
 }
