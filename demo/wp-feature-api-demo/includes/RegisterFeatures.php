@@ -3,10 +3,14 @@
 namespace A8C\WpFeatureApiDemo;
 
 use WP_Feature;
+use A8C\WpFeatureApiDemo\Features\WooProductsFeatures;
+require_once __DIR__ . '/Features/WooProductsFeatures.php';
 
 class RegisterFeatures {
 	public function init() {
-		add_action( 'init', [ $this, 'register_features' ] );
+		add_action( 'init', array( $this, 'register_features' ) );
+
+		new WooProductsFeatures();
 	}
 
 	/**
@@ -24,7 +28,7 @@ class RegisterFeatures {
 				'description' => __( 'Get basic information about the WordPress site. This includes the name, description, URL, version, language, timezone, date format, time format, active plugins, and active theme.', 'wp-feature-api-demo' ),
 				'type'        => WP_Feature::TYPE_RESOURCE,
 				'categories'  => array( 'demo', 'site', 'information' ),
-				'callback'    => [ $this, 'site_info_callback' ],
+				'callback'    => array( $this, 'site_info_callback' ),
 			)
 		);
 		wp_register_feature(
@@ -34,9 +38,9 @@ class RegisterFeatures {
 				'description' => __( 'Get basic information about the configuration of WooCommerce. This includes the currency, country, language, timezone, date format, and time format.', 'wp-feature-api-demo' ),
 				'type'        => WP_Feature::TYPE_RESOURCE,
 				'categories'  => array( 'demo', 'woocommerce', 'information' ),
-				'callback'    => function() {
+				'callback'    => function () {
 					return array(
-						'version' => WC()->version,
+						'version'  => WC()->version,
 						'currency' => get_woocommerce_currency(),
 					);
 				},
@@ -51,24 +55,24 @@ class RegisterFeatures {
 		 */
 		wp_register_feature(
 			array(
-				'id'          => 'demo/post-info',
-				'name'        => __( 'Post Information', 'wp-feature-api-demo' ),
+				'id'   => 'demo/post-info',
+				'name' => __( 'Post Information', 'wp-feature-api-demo' ),
 			)
 		);
 	}
 
 	private function site_info_callback( $input ) {
 		return array(
-			'name'        => get_bloginfo( 'name' ),
-			'description' => get_bloginfo( 'description' ),
-			'url'         => home_url(),
-			'version'     => get_bloginfo( 'version' ),
-			'language'    => get_bloginfo( 'language' ),
-			'timezone'    => wp_timezone_string(),
-			'date_format' => get_option( 'date_format' ),
-			'time_format' => get_option( 'time_format' ),
+			'name'           => get_bloginfo( 'name' ),
+			'description'    => get_bloginfo( 'description' ),
+			'url'            => home_url(),
+			'version'        => get_bloginfo( 'version' ),
+			'language'       => get_bloginfo( 'language' ),
+			'timezone'       => wp_timezone_string(),
+			'date_format'    => get_option( 'date_format' ),
+			'time_format'    => get_option( 'time_format' ),
 			'active_plugins' => get_option( 'active_plugins' ),
-			'active_theme' => get_option( 'stylesheet' ),
+			'active_theme'   => get_option( 'stylesheet' ),
 		);
 	}
 }
