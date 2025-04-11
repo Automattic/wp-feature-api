@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "my-website-features-api": {
+      "command": "node",
+      "args": [
+        "your-full-path/wp-content/plugins/wp-feature-api/demo/mcp/mcp-proxy/dist/index.js"
+      ],
+      "env": {
+        "WP_API_USERNAME": "your username",
+        "WP_API_PASSWORD": "your application password",
+        "WP_API_URL": "your webiste url"
+      }
+    }
+  }
+}
