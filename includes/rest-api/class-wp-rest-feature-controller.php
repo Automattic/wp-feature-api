@@ -111,13 +111,14 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 							'validate_callback' => 'rest_validate_request_arg',
 						),
 					),
-					'schema' => WP_Feature_Category::get_schema(),
+					'schema'              => WP_Feature_Category::get_schema(),
 				),
 			)
 		);
 
 		// Get features after they've been registered.
 		$features = wp_feature_registry()->get();
+
 		foreach ( $features as $feature ) {
 			$this->register_feature_routes( $feature );
 		}
@@ -132,7 +133,7 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function get_items( $request ) {
-		$query = new WP_Feature_Query( $request->get_query_params() );
+		$query    = new WP_Feature_Query( $request->get_query_params() );
 		$features = wp_feature_registry()->get( $query );
 
 		// Handle pagination.
@@ -160,7 +161,7 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 
 		// Add pagination links.
 		$request_params = $request->get_query_params();
-		$base = add_query_arg( urlencode_deep( $request_params ), rest_url( sprintf( '%s/%s', $this->namespace, $this->rest_base ) ) );
+		$base           = add_query_arg( urlencode_deep( $request_params ), rest_url( sprintf( '%s/%s', $this->namespace, $this->rest_base ) ) );
 
 		if ( $page > 1 ) {
 			$prev_page = $page - 1;
@@ -202,7 +203,7 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 		$data = $this->transform_feature_data( $feature, $request );
 
 		$response = rest_ensure_response( $data );
-		$links = $this->get_links( $feature );
+		$links    = $this->get_links( $feature );
 		if ( ! empty( $links ) ) {
 			$response->add_links( $links );
 		}
@@ -236,7 +237,7 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 				'sanitize_callback' => 'absint',
 				'validate_callback' => 'rest_validate_request_arg',
 			),
-			'fields' => array(
+			'fields'   => array(
 				'description'       => __( 'Limit response to specific fields. Defaults to all fields.', 'wp-feature-api' ),
 				'type'              => 'string',
 				'sanitize_callback' => 'sanitize_text_field',
@@ -299,36 +300,36 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 		$this->schema = array(
 			'type'       => 'object',
 			'properties' => array(
-				'id' => array(
+				'id'            => array(
 					'description' => __( 'Unique identifier for the feature.', 'wp-feature-api' ),
 					'type'        => 'string',
 				),
-				'name' => array(
+				'name'          => array(
 					'description' => __( 'The name of the feature.', 'wp-feature-api' ),
 					'type'        => 'string',
 				),
-				'description' => array(
+				'description'   => array(
 					'description' => __( 'The description of the feature.', 'wp-feature-api' ),
 					'type'        => 'string',
 				),
-				'type' => array(
+				'type'          => array(
 					'description' => __( 'The type of the feature (resource or tool).', 'wp-feature-api' ),
 					'type'        => 'string',
 					'enum'        => array( 'resource', 'tool' ),
 				),
-				'categories' => array(
+				'categories'    => array(
 					'description' => __( 'The categories that the feature belongs to.', 'wp-feature-api' ),
 					'type'        => 'array',
 					'items'       => array(
 						'type' => 'string',
 					),
 				),
-				'location' => array(
+				'location'      => array(
 					'description' => __( 'Where the feature is executed (server or client).', 'wp-feature-api' ),
 					'type'        => 'string',
 					'enum'        => array( 'server', 'client' ),
 				),
-				'input_schema' => array(
+				'input_schema'  => array(
 					'description' => __( 'JSON Schema defining the input parameters for the feature.', 'wp-feature-api' ),
 					'type'        => 'object',
 				),
@@ -336,13 +337,13 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 					'description' => __( 'JSON Schema defining the output format of the feature.', 'wp-feature-api' ),
 					'type'        => 'object',
 				),
-				'meta' => array(
+				'meta'          => array(
 					'description' => __( 'Additional metadata associated with the feature.', 'wp-feature-api' ),
 					'type'        => 'object',
 					'properties'  => array(),
 				),
 			),
-			'required' => array( 'id', 'name', 'description', 'type' ),
+			'required'   => array( 'id', 'name', 'description', 'type' ),
 		);
 
 		return $this->schema;
@@ -387,7 +388,7 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 		$fields = $this->default_fields;
 		if ( ! empty( $request['fields'] ) ) {
 			$requested_fields = array_map( 'trim', explode( ',', $request['fields'] ) );
-			$fields = array_unique( $requested_fields );
+			$fields           = array_unique( $requested_fields );
 		}
 
 		return array_intersect_key( $data, array_flip( $fields ) );
@@ -407,7 +408,7 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 			'self' => array(
 				'href' => $this->get_feature_url( $feature ),
 			),
-			'run' => array(
+			'run'  => array(
 				array(
 					'href'   => $this->get_feature_run_url( $feature ),
 					'method' => $feature->get_rest_method(),
@@ -419,7 +420,7 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 		$alternate_features = $feature->get_alternate_types();
 		if ( $alternate_features ) {
 			foreach ( $alternate_features as $alternate_feature ) {
-				$url = $this->get_feature_url( $alternate_feature );
+				$url                = $this->get_feature_url( $alternate_feature );
 				$links['related'][] = array(
 					'href'   => $this->get_feature_url( $alternate_feature ),
 					'method' => 'GET',
@@ -493,8 +494,23 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 			array(
 				array(
 					'methods'             => $feature->get_rest_method(),
-					'callback'            => function ( $request ) use ( $feature ) {
-						$result = $feature->call( $request->get_param( 'context' ) );
+					'callback'            => function ( WP_REST_Request $request ) use ( $feature ) {
+						$params = $request->get_query_params();
+						if ( $request->get_method() === 'POST' ) {
+							$params = $request->get_json_params();
+							// if title, content or excerpt are an array containing rendered, set them to the rendered value.
+							// if ( isset( $params['title'] ) && is_array( $params['title'] ) && isset( $params['title']['rendered'] ) ) {
+							// $params['title'] = $params['title']['rendered'];
+							// }
+							// if ( isset( $params['content'] ) && is_array( $params['content'] ) && isset( $params['content']['rendered'] ) ) {
+							// $params['content'] = $params['content']['rendered'];
+							// }
+							// if ( isset( $params['excerpt'] ) && is_array( $params['excerpt'] ) && isset( $params['excerpt']['rendered'] ) ) {
+							// $params['excerpt'] = $params['excerpt']['rendered'];
+							// }
+						}
+
+						$result = $feature->call( $params );
 						return rest_ensure_response( $result );
 					},
 					'permission_callback' => array( $feature, 'get_permission_callback' ),
@@ -504,15 +520,15 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 							'type'        => 'object',
 							'properties'  => array(
 								'client_features' => array(
-									'type'        => 'array',
-									'items'       => $this->get_item_schema(),
+									'type'  => 'array',
+									'items' => $this->get_item_schema(),
 								),
 							),
 						),
-						'context' => array(
+						'context'  => array(
 							'description' => __( 'Context for executing the feature.', 'wp-feature-api' ),
-							'type'        => 'object',
-							'default'     => array(),
+							'type'        => 'string',
+							'default'     => 'view',
 							'properties'  => $feature->get_input_schema(),
 						),
 					),
@@ -561,7 +577,7 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function get_category( $request ) {
-		$id = $request['id'];
+		$id       = $request['id'];
 		$category = wp_feature_registry()->get_category( $id );
 
 		if ( ! $category ) {
