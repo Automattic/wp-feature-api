@@ -29,8 +29,8 @@ class WooProductsFeatures {
 	public function register_woo_products_features() {
 		wp_register_feature(
 			array(
-				'id'          => 'woocommerce-products',
-				'name'        => 'woocommerce_products',
+				'id'          => 'woo-products-search',
+				'name'        => 'woo_products_search',
 				'description' => 'Search for WooCommerce products',
 				'rest_alias'  => '/wp/v2/product',
 				'categories'  => array( 'woocommerce', 'products' ),
@@ -43,8 +43,8 @@ class WooProductsFeatures {
 
 		wp_register_feature(
 			array(
-				'id'           => 'woocommerce-product-by-id',
-				'name'         => 'woocommerce_product_by_id',
+				'id'           => 'woo-product-by-id',
+				'name'         => 'woo_product_get',
 				'description'  => 'Get a WooCommerce product by its ID',
 				'rest_alias'   => '/wp/v2/product/(?P<id>[\d]+)',
 				'categories'   => array( 'woocommerce', 'products' ),
@@ -63,9 +63,9 @@ class WooProductsFeatures {
 
 		wp_register_feature(
 			array(
-				'id'           => 'woocommerce-product-modify',
-				'name'         => 'woocommerce_product_modify',
-				'description'  => 'Modify a WooCommerce product',
+				'id'           => 'woo-product-modify',
+				'name'         => 'woo_product_update',
+				'description'  => 'Update a WooCommerce product',
 				'rest_alias'   => '/wp/v2/product/(?P<id>[\d]+)',
 				'categories'   => array( 'woocommerce', 'products' ),
 				'type'         => WP_Feature::TYPE_TOOL,
