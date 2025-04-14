@@ -12,7 +12,6 @@ import { createSelector, createRegistrySelector } from '@wordpress/data';
  */
 import { store } from './index';
 import type { Feature, FeaturesState } from '../types';
-import { STORE_NAME } from './constants';
 
 // Select all features
 export const getRegisteredFeatures = createSelector(
@@ -28,20 +27,14 @@ export const getRegisteredFeature = (
 	id: string
 ): Feature | null => state.featuresById[ id ] || null;
 
-interface SelectInterface {
-	( storeName: string ): {
-		getRegisteredFeature: ( id: string ) => Feature | null;
-	};
-}
-
 // Return the feature callback
 export const getRegisteredFeatureCallback = createRegistrySelector(
-	( select: SelectInterface ) =>
+	( select ) =>
 		(
 			state: FeaturesState,
 			id: string
 		): Feature[ 'callback' ] | undefined => {
-			const feature = select( STORE_NAME ).getRegisteredFeature( id );
+			const feature = select( store ).getRegisteredFeature( id );
 			return feature?.callback;
 		}
 );
