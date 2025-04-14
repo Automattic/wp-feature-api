@@ -49,7 +49,6 @@ async function initialize() {
 			capabilities: {
 				tools: {},
 				resources: {},
-				prompts: {},
 			},
 		}
 	);
