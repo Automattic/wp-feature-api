@@ -205,7 +205,9 @@ class WP_Feature_Schema_Adapter {
 
 		foreach ( array_keys( $this->rules ) as $rule_name ) {
 			$rule_method = 'rule_' . $rule_name;
-			if ( method_exists( $this, $rule_method ) && true === $this->rules[ $rule_name ] ) {
+			// Execute the rule method if it exists and the rule is not explicitly set to false,
+			// since rules can be true/false OR a value.
+			if ( method_exists( $this, $rule_method ) && false !== $this->rules[ $rule_name ] ) {
 				$this->transformed_schema = call_user_func( array( $this, $rule_method ), $rule_name, $this->transformed_schema );
 			}
 		}
@@ -349,6 +351,53 @@ class WP_Feature_Schema_Adapter {
 			}
 
 			$data[ $key ] = $value;
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Processes and adds required properties to a schema object recursively.
+	 *
+	 * @since 0.1.0
+	 * @param array $rule_name The rule value.
+	 * @param array $data The schema data to process.
+	 * @return array The processed schema data.
+	 */
+	private function rule_all_fields_required( $rule_name, $data ) {
+		if ( ! is_array( $data ) || false === $rule_name ) {
+			return $data;
+		}
+
+		if ( isset( $data['type'] ) && isset( $data['properties'] ) && 'object' === $data['type'] ) {
+			$required_properties = array();
+
+			foreach ( $data['properties'] as $property_key => $property_value ) {
+				// Process nested objects/arrays recursively.
+				$data['properties'][ $property_key ] = $this->rule_all_fields_required( $rule_name, $property_value );
+
+				// Handle required flag.
+				if ( isset( $property_value['required'] ) ) {
+					if ( true === $property_value['required'] ) {
+						$required_properties[] = $property_key;
+					}
+					// Remove the required flag as it's not part of JSON Schema.
+					unset( $data['properties'][ $property_key ]['required'] );
+				} else {
+					// Make non-required properties nullable.
+					$current_type                                = isset( $property_value['type'] ) ? $property_value['type'] : 'string';
+					$types                                       = is_array( $current_type ) ? $current_type : array( $current_type );
+					$types[]                                     = 'null';
+					$data['properties'][ $property_key ]['type'] = array_values( array_unique( $types ) );
+				}
+			}
+
+			$data['required'] = is_array( $data['properties'] ) ? array_keys( $data['properties'] ) : array();
+		}
+
+		// Handle arrays.
+		if ( isset( $data['type'] ) && 'array' === $data['type'] && isset( $data['items'] ) ) {
+			$data['items'] = $this->rule_all_fields_required( $rule_name, $data['items'] );
 		}
 
 		return $data;
