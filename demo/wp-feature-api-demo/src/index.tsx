@@ -15,6 +15,7 @@ import { ChatApp } from './chat-app';
 import { logMessage } from './features/log-message';
 import './style.scss';
 
+// Register demo specific feature
 registerFeature( logMessage );
 
 document.addEventListener( 'DOMContentLoaded', () => {
