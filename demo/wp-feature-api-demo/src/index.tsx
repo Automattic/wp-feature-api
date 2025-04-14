@@ -6,7 +6,8 @@ import { render, createElement } from '@wordpress/element';
 /**
  * External dependencies
  */
-import { registerCoreFeatures } from '@wp-feature-api/core-features';
+import { registerCoreFeatures } from '@wp-feature-api/client-features';
+import { registerFeature } from '@wp-feature-api/client';
 
 /**
  * Internal dependencies
@@ -17,7 +18,7 @@ import './style.scss';
 
 // Register core features
 registerCoreFeatures();
-
+registerFeature( logMessage );
 document.addEventListener( 'DOMContentLoaded', () => {
 	const container = document.getElementById( 'wp-feature-api-demo-root' );
 	if ( container ) {

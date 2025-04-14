@@ -155,7 +155,7 @@ export const insertQuoteBlock: Feature = {
 				description: __( 'Optional citation for the quote.' ),
 			},
 		},
-		required: [ 'value', 'citation' ],
+		required: [ 'value' ],
 	},
 	output_schema: {
 		type: 'object',
@@ -179,7 +179,7 @@ export const insertQuoteBlock: Feature = {
 			const newBlock = createBlock(
 				'core/quote',
 				{
-					citation: args.citation,
+					citation: args.citation || '',
 				},
 				[ innerParagraph ]
 			);
@@ -225,7 +225,7 @@ export const insertListBlock: Feature = {
 				),
 			},
 		},
-		required: [ 'values', 'ordered' ],
+		required: [ 'values' ],
 	},
 	output_schema: {
 		type: 'object',

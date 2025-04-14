@@ -23,7 +23,7 @@ declare module '@wp-feature-api/client' {
   export const store: any;
 }
 
-declare module '@wp-feature-api/core-features' {
+declare module '@wp-feature-api/client-features' {
   export function registerCoreFeatures(): void;
   export const coreFeatures: any[];
 }
