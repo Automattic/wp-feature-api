@@ -279,6 +279,16 @@ class BasicAgent {
 			$compatible_name = $this->encode_id( $feature_data['id'] );
 			$parameters      = $feature_data['input_schema'] ?? null;
 
+			if ( is_array( $parameters ) ) {
+				try {
+					$transformer = \WP_Feature_Schema_Adapter::make( null, $parameters );
+					$parameters  = $transformer->transform();
+				} catch ( \Exception $e ) {
+					error_log( 'Schema transformation failed for client feature ' . $feature_data['id'] . ': ' . $e->getMessage() );
+					$parameters = null;
+				}
+			}
+
 			$function = [
 				'name'        => $compatible_name,
 				'description' => $feature_data['description'],
@@ -287,9 +297,7 @@ class BasicAgent {
 
 			if ( is_array( $parameters ) && isset( $parameters['type'] ) && $parameters['type'] === 'object' && isset( $parameters['properties'] ) ) {
 				$function['parameters'] = $parameters;
-				$function['parameters']['additionalProperties'] = false;
 			} else {
-
 				$function['parameters'] = [
 					'type'                 => 'object',
 					'properties'           => new \stdClass(),

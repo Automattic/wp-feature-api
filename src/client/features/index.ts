@@ -16,14 +16,7 @@ import { insertParagraphBlock, insertHeadingBlock } from './blocks';
 export const registerDefaultWPFeatures = () => {
 	const { registerFeature } = dispatch( featureStore );
 
-	if ( navigate ) {
-		registerFeature( navigate );
-	}
-
-	if ( insertParagraphBlock ) {
-		registerFeature( insertParagraphBlock );
-	}
-	if ( insertHeadingBlock ) {
-		registerFeature( insertHeadingBlock );
-	}
+	[ navigate, insertParagraphBlock, insertHeadingBlock ]
+		.filter( ( feature ) => !! feature )
+		.forEach( registerFeature );
 };

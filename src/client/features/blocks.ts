@@ -31,7 +31,6 @@ export const insertParagraphBlock: Feature = {
 				description: __( 'Text content for the paragraph.' ),
 			},
 		},
-		required: [ 'content' ],
 	},
 	output_schema: {
 		type: 'object',
@@ -92,7 +91,7 @@ export const insertHeadingBlock: Feature = {
 				description: __( 'Heading level (intended range 1–6).' ),
 			},
 		},
-		required: [ 'content', 'level' ],
+		required: [ 'content' ],
 	},
 	output_schema: {
 		type: 'object',
