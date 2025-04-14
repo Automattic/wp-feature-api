@@ -53,14 +53,53 @@ export const navigate: Feature = {
 				! finalUrl.startsWith( 'https://' )
 			) {
 				if ( finalUrl.startsWith( '/' ) ) {
-					// Starts with '/', treat as relative to site root
-					finalUrl = `${ location.origin }${ finalUrl }`;
+					const wpAdminPath = '/wp-admin/';
+					const currentPath = location.pathname; // e.g., /site-wp-dev/wp-admin/some-page.php
+					const adminPathIndex = currentPath.indexOf( wpAdminPath );
+					let siteRoot = location.origin;
+
+					if ( adminPathIndex > 0 ) {
+						// Subdirectory found (e.g., /site-wp-dev)
+						const subDirectoryPath = currentPath.substring(
+							0,
+							adminPathIndex
+						);
+						siteRoot += subDirectoryPath;
+					} else if ( adminPathIndex === -1 ) {
+						// eslint-disable-next-line no-console
+						console.warn(
+							'Could not determine WP admin path from location.pathname. Assuming root installation.',
+							currentPath
+						);
+					}
+
+					finalUrl = siteRoot + finalUrl; // e.g., http://localhost:6888/site-wp-dev + /wp-admin/edit.php
 				} else {
-					// Assume relative to admin root
-					const adminBase = ajaxurl.substring(
-						0,
-						ajaxurl.lastIndexOf( '/' ) + 1
-					);
+					// Non-root relative paths (e.g., 'edit.php') - needs admin base path
+					// Reconstruct admin base path using the same logic as above
+					const wpAdminPathForRelative = '/wp-admin/';
+					const currentPathForRelative = location.pathname;
+					const adminPathIndexForRelative =
+						currentPathForRelative.indexOf(
+							wpAdminPathForRelative
+						);
+					let adminBase = location.origin;
+
+					if ( adminPathIndexForRelative !== -1 ) {
+						adminBase += currentPathForRelative.substring(
+							0,
+							adminPathIndexForRelative +
+								wpAdminPathForRelative.length
+						);
+					} else {
+						// eslint-disable-next-line no-console
+						console.warn(
+							'Could not determine WP admin path from location.pathname for relative URL. Assuming /wp-admin/ base.',
+							currentPathForRelative
+						);
+						adminBase += wpAdminPathForRelative;
+					}
+
 					finalUrl = adminBase + finalUrl.replace( /^\/+/, '' );
 				}
 			}
