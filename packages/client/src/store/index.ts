@@ -1,12 +1,7 @@
 /**
  * WordPress dependencies
  */
-import {
-	createReduxStore,
-	dispatch,
-	register,
-	resolveSelect,
-} from '@wordpress/data';
+import { createReduxStore, dispatch, register } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -43,10 +38,6 @@ if ( ! isStoreRegistered() ) {
 		register( store );
 		window.__WP_FEATURE_API_STORE_REGISTERED = true;
 
-		// get registered features
-		resolveSelect( STORE_NAME ).getRegisteredFeatures();
-
-		// get registered server features
 		dispatch( coreStore )?.addEntities( [
 			{
 				name: ENTITY_NAME,
