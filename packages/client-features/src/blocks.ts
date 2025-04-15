@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { createBlock } from '@wordpress/blocks';
 import { store as blockEditorStore } from '@wordpress/block-editor';
+import { dispatch } from '@wordpress/data';
 
 /**
  * External dependencies
@@ -39,7 +40,7 @@ export const insertParagraphBlock: Feature = {
 		},
 		required: [ 'success', 'blockType' ],
 	},
-	callback: ( args: { content: string }, { data } ) => {
+	callback: ( args: { content: string } ) => {
 		if ( typeof args?.content !== 'string' ) {
 			throw new Error(
 				'Content argument is missing or invalid for paragraph block.'
@@ -52,7 +53,7 @@ export const insertParagraphBlock: Feature = {
 			if ( ! newBlock ) {
 				throw new Error( 'Failed to create paragraph block.' );
 			}
-			data.dispatch( blockEditorStore ).insertBlocks( newBlock );
+			dispatch( blockEditorStore ).insertBlocks( newBlock );
 			return { success: true, blockType: 'core/paragraph' };
 		} catch ( error ) {
 			throw new Error(
@@ -99,7 +100,7 @@ export const insertHeadingBlock: Feature = {
 		},
 		required: [ 'success', 'blockType', 'level' ],
 	},
-	callback: ( args: { content: string; level?: number }, { data } ) => {
+	callback: ( args: { content: string; level?: number } ) => {
 		if ( ! args?.content ) {
 			throw new Error( 'Content is required for heading block.' );
 		}
@@ -115,7 +116,7 @@ export const insertHeadingBlock: Feature = {
 			if ( ! newBlock ) {
 				throw new Error( 'Failed to create heading block.' );
 			}
-			data.dispatch( blockEditorStore ).insertBlocks( newBlock );
+			dispatch( blockEditorStore ).insertBlocks( newBlock );
 			return {
 				success: true,
 				blockType: 'core/heading',
@@ -165,7 +166,7 @@ export const insertQuoteBlock: Feature = {
 		},
 		required: [ 'success', 'clientId' ],
 	},
-	callback: ( args: { value: string; citation?: string }, { data } ) => {
+	callback: ( args: { value: string; citation?: string } ) => {
 		if ( typeof args?.value !== 'string' ) {
 			throw new Error(
 				'Value argument is missing or invalid for quote block.'
@@ -186,7 +187,7 @@ export const insertQuoteBlock: Feature = {
 			if ( ! newBlock ) {
 				throw new Error( 'Failed to create quote block.' );
 			}
-			data.dispatch( blockEditorStore ).insertBlocks( newBlock );
+			dispatch( blockEditorStore ).insertBlocks( newBlock );
 			return { success: true, clientId: newBlock.clientId };
 		} catch ( error ) {
 			throw new Error(
@@ -235,7 +236,7 @@ export const insertListBlock: Feature = {
 		},
 		required: [ 'success', 'clientId' ],
 	},
-	callback: ( args: { values: string[]; ordered?: boolean }, { data } ) => {
+	callback: ( args: { values: string[]; ordered?: boolean } ) => {
 		if ( ! Array.isArray( args?.values ) || args.values.length === 0 ) {
 			throw new Error(
 				'Values argument must be a non-empty array for list block.'
@@ -258,7 +259,7 @@ export const insertListBlock: Feature = {
 			if ( ! newBlock ) {
 				throw new Error( 'Failed to create list block.' );
 			}
-			data.dispatch( blockEditorStore ).insertBlocks( newBlock );
+			dispatch( blockEditorStore ).insertBlocks( newBlock );
 			return { success: true, clientId: newBlock.clientId };
 		} catch ( error ) {
 			throw new Error(

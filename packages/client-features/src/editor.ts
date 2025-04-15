@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { store as editorStore } from '@wordpress/editor';
+import { select, dispatch } from '@wordpress/data';
 
 /**
  * External dependencies
@@ -36,12 +37,12 @@ export const setTitle: Feature = {
 		},
 		required: [ 'success' ],
 	},
-	callback: ( args: { title: string }, { data } ) => {
+	callback: ( args: { title: string } ) => {
 		if ( typeof args?.title !== 'string' ) {
 			throw new Error( 'Title argument is missing or invalid.' );
 		}
 		try {
-			data.dispatch( editorStore ).editPost( { title: args.title } );
+			dispatch( editorStore ).editPost( { title: args.title } );
 			return { success: true };
 		} catch ( error ) {
 			throw new Error(
@@ -70,9 +71,9 @@ export const savePost: Feature = {
 		},
 		required: [ 'success' ],
 	},
-	callback: ( _args, { data } ) => {
+	callback: () => {
 		try {
-			data.dispatch( editorStore ).savePost();
+			dispatch( editorStore ).savePost();
 			return { success: true };
 		} catch ( error ) {
 			throw new Error(
@@ -103,8 +104,8 @@ export const getEditorContent: Feature = {
 		},
 		required: [ 'content' ],
 	},
-	callback: ( _args, { data } ) => {
-		const content = data.select( editorStore ).getCurrentPost().content;
+	callback: () => {
+		const content = select( editorStore ).getCurrentPost().content;
 		return { content };
 	},
 };

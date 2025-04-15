@@ -66,10 +66,7 @@ export async function executeFeature(
 	}
 
 	try {
-		// Passes the select and dispatch functions to the callback, allowing
-		// for context and manipulation of the WordPress data store.
-		const data = { select, dispatch };
-		return await callback( args, { data } );
+		return await callback( args );
 	} catch ( error ) {
 		// eslint-disable-next-line no-console
 		console.error( `Error executing feature ${ featureId }:`, error );
