@@ -10,7 +10,8 @@
 		"lint:js": "wp-scripts lint-js",
 		"packages-update": "wp-scripts packages-update",
 		"plugin-zip": "wp-scripts plugin-zip",
-		"start": "wp-scripts start"
+		"start": "wp-scripts start",
+		"clean": "rm -rf build build-types tsconfig.tsbuildinfo"
 	},
 	"keywords": [
 		"wordpress",
@@ -23,6 +24,8 @@
 	"author": "Automattic",
 	"license": "GPL-2.0-or-later",
 	"dependencies": {
+		"@wp-feature-api/client": "^1.0.0",
+		"@wp-feature-api/client-features": "^1.0.0",
 		"@types/react": "^18.3.20",
 		"@types/react-dom": "^18.3.5",
 		"@wordpress/api-fetch": "^6.55.0",

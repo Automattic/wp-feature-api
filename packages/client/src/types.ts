@@ -14,3 +14,9 @@ export interface Feature {
 export interface FeaturesState {
 	featuresById: Record< string, Feature >;
 }
+
+// Declare global variables provided by WordPress
+// Currently used for the navigate feature, but we may want to handle this a different way
+declare global {
+	const ajaxurl: string | undefined;
+}

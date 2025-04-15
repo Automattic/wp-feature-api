@@ -5,6 +5,11 @@ import { useCallback } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
+ * External dependencies
+ */
+import { executeFeature, getRegisteredFeature } from '@wp-feature-api/client';
+
+/**
  * Internal dependencies
  */
 import type { Message, ClientAction } from '../context/conversation-provider';
@@ -22,27 +27,8 @@ export const useClientActionHandler = (
 ) => {
 	const executeClientFeature = useCallback(
 		async ( featureId: string, args: any ): Promise< unknown > => {
-			// Access store via global wp.data
-			// @todo We should probably export our feature store as a proper package and use that instead,
-			// this is to avoid double bundling by calling things from the root src/client/... files directly
-			const selector = ( window.wp as any )?.data?.select(
-				'feature-api'
-			);
-			const callback =
-				selector?.getRegisteredFeatureCallback?.( featureId );
-
-			if ( typeof callback !== 'function' ) {
-				// eslint-disable-next-line no-console
-				console.error(
-					`No callback registered for feature: ${ featureId }`
-				);
-				throw new Error(
-					`No callback registered for feature: ${ featureId }`
-				);
-			}
-
 			try {
-				return await callback( args );
+				return await executeFeature( featureId, args );
 			} catch ( error ) {
 				// eslint-disable-next-line no-console
 				console.error(
@@ -110,12 +96,8 @@ export const useClientActionHandler = (
 
 			const { id: featureId, args, tool_call_id: toolCallId } = action;
 
-			const selector = ( window.wp as any )?.data?.select(
-				'feature-api'
-			);
-			const feature: any = selector?.getRegisteredFeature?.( featureId );
-
 			// Determine if a result should be sent back based on output_schema
+			const feature = getRegisteredFeature( featureId );
 			const expectsResult =
 				!! feature?.output_schema &&
 				Object.keys( feature.output_schema ).length > 0;

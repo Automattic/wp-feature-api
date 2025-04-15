@@ -1,4 +1,7 @@
 /**
- * Internal dependencies
+ * External dependencies
  */
-import './client/index';
+import '@wp-feature-api/client';
+import { registerCoreFeatures } from '@wp-feature-api/client-features';
+
+registerCoreFeatures();

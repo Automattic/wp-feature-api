@@ -4,9 +4,9 @@
 import { __ } from '@wordpress/i18n';
 
 /**
- * Internal dependencies
+ * External dependencies
  */
-import type { Feature } from '../types';
+import type { Feature } from '@wp-feature-api/client';
 
 /**
  * Client-side feature for browser navigation.

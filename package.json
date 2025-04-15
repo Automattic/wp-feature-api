@@ -3,11 +3,18 @@
 	"version": "1.0.0",
 	"description": "A system for exposing WordPress functionality in a standardized, discoverable way for both server and client-side use",
 	"main": "src/index.js",
+	"private": true,
+	"workspaces": [
+		"packages/*",
+		"demo/*"
+	],
 	"scripts": {
-		"build": "wp-scripts build",
+		"build": "npm run build:packages && wp-scripts build",
+		"build:packages": "npm run build --workspaces --if-present",
 		"format": "wp-scripts format",
 		"lint:css": "wp-scripts lint-style",
 		"lint:js": "wp-scripts lint-js",
+		"lint:packages": "npm run lint:js --workspaces --if-present",
 		"packages-update": "wp-scripts packages-update",
 		"plugin-zip": "wp-scripts plugin-zip",
 		"start": "wp-scripts start",
@@ -18,7 +25,8 @@
 		"test:unit:php": "npm-run-all test:unit:php:setup test:unit:php:base",
 		"test:unit:php:debug": "npm-run-all test:unit:php:setup:debug test:unit:php:base",
 		"serve": "wp-env start --xdebug",
-		"wp-env": "wp-env"
+		"wp-env": "wp-env",
+		"clean": "npm run clean --workspaces --if-present && rm -rf build tsconfig.tsbuildinfo"
 	},
 	"keywords": [
 		"wordpress",
@@ -38,20 +46,25 @@
 		"@wordpress/data": "^9.28.0",
 		"@wordpress/element": "^5.35.0",
 		"@wordpress/i18n": "^4.58.0",
-		"node-fetch": "^3.3.2"
+		"node-fetch": "^3.3.2",
+		"@wp-feature-api/client": "^1.0.0",
+		"@wp-feature-api/client-features": "^1.0.0"
 	},
 	"prettier": "@wordpress/prettier-config",
 	"devDependencies": {
+		"@wordpress/dependency-extraction-webpack-plugin": "^6.21.0",
+		"@wordpress/env": "^10.20.0",
 		"@wordpress/eslint-plugin": "^22.6.0",
 		"@wordpress/prettier-config": "^4.20.0",
-		"eslint": "^8.57.1",
 		"@wordpress/scripts": "^30.13.0",
-		"npm-run-all": "4.1.5",
-		"@wordpress/env": "^10.20.0",
+		"eslint": "^8.57.1",
 		"eslint-import-resolver-node": "0.3.4",
 		"eslint-plugin-eslint-comments": "3.1.2",
 		"eslint-plugin-react-compiler": "^19.0.0-beta-aeaed83-20250323",
 		"eslint-plugin-storybook": "^0.11.6",
-		"prettier": "npm:wp-prettier@3.0.3"
+		"npm-run-all": "4.1.5",
+		"prettier": "npm:wp-prettier@3.0.3",
+		"@types/wordpress__block-editor": "^11.5.16",
+		"@types/wordpress__blocks": "^12.5.17"
 	}
 }

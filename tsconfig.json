@@ -1,3 +1,9 @@
 {
-	"$schema": "https://json.schemastore.org/tsconfig.json"
+  "$schema": "https://json.schemastore.org/tsconfig.json",
+  "files": [],
+  "references": [
+    { "path": "./packages/client" },
+    { "path": "./packages/client-features" },
+    { "path": "./demo/wp-feature-api-demo" }
+  ]
 }

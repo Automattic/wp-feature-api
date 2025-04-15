@@ -267,10 +267,10 @@ class BasicAgent {
 	/**
 	 * Convert client features to tools for the LLM
 	 *
-	 * @param array<array{id: string, description: string, input_schema?: array}> $client_features The client features to convert.
+	 * @param array<array{id: string, description: string, input_schema?: array}> $features The client features to convert.
 	 * @return array<array{type: string, function: array}> The tools for the LLM.
 	 */
-	private function tools_from_client_features( array $client_features ): array {
+	private function tools_from_client_features( array $features ): array {
 		$mapped = array_map( function( $feature_data ) {
 			if ( ! isset( $feature_data['id'] ) || ! isset( $feature_data['description'] ) ) {
 				return null;
@@ -306,10 +306,10 @@ class BasicAgent {
 			}
 
 			return [
-				'type' => 'function',
+				'type'     => 'function',
 				'function' => $function,
 			];
-		}, $client_features );
+		}, $features );
 
 		return array_values( array_filter( $mapped ) );
 	}
