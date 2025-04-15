@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { dispatch, select } from '@wordpress/data';
+import { dispatch, select, resolveSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -43,8 +43,8 @@ export function getRegisteredFeature( featureId: string ): Feature | null {
  *
  * @return An array of all registered feature definition objects, or null if the store is not ready.
  */
-export function getRegisteredFeatures(): Feature[] | null {
-	const features = select( store )?.getRegisteredFeatures();
+export async function getRegisteredFeatures(): Promise< Feature[] | null > {
+	const features = await resolveSelect( store )?.getRegisteredFeatures();
 	return features || null;
 }
 

@@ -45,7 +45,8 @@ export const useMessageHandler = (
 			} );
 
 			try {
-				const registeredFeatures = getRegisteredFeatures() || [];
+				const registeredFeatures =
+					( await getRegisteredFeatures() ) || [];
 
 				const clientFeatures = registeredFeatures
 					.filter( ( feature ) => feature?.location === 'client' )

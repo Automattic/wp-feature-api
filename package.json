@@ -59,6 +59,7 @@
 		"@wordpress/eslint-plugin": "^22.6.0",
 		"@wordpress/prettier-config": "^4.20.0",
 		"@wordpress/scripts": "^30.13.0",
+		"eslint": "^8.57.1",
 		"@wordpress/env": "^10.20.0",
 		"eslint-import-resolver-node": "0.3.4",
 		"eslint-plugin-eslint-comments": "3.1.2",
