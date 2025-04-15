@@ -3,12 +3,10 @@
 namespace A8C\WpFeatureApiDemo\Agent;
 
 use A8C\WpFeatureApiDemo\Agent\Messages;
-use OpenAI;
+use A8C\WpFeatureApiDemo\Factories\OpenAIClientFactory;
 use OpenAI\Client;
 use OpenAI\Responses\Chat\CreateResponseMessage;
 use OpenAI\Responses\Chat\CreateResponseToolCallFunction;
-use WP_Error;
-use A8C\WpFeatureApiDemo\Options;
 use WP_Feature;
 
 class BasicAgent {
@@ -20,17 +18,7 @@ class BasicAgent {
 
 	public function __construct() {
 		$this->messages = new Messages();
-		$api_key = Options::get_api_key();
-
-		if (empty($api_key)) {
-			return new WP_Error(
-				'missing_api_key',
-				__('OpenAI API key is not configured. Please set it in the Feature API Demo settings.', 'wp-feature-api-demo'),
-				['status' => 500]
-			);
-		}
-
-		$this->client = OpenAI::client($api_key);
+		$this->client = OpenAIClientFactory::create();
 	}
 
 	public function get_messages() {
