@@ -1,3 +1,11 @@
+/**
+ * WordPress dependencies
+ */
+import type { StoreDescriptor } from '@wordpress/data';
+
+type SelectFunction = ( storeName: string | StoreDescriptor ) => any;
+type DispatchFunction = ( storeName: string | StoreDescriptor ) => any;
+
 export interface Feature {
 	id: string;
 	name: string;
@@ -5,10 +13,15 @@ export interface Feature {
 	type: 'resource' | 'tool';
 	meta?: Record< string, any >;
 	categories: string[];
-	input_schema: Record< string, any >;
+	input_schema?: Record< string, any >;
 	output_schema?: Record< string, any >;
 	location: 'server' | 'client';
-	callback?: ( args?: any ) => unknown | Promise< unknown >;
+	callback?: (
+		args: any,
+		context: {
+			data: { dispatch: DispatchFunction; select: SelectFunction };
+		}
+	) => unknown | Promise< unknown >;
 }
 
 export interface FeaturesState {

@@ -44,14 +44,18 @@
 		"@wordpress/components": "^25.16.0",
 		"@wordpress/core-data": "^7.20.0",
 		"@wordpress/data": "^9.28.0",
+		"@wordpress/editor": "^14.22.0",
 		"@wordpress/element": "^5.35.0",
 		"@wordpress/i18n": "^4.58.0",
-		"node-fetch": "^3.3.2",
 		"@wp-feature-api/client": "^1.0.0",
-		"@wp-feature-api/client-features": "^1.0.0"
+		"@wp-feature-api/client-features": "^1.0.0",
+		"node-fetch": "^3.3.2"
 	},
 	"prettier": "@wordpress/prettier-config",
 	"devDependencies": {
+		"@types/wordpress__block-editor": "^11.5.16",
+		"@types/wordpress__blocks": "^12.5.17",
+		"@types/wordpress__editor": "^14.3.1",
 		"@wordpress/dependency-extraction-webpack-plugin": "^6.21.0",
 		"@wordpress/env": "^10.20.0",
 		"@wordpress/eslint-plugin": "^22.6.0",
@@ -63,8 +67,6 @@
 		"eslint-plugin-react-compiler": "^19.0.0-beta-aeaed83-20250323",
 		"eslint-plugin-storybook": "^0.11.6",
 		"npm-run-all": "4.1.5",
-		"prettier": "npm:wp-prettier@3.0.3",
-		"@types/wordpress__block-editor": "^11.5.16",
-		"@types/wordpress__blocks": "^12.5.17"
+		"prettier": "npm:wp-prettier@3.0.3"
 	}
 }

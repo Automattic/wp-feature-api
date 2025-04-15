@@ -13,6 +13,7 @@ import * as resolvers from './resolvers';
 import { ENTITY_KIND, ENTITY_NAME, STORE_NAME } from './constants';
 import { __ } from '@wordpress/i18n';
 import { store as coreStore } from '@wordpress/core-data';
+
 // Create a global variable to track if the store has been registered, this ensures we only register the store once across all imports
 // if multiple plugins are using the Feature API.
 // TODO: We may want to expose the api over wp.featureApi.* in the future like WordPress does.
