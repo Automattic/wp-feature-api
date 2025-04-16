@@ -26,6 +26,7 @@ export const navigate: Feature = {
 				description: __(
 					'The URL to navigate to (can be absolute or relative).'
 				),
+				ui_hint: 'url',
 			},
 		},
 		required: [ 'url' ],

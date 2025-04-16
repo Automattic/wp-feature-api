@@ -2,9 +2,15 @@
  * WordPress dependencies
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
-import { Modal, TextControl, Button } from '@wordpress/components';
+import {
+	Modal,
+	TextControl,
+	Button,
+	__experimentalVStack as VStack,
+} from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useDispatch, useRegistry, useSelect } from '@wordpress/data';
+import { URLInput } from '@wordpress/block-editor';
 
 /**
  * Internal dependencies
@@ -15,6 +21,7 @@ import { store } from '../store';
 interface PropertySchema {
 	type: string;
 	description?: string;
+	ui_hint?: string;
 	// Add other potential fields like 'enum', 'default', etc. if needed
 }
 
@@ -97,12 +104,13 @@ export default function InputModal( { featureId }: InputModalProps ) {
 
 	const renderInput = ( key: string, propSchema: PropertySchema ) => {
 		const { type, description } = propSchema;
+		const uiHint = propSchema.ui_hint;
 		// Type assertion needed because feature/inputSchema might be undefined initially
 		const isRequired = ( feature?.input_schema?.required ?? [] ).includes(
 			key
 		);
 
-		switch ( type ) {
+		switch ( uiHint || type ) {
 			case 'integer':
 				return (
 					<TextControl
@@ -118,6 +126,21 @@ export default function InputModal( { featureId }: InputModalProps ) {
 						required={ isRequired }
 						style={ { fontFamily: 'monospace' } } // Monospace font
 					/>
+				);
+			case 'url':
+				return (
+					<div>
+						<URLInput
+							// @ts-ignore
+							label={ key }
+							value={ formData[ key ] || '' }
+							onChange={ ( value ) =>
+								handleInputChange( key, value )
+							}
+							placeholder={ description }
+							onKeyDown={ handleKeyDown }
+						/>
+					</div>
 				);
 			case 'string':
 			default:
@@ -143,14 +166,7 @@ export default function InputModal( { featureId }: InputModalProps ) {
 			title={ feature?.name }
 			onRequestClose={ () => setFeatureInputInProgress( null ) }
 		>
-			<div
-				ref={ inputContainerRef }
-				style={ {
-					display: 'flex',
-					flexDirection: 'column',
-					gap: '1em',
-				} }
-			>
+			<VStack ref={ inputContainerRef } spacing={ 4 }>
 				{ inputSchema?.properties ? (
 					Object.entries( inputSchema.properties ).map(
 						( [ key, propSchema ] ) =>
@@ -163,7 +179,7 @@ export default function InputModal( { featureId }: InputModalProps ) {
 				<Button variant="primary" onClick={ handleSubmit }>
 					{ __( 'Run' ) }
 				</Button>
-			</div>
+			</VStack>
 		</Modal>
 	);
 }
