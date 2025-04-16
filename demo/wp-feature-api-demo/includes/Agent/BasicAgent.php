@@ -101,6 +101,26 @@ class BasicAgent {
 	}
 
 	/**
+	 * Transform a schema using WP_Feature_Schema_Adapter with all_fields_required rule
+	 *
+	 * @param array $schema The schema to transform.
+	 * @param string $feature_id The ID of the feature for error logging.
+	 * @return array|null The transformed schema or null if transformation fails.
+	 */
+	private function transform_schema( array $schema, string $feature_id ): ?array {
+		// In strict mode, OpenAI requires all fields to be present in the object.
+		// @see https://platform.openai.com/docs/guides/function-calling?api-mode=chat#strict-mode
+		// @todo During the agent clean up, let's abstract this out for only OpenAI.
+		try {
+			$transformer = \WP_Feature_Schema_Adapter::make( null, $schema, array( 'all_fields_required' => true ) );
+			return $transformer->transform();
+		} catch ( \Exception $e ) {
+			error_log( 'Schema transformation failed for feature ' . $feature_id . ': ' . $e->getMessage() );
+			return null;
+		}
+	}
+
+	/**
 	 * Get tools from both server and client features
 	 *
 	 * @return array<array{type: string, function: array}>
@@ -246,7 +266,7 @@ class BasicAgent {
 			];
 
 			if ( is_array( $parameters ) && isset( $parameters['type'] ) && $parameters['type'] === 'object' && ! empty( $parameters['properties'] ) ) {
-				$function['parameters'] = $parameters;
+				$function['parameters'] = $this->transform_schema( $parameters, $feature->get_id() );
 			} else {
 				$function['parameters'] = [
 					'type'                 => 'object',
@@ -280,13 +300,7 @@ class BasicAgent {
 			$parameters      = $feature_data['input_schema'] ?? null;
 
 			if ( is_array( $parameters ) ) {
-				try {
-					$transformer = \WP_Feature_Schema_Adapter::make( null, $parameters );
-					$parameters  = $transformer->transform();
-				} catch ( \Exception $e ) {
-					error_log( 'Schema transformation failed for client feature ' . $feature_data['id'] . ': ' . $e->getMessage() );
-					$parameters = null;
-				}
+				$parameters = $this->transform_schema( $parameters, $feature_data['id'] );
 			}
 
 			$function = [
