@@ -105,7 +105,7 @@ class WP_Feature_Schema_Adapter {
 				 * Description: To use Structured Outputs, all fields or function parameters must be specified as required.
 				 * Although all fields must be required (and the model will return a value for each parameter), it is possible to emulate an optional parameter by using a union type with null.
 				 */
-				'all_fields_required'         => true,
+				'all_fields_required'         => false,
 				/**
 				 * Name: additionalProperties
 				 * Description: false must always be set in objects additionalProperties controls whether it is allowable for an object to contain additional keys / values that were not defined in the JSON Schema.
