@@ -9,7 +9,7 @@ import { useMemo } from '@wordpress/element';
  */
 import { store } from '../store';
 import type { Feature } from '../types';
-import { useDispatch, useSelect } from '@wordpress/data';
+import { useDispatch, useSelect, useRegistry } from '@wordpress/data';
 import { brush } from '@wordpress/icons'; // Default icon for commands
 
 /**
