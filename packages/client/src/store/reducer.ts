@@ -13,6 +13,7 @@ import {
 	UNREGISTER_FEATURE,
 	RECEIVE_FEATURES,
 	REGISTER_FEATURE_CALLBACK,
+	SET_FEATURE_INPUT_IN_PROGRESS,
 } from './constants';
 
 interface FeatureAction {
@@ -65,6 +66,19 @@ function featuresById(
 	}
 }
 
+function featureInputInProgressId(
+	state: string | null = null,
+	action: FeatureAction
+): string | null {
+	switch ( action.type ) {
+		case SET_FEATURE_INPUT_IN_PROGRESS:
+			return action.id;
+		default:
+			return state;
+	}
+}
+
 export default combineReducers( {
 	featuresById,
+	featureInputInProgressId,
 } );

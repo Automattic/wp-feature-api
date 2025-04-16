@@ -7,6 +7,7 @@ import {
 	UNREGISTER_FEATURE,
 	RECEIVE_FEATURES,
 	REGISTER_FEATURE_CALLBACK,
+	SET_FEATURE_INPUT_IN_PROGRESS,
 } from './constants';
 
 import { store } from './index';
@@ -57,5 +58,12 @@ export function registerFeatureCallback(
 			id,
 			callback,
 		} );
+	};
+}
+
+export function setFeatureInputInProgress( id: string ) {
+	return {
+		type: SET_FEATURE_INPUT_IN_PROGRESS,
+		id,
 	};
 }

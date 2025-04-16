@@ -16,6 +16,7 @@ export interface Feature {
 	input_schema?: Record< string, any >;
 	output_schema?: Record< string, any >;
 	location: 'server' | 'client';
+	icon?: any;
 	callback?: (
 		args: any,
 		context: {
@@ -26,6 +27,7 @@ export interface Feature {
 
 export interface FeaturesState {
 	featuresById: Record< string, Feature >;
+	featureInputInProgressId: string | null;
 }
 
 // Declare global variables provided by WordPress

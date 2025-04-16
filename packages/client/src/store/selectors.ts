@@ -38,3 +38,8 @@ export const getRegisteredFeatureCallback = createRegistrySelector(
 			return feature?.callback;
 		}
 );
+
+// Select the feature input in progress
+export const getFeatureInputInProgress = (
+	state: FeaturesState
+): string | null => state.featureInputInProgressId;

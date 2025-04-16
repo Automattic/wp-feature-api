@@ -7,3 +7,4 @@ export {
 	getRegisteredFeature,
 	getRegisteredFeatures,
 } from './api';
+export * from './command-integration';
