@@ -5,8 +5,7 @@
 	"main": "src/index.js",
 	"private": true,
 	"workspaces": [
-		"packages/*",
-		"demo/*"
+		"packages/*"
 	],
 	"scripts": {
 		"build": "npm run build:packages && wp-scripts build",
