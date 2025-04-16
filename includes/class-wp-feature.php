@@ -430,10 +430,10 @@ class WP_Feature implements \JsonSerializable {
 	 * Calls the feature.
 	 *
 	 * @since 0.1.0
-	 * @param array $context The context to run the feature with.
+	 * @param array|WP_REST_Request $input The input to run the feature with. Can be an array of parameters or a WP_REST_Request object.
 	 * @return mixed The result of running the feature.
 	 */
-	public function call( $rest_request ) {
+	public function call( $input ) {
 		/**
 		 * Filters the context before running a feature.
 		 *
@@ -441,7 +441,12 @@ class WP_Feature implements \JsonSerializable {
 		 * @param array      $context The context to run the feature with.
 		 * @param WP_Feature $feature The feature object.
 		 */
-		$context = $rest_request->get_param( 'context' );
+		$context = array();
+		if ( is_array( $input ) ) {
+			$context = $input;
+		} elseif ( $input instanceof \WP_REST_Request ) {
+			$context = $input->get_param( 'context' );
+		}
 		$context = apply_filters( 'wp_feature_pre_run_context', $context, $this );
 		$context = apply_filters( $this->get_filter_id() . '_pre_run_context', $context, $this );
 
@@ -479,7 +484,13 @@ class WP_Feature implements \JsonSerializable {
 		do_action( $this->get_filter_id() . '_before_run', $context, $this );
 		$result = $context;
 		if ( $this->is_rest_alias() ) {
-			$rest_request->set_route( $this->get_rest_alias_route( $result ) );
+			if ( $input instanceof \WP_REST_Request ) {
+				$rest_request = $input;
+				$rest_request->set_route( $this->get_rest_alias_route( $result ) );
+			} else {
+				$rest_request = new WP_REST_Request( $this->get_rest_method(), $this->get_rest_alias_route( $result ) );
+				$rest_request->set_body_params( $result );
+			}
 			$response = rest_get_server()->dispatch( $rest_request );
 			$result = $response->get_data();
 		} elseif ( is_callable( $this->callback ) ) {
