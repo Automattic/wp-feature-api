@@ -48,8 +48,14 @@ export const useMessageHandler = (
 				const registeredFeatures =
 					( await getRegisteredFeatures() ) || [];
 
+				// TODO: The agent is being re-worked so this isn't so directly coupled, but
+				// this allows us to filter out features that are not eligible to be used (i.e. post editor commands)
 				const clientFeatures = registeredFeatures
 					.filter( ( feature ) => feature?.location === 'client' )
+					.filter(
+						( feature ) =>
+							! feature.is_eligible || feature.is_eligible()
+					)
 					.map(
 						( {
 							id,
