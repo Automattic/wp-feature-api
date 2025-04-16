@@ -45,6 +45,9 @@ function wp_feature_api_init() {
 
 	// enqueue admin scripts.
 	add_action( 'admin_enqueue_scripts', 'wp_feature_api_enqueue_admin_scripts' );
+	
+	// Initialize admin interface.
+	add_action( 'init', 'wp_feature_api_init_admin' );
 
 	// Load demo plugin if enabled.
 	if ( WP_FEATURE_API_LOAD_DEMO ) {
@@ -75,6 +78,17 @@ function wp_feature_api_enqueue_admin_scripts() {
 function wp_feature_api_register_rest_routes() {
 	$controller = new WP_REST_Feature_Controller();
 	$controller->register_routes();
+}
+
+/**
+ * Initializes the admin interface for the plugin.
+ *
+ * @since 0.1.0
+ * @return void
+ */
+function wp_feature_api_init_admin() {
+	$admin = new WP_Feature_API_Admin();
+	$admin->init();
 }
 
 /**
