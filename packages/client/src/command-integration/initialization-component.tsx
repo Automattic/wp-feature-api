@@ -18,10 +18,6 @@ function useFeatureCommandLoader() {
 		hook: useFeatureCommands, // The custom hook defined above
 	} );
 }
-
-// --- Original Modal Plugin ---
-// (Keep the original modal plugin code if it's still needed)
-// Create the component for our plugin
 const FeatureAPIInitializationComponent = () => {
 	useFeatureCommandLoader();
 	const featureInputInProgress = useSelect(

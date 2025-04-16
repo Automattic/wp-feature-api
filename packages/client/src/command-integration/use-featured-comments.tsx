@@ -1,29 +1,16 @@
 /**
  * WordPress dependencies
  */
-//import { registerPlugin } from '@wordpress/plugins';
-import { useState, useMemo } from '@wordpress/element';
-
-import { __ } from '@wordpress/i18n';
-import { useCommandLoader } from '@wordpress/commands';
-import { useDispatch, useRegistry, useSelect } from '@wordpress/data';
-import { brush } from '@wordpress/icons'; // Default icon for commands
+import { useMemo } from '@wordpress/element';
 
 // Internal dependencies
 /**
  * Internal dependencies
  */
 import { store } from '../store';
-import { getRegisteredFeatures } from '../store/selectors';
 import type { Feature } from '../types';
-import MyModalPlugin from './initialization-component';
-
-// Define the icon for the menu item (optional, using a dashicon here)
-const MyModalIcon = 'smiley';
-
-// --- Feature Command Loader ---
-// This section defines and registers a command loader that makes features
-// with callbacks available in the Command Palette (Cmd+K).
+import { useDispatch, useSelect } from '@wordpress/data';
+import { brush } from '@wordpress/icons'; // Default icon for commands
 
 /**
  * Custom React hook to load registered features as dynamic commands.
@@ -44,9 +31,6 @@ function useFeatureCommands( { search } ) {
 		const resolvedFeatures = _select(
 			store
 		).getRegisteredFeatures() as Feature[];
-
-		// Check if the data resolution has finished using the core/data store
-		// Note: Linter might complain here if @types/wordpress__data is missing/incomplete
 		// @ts-expect-error - WP Core type, not available on custom store
 		const hasFinishedResolution = _select( store ).hasFinishedResolution(
 			'getRegisteredFeatures',
