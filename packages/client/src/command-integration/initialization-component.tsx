@@ -13,7 +13,7 @@ import InputModal from './input-modal';
 
 function useFeatureCommandLoader() {
 	return useCommandLoader( {
-		name: 'my-plugin/feature-command-loader', // Unique name for this loader
+		name: 'wp-feature-api/feature-command-loader', // Unique name for this loader
 		// eslint-disable-next-line react-compiler/react-compiler
 		hook: useFeatureCommands, // The custom hook defined above
 	} );
