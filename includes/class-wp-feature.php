@@ -4,6 +4,7 @@
  *
  * @package WordPress\Features_API
  */
+
 /**
  * Class WP_Feature
  *
@@ -445,8 +446,8 @@ class WP_Feature implements \JsonSerializable {
 		$context = apply_filters( 'wp_feature_pre_run_context', $context, $this );
 		$context = apply_filters( $this->get_filter_id() . '_pre_run_context', $context, $this );
 
+		// Remove the _locale parameter, which is added by @wordpress/api-fetch.
 		unset( $context['_locale'] );
-
 
 		// If no callback is set, return the context as is.
 		if ( ! is_callable( $this->callback ) ) {
@@ -481,8 +482,6 @@ class WP_Feature implements \JsonSerializable {
 		do_action( 'wp_feature_before_run', $context, $this );
 		do_action( $this->get_filter_id() . '_before_run', $context, $this );
 		$result = $context;
-
-		//error_log( print_r( $this->get_rest_alias_route( $result ), true ) );
 
 		if ( $this->is_rest_alias() ) {
 			$rest_request->set_route( $this->get_rest_alias_route( $result ) );

@@ -40,8 +40,8 @@ if ( ! defined( 'WP_FEATURE_API_LOAD_DEMO' ) ) {
 function wp_feature_api_init() {
 	require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/load.php';
 
-	// Register REST routes on init.
-	add_action( 'init', 'wp_feature_api_register_rest_routes' );
+	// Register REST routes on init. Late execution to ensure features are registered by plugins first.
+	add_action( 'init', 'wp_feature_api_register_rest_routes', 99999 );
 
 	// enqueue admin scripts.
 	add_action( 'admin_enqueue_scripts', 'wp_feature_api_enqueue_admin_scripts' );
