@@ -14,7 +14,6 @@ use OpenAI\Responses\Chat\CreateResponseMessage;
 use OpenAI\Responses\Chat\CreateResponseToolCallFunction;
 use WP_Error;
 use WpFeatureApiDemo\Options;
-use WP_Feature;
 
 /**
  * Basic agent class.
@@ -50,28 +49,28 @@ class Basic_Agent {
 	private $call_depth = 3;
 
 	/**
-	 * Stored client-provided WP Features
+	 * Stored available tools
 	 *
-	 * @var array<string, array{id: string, description: string, input_schema?: array}>
+	 * @var array<string, array{id: string, description: string, input_schema?: array, output_schema?: array, type: string}>
 	 */
-	private $client_features = array();
+	private $available_tools = array();
 
 	/**
-	 * Store action for client to execute
+	 * Store pending tool execution
 	 *
-	 * @var array{type: string, id: string, args: array, tool_call_id: string}|null
+	 * @var array{type: string, tool_id: string, args: array, tool_call_id: string}|null
 	 */
-	private $pending_client_action = null;
+	private $pending_tool_execution = null;
 
 	/**
 	 * Constructor for the BasicAgent class
 	 *
-	 * @param array<array{id: string, description: string, input_schema?: array}> $client_features Client-provided features to be used by the agent.
+	 * @param array<array{id: string, description: string, input_schema?: array, output_schema?: array, type: string}> $available_tools Tools available to the agent.
 	 * @return self|WP_Error Returns self on success or WP_Error on failure.
 	 */
-	public function __construct( array $client_features = array() ) {
+	public function __construct( array $available_tools = array() ) {
 		$this->messages = new Messages();
-		$this->client_features = $this->save_client_features( $client_features );
+		$this->available_tools = $this->save_available_tools( $available_tools );
 		$api_key = Options::get_api_key();
 		if ( empty( $api_key ) ) {
 			return new WP_Error(
@@ -115,9 +114,9 @@ class Basic_Agent {
 	 */
 	public function run(): array {
 		$depth = $this->call_depth;
-		$this->pending_client_action = null;
+		$this->pending_tool_execution = null;
 
-		while ( ! $this->messages->assistant_has_responded() && $depth > 0 && is_null( $this->pending_client_action ) ) {
+		while ( ! $this->messages->assistant_has_responded() && $depth > 0 && is_null( $this->pending_tool_execution ) ) {
 			$this->make_response_or_feature_call();
 			--$depth;
 		}
@@ -126,8 +125,8 @@ class Basic_Agent {
 			'messages' => $this->messages->get_chat_messages(),
 		);
 
-		if ( ! is_null( $this->pending_client_action ) ) {
-			$result['client_action'] = $this->pending_client_action;
+		if ( ! is_null( $this->pending_tool_execution ) ) {
+			$result['client_action'] = $this->pending_tool_execution;
 			$result['message_history'] = $this->messages->get_chat_messages();
 		}
 
@@ -155,13 +154,13 @@ class Basic_Agent {
 	}
 
 	/**
-	 * Transform a schema using WP_Feature_Schema_Adapter with all_fields_required rule
+	 * Transform a schema with all_fields_required rule
 	 *
 	 * @param array  $schema The schema to transform.
-	 * @param string $feature_id The ID of the feature for error logging.
+	 * @param string $tool_id The ID of the tool for error logging.
 	 * @return array|null The transformed schema or null if transformation fails.
 	 */
-	private function transform_schema( array $schema, string $feature_id ): array|null {
+	private function transform_schema( array $schema, string $tool_id ): array|null {
 		// In strict mode, OpenAI requires all fields to be present in the object.
 		// @see https://platform.openai.com/docs/guides/function-calling?api-mode=chat#strict-mode
 		// @todo During the agent clean up, let's abstract this out for only OpenAI.
@@ -169,22 +168,81 @@ class Basic_Agent {
 			$transformer = \WP_Feature_Schema_Adapter::make( null, $schema, array( 'all_fields_required' => true ) );
 			return $transformer->transform();
 		} catch ( \Exception $e ) {
-			error_log( 'Schema transformation failed for feature ' . $feature_id . ': ' . $e->getMessage() );
+			error_log( 'Schema transformation failed for tool ' . $tool_id . ': ' . $e->getMessage() );
 			return null;
 		}
 	}
 
 	/**
-	 * Get tools from both server and client features
+	 * Convert features to tools for the LLM
+	 *
+	 * @param array<array{id: string, description: string, input_schema?: array, output_schema?: array, type: string}> $features The features to convert.
+	 * @return array<array{type: string, function: array}> The tools for the LLM.
+	 */
+	private function tools_from_features( array $features ): array {
+		$mapped = array_map(
+			function ( $feature ) {
+				// Handle array-based features.
+				if ( is_array( $feature ) && isset( $feature['id'] ) && isset( $feature['description'] ) ) {
+					$compatible_name = $this->encode_id( $feature['id'] );
+					$parameters      = $feature['input_schema'] ?? null;
+
+					// Create a default parameters object if none provided.
+					if ( ! is_array( $parameters ) || empty( $parameters ) ) {
+						$parameters = array(
+							'type'                 => 'object',
+							'properties'           => new \stdClass(),
+							'additionalProperties' => false,
+						);
+					} else {
+						// Transform the schema if it exists.
+						$parameters = $this->transform_schema( $parameters, $feature['id'] );
+					}
+
+					$function = array(
+						'name'        => $compatible_name,
+						'description' => $feature['description'],
+						'strict'      => $this->strict_schemas,
+					);
+
+					// Only use the parameters if they're a valid object schema.
+					if ( is_array( $parameters ) && isset( $parameters['type'] ) && 'object' === $parameters['type'] && isset( $parameters['properties'] ) ) {
+						$function['parameters'] = $parameters;
+					} else {
+						// Fallback to a default object schema.
+						$function['parameters'] = array(
+							'type'                 => 'object',
+							'properties'           => new \stdClass(),
+							'additionalProperties' => false,
+						);
+					}
+
+					return array(
+						'type'     => 'function',
+						'function' => $function,
+					);
+				}
+
+				return null;
+			},
+			$features
+		);
+
+		return array_values( array_filter( $mapped ) );
+	}
+
+	/**
+	 * Get tools from all available sources
 	 *
 	 * @return array<array{type: string, function: array}>
 	 */
 	private function get_tools(): array {
-		$server_features = wp_feature_registry()->get();
-		$server_tools = $this->tools_from_server_features( $server_features );
-		$client_tools = $this->tools_from_client_features( $this->client_features );
+		$tools = array();
 
-		return array_merge( $server_tools, $client_tools );
+		// Add all available tools.
+		$tools = array_merge( $tools, $this->tools_from_features( $this->available_tools ) );
+
+		return $tools;
 	}
 
 	/**
@@ -233,28 +291,6 @@ class Basic_Agent {
 	}
 
 	/**
-	 * Get a feature from a tool call.
-	 *
-	 * @param CreateResponseToolCallFunction $function The tool call.
-	 * @return WP_Feature|null The feature.
-	 */
-	private function feature_from_tool_call( CreateResponseToolCallFunction $function ): WP_Feature|null {
-		$feature_name = $this->decode_id( $function->name );
-		return wp_feature_registry()->find( $feature_name );
-	}
-
-	/**
-	 * Make a feature call with the given feature and arguments
-	 *
-	 * @param WP_Feature $feature The feature to call.
-	 * @param array|null $arguments The arguments to pass to the feature.
-	 * @return mixed The result of the feature call.
-	 */
-	private function make_feature_call( WP_Feature $feature, array $arguments = null ) {
-		return $feature->call( $arguments ?? array() );
-	}
-
-	/**
 	 * Make a tool call.
 	 *
 	 * @return CreateResponseMessage The response from the LLM.
@@ -268,15 +304,13 @@ class Basic_Agent {
 	/**
 	 * Processes a tool call from the LLM response.
 	 *
-	 * Checks if the tool call corresponds to a client or server feature,
-	 * sets pending client action or executes the server feature accordingly.
-	 *
-	 * @todo Consider abstracting some part of the client chain here into the main WP Features API in the future
+	 * Determines if the tool should be executed locally or remotely,
+	 * sets pending tool execution or executes the tool accordingly.
 	 *
 	 * @param object $tool_call The tool call object from the LLM response.
 	 * @return void
 	 */
-	private function process_tool_call( object $tool_call ) {
+	private function process_tool_call( $tool_call ) {
 		if ( ! isset( $tool_call->id ) || ! isset( $tool_call->function ) || ! $tool_call->function instanceof CreateResponseToolCallFunction ) {
 			$this->messages->add_by( 'assistant', 'Received an invalid tool call structure from the AI.' );
 			return;
@@ -284,165 +318,49 @@ class Basic_Agent {
 
 		$tool_call_id = $tool_call->id;
 		$function = $tool_call->function;
-		$feature_name = $this->decode_id( $function->name );
+		$tool_name = $this->decode_id( $function->name );
 		$arguments = json_decode( $function->arguments, true );
 
-		if ( $this->is_client_feature( $feature_name ) ) {
-			$this->pending_client_action = array(
-				'type'         => 'execute_feature',
-				'id'           => $feature_name,
-				'args'         => $arguments,
-				'tool_call_id' => $tool_call_id,
-			);
+		// Check if the tool exists in our available tools.
+		if ( ! isset( $this->available_tools[ $tool_name ] ) ) {
+			$this->messages->add_by( 'assistant', "Sorry, I couldn't find a tool named '{$tool_name}'." );
 			return;
 		}
 
-		// It's a server feature, find and execute it.
-		$feature = wp_feature_registry()->find( $feature_name );
-
-		if ( ! $feature ) {
-			$this->messages->add_by( 'assistant', "Sorry, I couldn't find a tool named '{$feature_name}'." );
-			return;
-		}
-
-		// Execute the server feature.
-		$result = $this->make_feature_call( $feature, $arguments );
-
-		// Handle the result.
-		if ( is_wp_error( $result ) ) {
-			$this->messages->add_by( 'assistant', $result->get_error_message() );
-		} else {
-			// Add the feature result message.
-			$this->messages->add_feature_result( $result, $feature );
-			// Make another LLM call to process the tool result.
-			$response = $this->make_tool_call();
-			$this->messages->add_response( $response );
-		}
-	}
-
-
-	/**
-	 * Convert server features to tools for the LLM
-	 *
-	 * @param array<WP_Feature> $features The server features to convert.
-	 * @return array<array{type: string, function: array}> The tools for the LLM.
-	 */
-	private function tools_from_server_features( array $features ): array {
-		$mapped = array_map(
-			function ( $feature ) {
-				if ( ! $feature instanceof WP_Feature ) {
-						return null;
-				}
-				$compatible_name = $this->encode_id( $feature->get_id() );
-				$parameters      = $feature->get_input_schema();
-				$function        = array(
-					'name'        => $compatible_name,
-					'description' => $feature->get_description(),
-					'strict'      => $this->strict_schemas,
-				);
-
-				if ( is_array( $parameters ) && isset( $parameters['type'] ) && 'object' === $parameters['type'] && ! empty( $parameters['properties'] ) ) {
-					$function['parameters'] = $this->transform_schema( $parameters, $feature->get_id() );
-				} else {
-						$function['parameters'] = array(
-							'type'                 => 'object',
-							'properties'           => new \stdClass(),
-							'additionalProperties' => false,
-						);
-				}
-
-				return array(
-					'type'     => 'function',
-					'function' => $function,
-				);
-			},
-			$features
+		// Set pending tool execution for all tools.
+		// The client will handle execution based on the tool's location.
+		$this->pending_tool_execution = array(
+			'type'         => 'execute_tool',
+			'toolId'       => $tool_name,
+			'args'         => $arguments,
+			'toolCallId'   => $tool_call_id,
 		);
-
-		return array_values( array_filter( $mapped ) );
 	}
 
 	/**
-	 * Convert client features to tools for the LLM
+	 * Saves tools for efficient repeated lookup using the tool's ID.
 	 *
-	 * @param array<array{id: string, description: string, input_schema?: array}> $features The client features to convert.
-	 * @return array<array{type: string, function: array}> The tools for the LLM.
+	 * @param array<array{id: string, description: string, input_schema?: array, output_schema?: array, type: string}> $tools An array of tool definitions. Each tool must have an 'id'.
+	 * @return array<string, array{id: string, description: string, input_schema?: array, output_schema?: array, type: string}> An associative array where keys are tool IDs and values are the corresponding tool definitions.
 	 */
-	private function tools_from_client_features( array $features ): array {
-		$mapped = array_map(
-			function ( $feature_data ) {
-				if ( ! isset( $feature_data['id'] ) || ! isset( $feature_data['description'] ) ) {
-						return null;
-				}
-
-				$compatible_name = $this->encode_id( $feature_data['id'] );
-				$parameters      = $feature_data['input_schema'] ?? null;
-
-				if ( is_array( $parameters ) ) {
-					$parameters = $this->transform_schema( $parameters, $feature_data['id'] );
-				}
-
-				$function = array(
-					'name'        => $compatible_name,
-					'description' => $feature_data['description'],
-					'strict'      => $this->strict_schemas,
-				);
-
-				if ( is_array( $parameters ) && isset( $parameters['type'] ) && 'object' === $parameters['type'] && isset( $parameters['properties'] ) ) {
-					$function['parameters'] = $parameters;
-				} else {
-						$function['parameters'] = array(
-							'type'                 => 'object',
-							'properties'           => new \stdClass(),
-							'additionalProperties' => false,
-						);
-				}
-
-				return array(
-					'type'     => 'function',
-					'function' => $function,
-				);
-			},
-			$features
-		);
-
-		return array_values( array_filter( $mapped ) );
-	}
-
-	/**
-	 * Check if a feature is a client feature
-	 *
-	 * @param string $feature_name The name of the feature to check.
-	 * @return bool True if the feature is a client feature, false otherwise.
-	 */
-	private function is_client_feature( string $feature_name ): bool {
-		return isset( $this->client_features[ $feature_name ] );
-	}
-
-	/**
-	 * Saves client features for efficient repeated lookup of features using the feature's ID.
-	 *
-	 * @param array<array{id: string, description: string, input_schema?: array}> $client_features An array of client feature definitions. Each feature must have an 'id'.
-	 * @return array<string, array{id: string, description: string, input_schema?: array}> An associative array where keys are feature IDs and values are the corresponding feature definitions.
-	 */
-	private function save_client_features( array $client_features ): array {
+	private function save_available_tools( array $tools ): array {
 		$indexed = array();
-		foreach ( $client_features as $feature ) {
-			if ( isset( $feature['id'] ) && is_string( $feature['id'] ) ) {
-				$indexed[ $feature['id'] ] = $feature;
+		foreach ( $tools as $tool ) {
+			if ( isset( $tool['id'] ) && is_string( $tool['id'] ) ) {
+				$indexed[ $tool['id'] ] = $tool;
 			}
 		}
 		return $indexed;
 	}
 
 	/**
-	 * Add a client tool result to the message history
+	 * Add a tool result to the message history
 	 *
 	 * @param string $tool_call_id The ID of the tool call.
 	 * @param string $result_content The content of the result.
 	 * @return array<array> The messages to return to the client.
 	 */
-	public function add_client_tool_result( string $tool_call_id, string $result_content ): array {
+	public function add_tool_result( string $tool_call_id, string $result_content ): array {
 		$tool_message = new Message(
 			role: 'tool',
 			content: $result_content,
@@ -469,13 +387,13 @@ class Basic_Agent {
 	/**
 	 * Set messages from history to restore conversation context
 	 *
-	 * When a client executes a client-side feature and returns the result, the server needs to
+	 * When a tool is executed and returns a result, the server needs to
 	 * restore the conversation state before processing the result. This method rebuilds the
-	 * conversation context from the message history provided by the client.
+	 * conversation context from the message history provided.
 	 *
 	 * The flow typically works as follows:
-	 * 1. AI identifies a client-side feature to execute and returns a client_action
-	 * 2. Client executes the feature and collects the result
+	 * 1. AI identifies a tool to execute and returns a client_action
+	 * 2. Client executes the tool and collects the result
 	 * 3. Client submits the result back to the server with the complete message history
 	 * 4. Server creates a new BasicAgent instance and calls this method to restore context
 	 * 5. Agent then processes the result and generates a new response

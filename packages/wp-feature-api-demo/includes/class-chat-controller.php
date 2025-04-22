@@ -60,8 +60,8 @@ class Chat_Controller extends WP_REST_Controller {
 	 * Main handler for chat requests, routing to either handle a new message or a tool result.
 	 *
 	 * @param \WP_REST_Request $request The request object. Expected parameters vary:
-	 *                                  - For new messages: ['message' => string, 'client_features' => array]
-	 *                                  - For tool results: ['tool_result' => array, 'message_history' => array, 'client_features' => array].
+	 *                                  - For new messages: ['message' => string, 'available_tools' => array]
+	 *                                  - For tool results: ['tool_result' => array, 'message_history' => array].
 	 * @return \WP_REST_Response|\WP_Error Response object containing messages and potentially client actions, or WP_Error on failure.
 	 *                                  - Message response: ['messages' => array, 'client_action' => array|null, 'message_history' => array|null]
 	 *                                  - Tool result response: ['messages' => array]
@@ -84,28 +84,25 @@ class Chat_Controller extends WP_REST_Controller {
 	}
 
 	/**
-	 * Extract and validate client features from request parameters.
+	 * Extract and validate tools from request parameters.
 	 *
-	 * Client features represent the capabilities available on the client-side specifically, and are passed down from the client to the server, so the agent can use them.
+	 * Tools represent the capabilities available to the agent, and are passed down from the client to the server.
 	 *
-	 * @todo:
-	 * - Instead of passing the client_features down with every message, maybe we can set them when the context changes (page load, navigation, etc.)?
-	 *
-	 * @param array $params Request parameters, expected to contain ['client_features'].
-	 * @return array<int, array{id: string, description: string}> Validated client features, or an empty array if none are provided or invalid.
+	 * @param array $params Request parameters, expected to contain ['available_tools'].
+	 * @return array<int, array{id: string, description: string, input_schema?: array, output_schema?: array, type: string}> Available tools, or an empty array if none are provided or invalid.
 	 */
-	private function get_client_features( array $params ): array {
-		return isset( $params['client_features'] ) && is_array( $params['client_features'] )
-			? $params['client_features']
-			: array();
+	private function get_available_tools( array $params ): array {
+			return isset( $params['available_tools'] ) && is_array( $params['available_tools'] )
+					? $params['available_tools']
+					: array();
 	}
 	/**
 	 * Handles a new user message by passing it to the agent.
 	 *
-	 * Initializes the agent with client features and processes the user's message.
-	 * The agent might respond directly or request a client-side action to be ran (tool call).
+	 * Initializes the agent with available tools and processes the user's message.
+	 * The agent might respond directly or request a tool to be executed.
 	 *
-	 * @param array $params Request parameters containing 'message' (string) and 'client_features' (array).
+	 * @param array $params Request parameters containing 'message' (string) and 'available_tools' (array).
 	 * @return \WP_REST_Response|\WP_Error Response object containing agent messages and potentially a client action request, or WP_Error on failure.
 	 */
 	private function handle_message( array $params ): \WP_REST_Response|\WP_Error {
@@ -119,7 +116,7 @@ class Chat_Controller extends WP_REST_Controller {
 			);
 		}
 
-		$agent = new Basic_Agent( $this->get_client_features( $params ) );
+		$agent = new Basic_Agent( $this->get_available_tools( $params ) );
 		$result = $agent->user_message( $message )->run();
 
 		if ( ! is_array( $result ) ) {
@@ -147,19 +144,19 @@ class Chat_Controller extends WP_REST_Controller {
 	}
 
 	/**
-	 * Handles a tool result submitted by the client after executing a requested feature (client_action).
+	 * Handles a tool result submitted by the client after executing a requested tool.
 	 *
-	 * This method receives the output from the client-side JavaScript function execution.
-	 * It uses the provided 'message_history' to restore the agent's state to the point just before the client action was requested.
+	 * This method receives the output from the tool execution.
+	 * It uses the provided 'message_history' to restore the agent's state to the point just before the tool was requested.
 	 * Then, it adds the tool result ('tool_result.content') associated with the 'tool_result.tool_call_id' to the agent's message history.
 	 * Finally, it runs the agent again, allowing it to process the tool's output and generate a final response to the user.
 	 *
 	 * @since 0.1.0
 	 *
 	 * @param array $params Request parameters containing:
-	 *                      'tool_result' => array{tool_call_id: string, content: string (JSON-encoded result from client JS execution)},
-	 *                      'message_history' => array<int, array{role: string, ...}> (The conversation history up to the point the client action was requested),
-	 *                      'client_features' => array<int, array{id: string, description: string}> (Client capabilities, needed to re-initialize agent).
+	 *                      'tool_result' => array{tool_call_id: string, content: string (JSON-encoded result from tool execution)},
+	 *                      'message_history' => array<int, array{role: string, ...}> (The conversation history up to the point the tool was requested),
+	 *                      'available_tools' => array<int, array{id: string, description: string, input_schema?: array, output_schema?: array, type: string}> (Available tools, needed to re-initialize agent).
 	 * @return \WP_REST_Response|\WP_Error Response object containing the final agent messages (including the 'tool' role message with the result and the final 'assistant' response), or WP_Error on failure.
 	 *                                     Response data structure: [
 	 *                                         'messages' => array<int, array{role: string, content: string|null, tool_calls?: array|null, tool_call_id?: string|null}>
@@ -189,11 +186,11 @@ class Chat_Controller extends WP_REST_Controller {
 			);
 		}
 
-		$agent = new Basic_Agent( $this->get_client_features( $params ) );
+		$agent = new Basic_Agent( $this->get_available_tools( $params ) );
 		$agent->set_messages_from_history( $message_history );
 
 		try {
-			$new_messages = $agent->add_client_tool_result( $tool_call_id, $content );
+			$new_messages = $agent->add_tool_result( $tool_call_id, $content );
 			return rest_ensure_response( array( 'messages' => $new_messages ) );
 		} catch ( \Exception $e ) {
 			return new WP_Error(
