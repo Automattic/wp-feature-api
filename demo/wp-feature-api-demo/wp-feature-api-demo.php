@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: WordPress Feature API Demo
+ * Plugin Name: WordPress Feature API Agent Demo
  * Plugin URI: https://github.com/Automattic/wp-feature-api
  * Description: Demo plugin showcasing the WordPress Features API.
  * Version: 0.1.0
@@ -24,7 +24,7 @@ define( 'WP_FEATURE_API_DEMO_URL', plugin_dir_url( __FILE__ ) );
 
 require_once WP_FEATURE_API_DEMO_PATH . 'vendor/autoload.php';
 
-use A8C\WpFeatureApiDemo\Main;
+use WpFeatureApiDemo\Main;
 
 $main = new Main();
 add_action( 'plugins_loaded', array( $main, 'init' ), 20 );

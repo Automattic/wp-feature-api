@@ -121,13 +121,18 @@ class Basic_Agent {
 			--$depth;
 		}
 
-		$result = array(
-			'messages' => $this->messages->get_chat_messages(),
-		);
+		$result = array();
 
 		if ( ! is_null( $this->pending_tool_execution ) ) {
 			$result['client_action'] = $this->pending_tool_execution;
 			$result['message_history'] = $this->messages->get_chat_messages();
+			$last_msg = $this->messages->last_message();
+			$result['messages'] = $last_msg instanceof Message ? array( $last_msg->to_array() ) : array();
+		} else {
+			$last_msg = $this->messages->last_message();
+			$result['messages'] = $last_msg instanceof Message && $last_msg->get_role() === 'assistant'
+				? array( $last_msg->to_array() )
+				: array(); // Should ideally always be an assistant message here.
 		}
 
 		return $result;
@@ -354,11 +359,24 @@ class Basic_Agent {
 	}
 
 	/**
-	 * Add a tool result to the message history
+	 * Add a tool result to the message history and run the agent loop.
 	 *
-	 * @param string $tool_call_id The ID of the tool call.
-	 * @param string $result_content The content of the result.
-	 * @return array<array> The messages to return to the client.
+	 * This method adds the result of a tool execution to the conversation history.
+	 * It then runs the agent's processing loop, which might involve:
+	 * 1. Calling the LLM with the updated history.
+	 * 2. The LLM responding with a text message.
+	 * 3. The LLM responding with another tool call request (tool chaining).
+	 *
+	 * @param string $tool_call_id The ID of the tool call this result corresponds to.
+	 * @param string $result_content The content (result) from the tool execution.
+	 * @return array{
+	 *   messages: array<array>,
+	 *   client_action?: array{type: string, toolId: string, args: array, toolCallId: string},
+	 *   message_history?: array<array>
+	 * } An array containing:
+	 *     - 'messages': An array of new messages generated during this turn (includes the 'tool' message and any subsequent 'assistant' messages/tool_calls).
+	 *     - 'client_action': (Optional) If the agent requests another tool execution.
+	 *     - 'message_history': (Optional) The complete updated message history, included only if 'client_action' is present.
 	 */
 	public function add_tool_result( string $tool_call_id, string $result_content ): array {
 		$tool_message = new Message(
@@ -370,18 +388,38 @@ class Basic_Agent {
 		);
 
 		$this->messages->add( $tool_message );
-		$final_response = $this->make_tool_call();
-		$this->messages->add_response( $final_response );
 
-		$final_assistant_message_object = $this->messages->last_message();
-		$messages_to_return = array();
-		$messages_to_return[] = $tool_message->to_array();
+		$depth = $this->call_depth;
+		$this->pending_tool_execution = null;
+		$new_messages_this_turn = array( $tool_message->to_array() );
 
-		if ( $final_assistant_message_object instanceof Message && $final_assistant_message_object->get_role() === 'assistant' ) {
-			$messages_to_return[] = $final_assistant_message_object->to_array();
+		while ( ! $this->messages->assistant_has_responded() && $depth > 0 && is_null( $this->pending_tool_execution ) ) {
+			$response = $this->make_tool_call();
+			$this->messages->add_response( $response );
+
+			$last_message = $this->messages->last_message();
+
+			if ( $last_message instanceof Message ) {
+				$new_messages_this_turn[] = $last_message->to_array();
+			}
+
+			if ( ! empty( $last_message->tool_calls ) && is_array( $last_message->tool_calls ) ) {
+				$this->process_tool_call( $last_message->tool_calls[0] );
+			}
+
+			--$depth;
 		}
 
-		return $messages_to_return;
+		$result = array(
+			'messages' => $new_messages_this_turn,
+		);
+
+		if ( ! is_null( $this->pending_tool_execution ) ) {
+			$result['client_action'] = $this->pending_tool_execution;
+			$result['message_history'] = $this->messages->get_chat_messages();
+		}
+
+		return $result;
 	}
 
 	/**

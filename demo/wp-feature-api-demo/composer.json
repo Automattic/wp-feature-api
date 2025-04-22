@@ -1,5 +1,5 @@
 {
-  "name": "a8c/wp-geature-api-demo",
+  "name": "wp-feature-api/demo",
   "description": "A demo WordPress plugin for the WP Feature API",
   "require": {
     "openai-php/client": "^0.10.3",
@@ -7,14 +7,13 @@
     "nyholm/psr7": "^1.8"
   },
   "autoload": {
-    "psr-4": {
-      "A8C\\WpFeatureApiDemo\\": "includes/"
-    }
+    "classmap": [
+	  "includes/"
+	 ]
   },
   "authors": [
     {
-      "name": "Greg Hunt",
-      "email": "gregory.hunt@automattic.com"
+      "name": "Automattic"
     }
   ],
   "config": {

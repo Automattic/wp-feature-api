@@ -1,57 +1,49 @@
 {
-	"name": "wp-feature-api-demo",
-	"version": "0.1.0",
-	"description": "Demo plugin showcasing the WordPress Features API.",
-	"main": "src/index.js",
-	"scripts": {
-		"build": "wp-scripts build",
-		"format": "wp-scripts format",
-		"lint:css": "wp-scripts lint-style",
-		"lint:js": "wp-scripts lint-js",
-		"packages-update": "wp-scripts packages-update",
-		"plugin-zip": "wp-scripts plugin-zip",
-		"start": "wp-scripts start",
-		"clean": "rm -rf build build-types tsconfig.tsbuildinfo"
-	},
-	"keywords": [
-		"wordpress",
-		"api",
-		"features",
-		"llm",
-		"ai",
-		"demo"
-	],
-	"author": "Automattic",
-	"license": "GPL-2.0-or-later",
-	"dependencies": {
-		"@wp-feature-api/client": "^1.0.0",
-		"@wp-feature-api/client-features": "^1.0.0",
-		"@types/react": "^18.3.20",
-		"@types/react-dom": "^18.3.5",
-		"@wordpress/api-fetch": "^6.55.0",
-		"@wordpress/blocks": "^14.10.0",
-		"@wordpress/components": "^25.16.0",
-		"@wordpress/core-data": "^7.20.0",
-		"@wordpress/data": "^9.28.0",
-		"@wordpress/element": "^5.35.0",
-		"@wordpress/i18n": "^4.58.0",
-		"@wordpress/icons": "^10.20.0",
-		"react": "^18.3.1",
-		"react-dom": "^18.3.1"
-	},
-	"devDependencies": {
-		"@wordpress/env": "^10.20.0",
-		"@wordpress/eslint-plugin": "^22.6.0",
-		"@wordpress/prettier-config": "^4.20.0",
-		"@wordpress/scripts": "^30.13.0",
-		"autoprefixer": "^10.4.21",
-		"eslint": "^8.57.1",
-		"eslint-import-resolver-node": "0.3.4",
-		"eslint-plugin-eslint-comments": "3.1.2",
-		"eslint-plugin-react-compiler": "^19.0.0-beta-aeaed83-20250323",
-		"eslint-plugin-storybook": "^0.11.6",
-		"postcss": "^8.5.3",
-		"react-markdown": "^10.1.0",
-		"tailwindcss": "^4.0.17"
-	}
+  "name": "@wp-feature-api/agent-demo",
+  "version": "0.1.0",
+  "description": "Decoupled agent example using @wp-feature-api/client",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "wp-scripts build",
+    "start": "wp-scripts start",
+    "plugin-zip": "wp-scripts plugin-zip --no-root-folder",
+    "lint:js": "wp-scripts lint-js",
+    "format": "wp-scripts format",
+    "clean": "rm -rf build build-types tsconfig.tsbuildinfo"
+  },
+  "keywords": [
+    "wordpress",
+    "feature-api",
+    "agent",
+    "example",
+    "llm",
+    "ai"
+  ],
+  "author": "Automattic",
+  "license": "GPL-2.0-or-later",
+  "files": [
+    "wp-feature-api-agent-demo.php",
+    "README.md",
+    "includes/",
+    "build/"
+  ],
+  "dependencies": {
+    "@wordpress/api-fetch": "^6.55.0",
+    "@wordpress/components": "^25.16.0",
+    "@wordpress/data": "^9.28.0",
+    "@wordpress/element": "^5.35.0",
+    "@wordpress/i18n": "^5.22.0",
+    "@wordpress/icons": "^10.20.0",
+	"@wp-feature-api/client": "^1.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-markdown": "^10.1.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.20",
+    "@types/react-dom": "^18.3.5",
+    "@wordpress/eslint-plugin": "^22.6.0",
+    "@wordpress/scripts": "^30.13.0",
+    "typescript": "^5.2.2"
+  }
 }

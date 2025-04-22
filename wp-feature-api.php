@@ -84,7 +84,7 @@ function wp_feature_api_register_rest_routes() {
  * @return void
  */
 function wp_feature_api_load_demo_plugin() {
-	$demo_plugin_file = WP_FEATURE_API_PLUGIN_DIR . 'packages/wp-feature-api-demo/wp-feature-api-demo.php';
+	$demo_plugin_file = WP_FEATURE_API_PLUGIN_DIR . 'demo/wp-feature-api-demo/wp-feature-api-demo.php';
 
 	if ( file_exists( $demo_plugin_file ) ) {
 		require_once $demo_plugin_file;

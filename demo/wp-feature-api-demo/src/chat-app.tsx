@@ -18,7 +18,6 @@ import {
 	ConversationProvider,
 	useConversation,
 } from './context/conversation-provider';
-import { useClientActionHandler } from './hooks/use-client-action-handler';
 import { useMessageHandler } from './hooks/use-message-handler';
 
 const ChatAppContent = () => {
@@ -26,14 +25,10 @@ const ChatAppContent = () => {
 	const [ inputValue, setInputValue ] = useState( '' );
 	const [ isLoading, setIsLoading ] = useState( false );
 
-	const { handleClientAction } = useClientActionHandler(
+	const { sendMessage } = useMessageHandler(
+		messages,
 		addMessage,
 		setIsLoading
-	);
-	const { sendMessage } = useMessageHandler(
-		addMessage,
-		setIsLoading,
-		handleClientAction
 	);
 
 	const handleSendMessage = () => {

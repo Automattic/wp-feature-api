@@ -30,10 +30,10 @@ interface ConversationContextType {
 }
 
 export type ClientAction = {
-	type: 'execute_feature';
-	id: string;
-	args?: any;
-	tool_call_id?: string;
+	type: 'execute_tool';
+	tool_id: string;
+	args: any;
+	tool_call_id: string;
 };
 
 const ConversationContext = createContext<
