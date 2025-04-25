@@ -29,6 +29,9 @@ require_once WP_AI_API_PROXY_PATH . 'includes/class-wp-ai-api-proxy.php';
 // Include the options class.
 require_once WP_AI_API_PROXY_PATH . 'includes/class-wp-ai-api-options.php';
 
+// Include the feature registration class.
+require_once WP_AI_API_PROXY_PATH . 'includes/class-wp-feature-register.php';
+
 /**
  * Initializes the plugin.
  *
@@ -55,6 +58,12 @@ function wp_ai_api_proxy_init() {
 	if ( class_exists( 'A8C\\WpFeatureApiAgent\\WP_AI_API_Options' ) ) {
 		$options_instance = new A8C\WpFeatureApiAgent\WP_AI_API_Options();
 		$options_instance->init();
+	}
+
+	// Initialize the feature registration.
+	if ( class_exists( 'A8C\\WpFeatureApiAgent\\WP_Feature_Register' ) ) {
+		$feature_register_instance = new A8C\WpFeatureApiAgent\WP_Feature_Register();
+		$feature_register_instance->init();
 	}
 }
 

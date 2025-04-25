@@ -2,12 +2,14 @@
  * WordPress dependencies
  */
 import { dispatch, select, resolveSelect } from '@wordpress/data';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
 import { store } from './store';
 import type { Feature } from './types';
+import { removeNullValues } from './utils';
 
 /**
  * Registers a feature with the feature registry.
@@ -59,14 +61,56 @@ export async function executeFeature(
 	featureId: string,
 	args: any
 ): Promise< unknown > {
-	const callback = select( store ).getRegisteredFeatureCallback( featureId );
+	const feature = select( store ).getRegisteredFeature( featureId );
 
-	if ( typeof callback !== 'function' ) {
-		throw new Error( `No callback registered for feature: ${ featureId }` );
+	if ( ! feature ) {
+		throw new Error( `Feature not found: ${ featureId }` );
 	}
 
 	try {
-		return await callback( args );
+		if ( feature.location === 'client' ) {
+			const callback =
+				select( store ).getRegisteredFeatureCallback( featureId );
+
+			if ( typeof callback !== 'function' ) {
+				throw new Error(
+					`No callback registered for client feature: ${ featureId }`
+				);
+			}
+
+			return await callback( args );
+		}
+
+		// Server-side features
+		const method = feature.type === 'tool' ? 'POST' : 'GET';
+		let requestPath = `/wp/v2/features/${ featureId }/run`;
+		const options: { method: string; data?: any } = { method };
+
+		// The LLM may pass in a bunch of new values for things, that can cause validation errors for certain
+		// fields like 'slug', etc. This cleans the args by removing null values.
+		const cleanedArgs = removeNullValues( args );
+
+		if (
+			method === 'GET' &&
+			cleanedArgs &&
+			Object.keys( cleanedArgs ).length
+		) {
+			requestPath = `${ requestPath }?${ new URLSearchParams(
+				Object.entries( cleanedArgs ).map( ( [ key, value ] ) => [
+					key,
+					typeof value === 'object'
+						? JSON.stringify( value )
+						: String( value ),
+				] )
+			) }`;
+		} else if ( method === 'POST' && cleanedArgs ) {
+			options.data = cleanedArgs;
+		}
+
+		return await apiFetch< unknown >( {
+			path: requestPath,
+			...options,
+		} );
 	} catch ( error ) {
 		// eslint-disable-next-line no-console
 		console.error( `Error executing feature ${ featureId }:`, error );

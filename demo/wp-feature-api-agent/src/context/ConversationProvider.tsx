@@ -7,6 +7,7 @@ import {
 	useCallback,
 	useMemo,
 	useEffect,
+	useRef,
 } from '@wordpress/element';
 
 /**
@@ -19,6 +20,8 @@ import { type ReactNode, type Dispatch, type SetStateAction } from 'react';
  */
 import type { Message } from '../types/messages';
 import { createAgent, type Agent, type ApiClient } from '../agent/orchestrator';
+import { createToolExecutor, type ToolExecutor } from '../agent/tool-executor';
+import { createWpFeatureToolProvider } from '../agent/wp-feature-tool-provider';
 
 export interface ConversationContextType {
 	messages: Message[];
@@ -70,53 +73,76 @@ export const ConversationProvider = ( {
 		}
 	} );
 	const [ isLoading, setIsLoading ] = useState< boolean >( false );
+	const [ toolExecutor, setToolExecutor ] = useState< ToolExecutor | null >(
+		null
+	);
+	const isInitializing = useRef( false );
 
-	// Save messages to localStorage whenever they change
 	useEffect( () => {
-		localStorage.setItem( STORAGE_KEY, JSON.stringify( messages ) );
+		if ( messages.length > 0 ) {
+			localStorage.setItem( STORAGE_KEY, JSON.stringify( messages ) );
+		}
 	}, [ messages ] );
 
-	// Instantiate the agent, injecting the WordPress API client
-	const agent: Agent = useMemo(
-		() => createAgent( { apiClient: wpApiClient } ),
-		[]
-	);
+	useEffect( () => {
+		if ( isInitializing.current ) {
+			return;
+		}
+		isInitializing.current = true;
 
-	// Function to handle sending a message
+		const initializeExecutor = async () => {
+			const executor = createToolExecutor();
+			const provider = createWpFeatureToolProvider();
+			try {
+				await executor.addProvider( provider );
+				setToolExecutor( executor );
+			} catch ( error ) {
+				// eslint-disable-next-line no-console
+				console.error( 'Failed to initialize Tool Executor:', error );
+			}
+		};
+
+		initializeExecutor();
+	}, [] );
+
+	const agent: Agent | null = useMemo( () => {
+		if ( toolExecutor ) {
+			return createAgent( { apiClient: wpApiClient, toolExecutor } );
+		}
+		return null;
+	}, [ toolExecutor ] );
+
 	const sendMessage = useCallback(
 		async ( query: string ) => {
-			if ( isLoading ) {
+			if ( isLoading || ! agent ) {
 				return;
 			}
 
-			// Get the default model from localized data, fallback if needed
 			const defaultModel =
-				window.wpFeatureApiAgentData?.defaultModel || 'gpt-3.5-turbo'; // Provide a sensible fallback
+				window.wpFeatureApiAgentData?.defaultModel || 'gpt-3.5-turbo';
 
 			setIsLoading( true );
-			const userMessage: Message = { role: 'user', content: query };
-			setMessages( ( prevMessages ) => [ ...prevMessages, userMessage ] );
+
+			const historyBeforeQuery = messages;
 
 			try {
-				const currentHistory = [ ...messages, userMessage ];
-				let assistantResponse = '';
-
-				for await ( const messageChunk of agent.processQuery(
+				const messageStream = agent.processQuery(
 					query,
-					currentHistory,
+					historyBeforeQuery,
 					defaultModel
-				) ) {
+				);
+
+				for await ( const messageChunk of messageStream ) {
 					setMessages( ( prev ) => {
-						const lastMessage = prev[ prev.length - 1 ];
 						if (
-							lastMessage?.role === 'assistant' &&
-							messageChunk.role === 'assistant'
+							messageChunk.role === 'user' &&
+							prev.some(
+								( m ) =>
+									m.role === 'user' &&
+									m.content === messageChunk.content
+							)
 						) {
-							assistantResponse += messageChunk.content ?? '';
-							return [
-								...prev.slice( 0, -1 ),
-								{ ...lastMessage, content: assistantResponse },
-							];
+							return prev;
 						}
 						return [ ...prev, messageChunk ];
 					} );
@@ -139,11 +165,12 @@ export const ConversationProvider = ( {
 				setIsLoading( false );
 			}
 		},
-		[ isLoading, agent, messages ]
+		[ isLoading, agent, messages, toolExecutor ]
 	);
 
 	const clearConversation = useCallback( () => {
 		setMessages( [] );
+		localStorage.removeItem( STORAGE_KEY );
 	}, [] );
 
 	const contextValue = useMemo(
@@ -154,7 +181,7 @@ export const ConversationProvider = ( {
 			isLoading,
 			clearConversation,
 		} ),
-		[ messages, sendMessage, isLoading, clearConversation ]
+		[ messages, setMessages, sendMessage, isLoading, clearConversation ]
 	);
 
 	return (

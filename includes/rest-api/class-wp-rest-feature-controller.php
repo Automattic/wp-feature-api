@@ -509,12 +509,12 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 								),
 							),
 						),
-						'context' => array(
+						/*'context' => array(
 							'description' => __( 'Context for executing the feature.', 'wp-feature-api' ),
 							'type'        => 'object',
 							'default'     => array(),
 							'properties'  => $feature->get_input_schema(),
-						),
+						),*/
 					),
 				),
 				'schema' => array( $feature, 'get_item_schema' ),
