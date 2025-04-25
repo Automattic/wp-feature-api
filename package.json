@@ -27,8 +27,7 @@
 		"serve": "wp-env start --xdebug",
 		"wp-env": "wp-env",
 		"clean": "npm run clean --workspaces --if-present && rm -rf build tsconfig.tsbuildinfo",
-		"composer:install": "composer install && cd demo/wp-feature-api-demo && composer install",
-		"setup": "npm install && npm run composer:install"
+		"setup": "npm install && composer install"
 	},
 	"keywords": [
 		"wordpress",

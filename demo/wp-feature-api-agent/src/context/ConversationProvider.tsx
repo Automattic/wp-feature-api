@@ -38,15 +38,6 @@ interface ConversationProviderProps {
 	children: ReactNode;
 }
 
-// TODO: Thinking of removing this.
-declare global {
-	interface Window {
-		wpFeatureApiAgentData?: {
-			defaultModel?: string;
-		};
-	}
-}
-
 // TODO: Should import from wordpress/api-fetch
 const wpApiClient: ApiClient = async ( endpoint, data ) => {
 	const apiFetch = ( window as any ).wp?.apiFetch;
@@ -118,8 +109,8 @@ export const ConversationProvider = ( {
 				return;
 			}
 
-			const defaultModel =
-				window.wpFeatureApiAgentData?.defaultModel || 'gpt-3.5-turbo';
+			// TODO: Consider making this a setting.
+			const defaultModel = 'gpt-4o';
 
 			setIsLoading( true );
 

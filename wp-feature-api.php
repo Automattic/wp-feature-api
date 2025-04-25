@@ -83,8 +83,8 @@ function wp_feature_api_register_rest_routes() {
  * @since 0.1.0
  * @return void
  */
-function wp_feature_api_load_demo_plugin() {
-	$demo_plugin_file = WP_FEATURE_API_PLUGIN_DIR . 'demo/wp-feature-api-demo/wp-feature-api-demo.php';
+function wp_feature_api_load_agent_demo() {
+	$demo_plugin_file = WP_FEATURE_API_PLUGIN_DIR . 'demo/wp-feature-api-agent/wp-feature-api-agent.php';
 
 	if ( file_exists( $demo_plugin_file ) ) {
 		require_once $demo_plugin_file;
@@ -95,21 +95,6 @@ function wp_feature_api_load_demo_plugin() {
 		}
 	}
 }
-
-/**
- * Loads the WP Feature API Demo plugin.
- *
- * @since 0.1.0
- * @return void
- */
-function wp_feature_api_load_agent_demo() {
-	$demo_plugin_file = WP_FEATURE_API_PLUGIN_DIR . 'demo/wp-feature-api-agent/wp-feature-api-agent.php';
-
-	if ( file_exists( $demo_plugin_file ) ) {
-		require_once $demo_plugin_file;
-	}
-}
-
 
 /**
  * Displays an admin notice when the demo plugin is loaded.
