@@ -20,22 +20,12 @@ class WP_AI_API_Proxy {
 	/**
 	 * Supported AI API service providers.
 	 */
-	private const SUPPORTED_AI_API_SERVICES = [ 'openai', 'anthropic', 'google' ];
+	private const SUPPORTED_AI_API_SERVICES = [ 'openai' ];
 
 	/**
 	 * Base URL for the OpenAI API.
 	 */
 	private const OPENAI_API_ROOT = 'https://api.openai.com/v1/';
-
-	/**
-	 * Base URL for the Anthropic API.
-	 */
-	private const ANTHROPIC_API_ROOT = 'https://api.anthropic.com/v1/';
-
-	/**
-	 * Base URL for the Google Generative Language API.
-	 */
-	private const GOOGLE_API_ROOT = 'https://generativelanguage.googleapis.com/v1beta/openai/';
 
 	/**
 	 * Cache namespace for AI proxy data.
@@ -135,10 +125,8 @@ class WP_AI_API_Proxy {
 	 */
 	public function ai_api_healthcheck( WP_REST_Request $request ) {
 		$openai_key = WP_AI_API_Options::get_openai_api_key();
-		$anthropic_key = WP_AI_API_Options::get_anthropic_api_key();
-		$google_key = WP_AI_API_Options::get_google_api_key();
 
-		$all_defined = ! empty( $openai_key ) || ! empty( $anthropic_key ) || ! empty( $google_key );
+		$all_defined = ! empty( $openai_key );
 
 		$status = $all_defined ? 'OK' : 'Configuration Error';
 		$code   = $all_defined ? 200 : 500;
@@ -147,15 +135,13 @@ class WP_AI_API_Proxy {
 	}
 
 	/**
-	 * Lists all the models available from the configured providers (OpenAI, Anthropic, Google).
+	 * Lists all the models available from the configured providers (OpenAI).
 	 *
 	 * @param WP_REST_Request $request Incoming request data.
 	 * @return WP_Error|WP_REST_Response Model list data or error.
 	 */
 	public function list_available_models( WP_REST_Request $request ) {
-		$openai_models    = $this->get_provider_model_list( 'openai' );
-		$anthropic_models = $this->get_provider_model_list( 'anthropic' );
-		$google_models    = $this->get_provider_model_list( 'google' );
+		$openai_models = $this->get_provider_model_list( 'openai' );
 
 		$all_models = [];
 
@@ -164,38 +150,6 @@ class WP_AI_API_Proxy {
 				if ( is_object( $model ) ) {
 					$model->owned_by = 'openai';
 					$all_models[]    = $model;
-				}
-			}
-		}
-
-		if ( is_array( $google_models ) ) {
-			foreach ( $google_models as $model ) {
-				if ( is_object( $model ) && isset( $model->name ) ) {
-					$model_obj           = new stdClass();
-					$model_obj->id       = preg_replace( '/^models\//', '', $model->name );
-					$model_obj->object   = 'model';
-					$model_obj->owned_by = 'google';
-					$model_obj->created  = time();
-					if ( isset( $model->displayName ) ) {
-						$model_obj->name = $model->displayName;
-					}
-					$all_models[] = $model_obj;
-				}
-			}
-		}
-
-		if ( is_array( $anthropic_models ) ) {
-			foreach ( $anthropic_models as $model ) {
-				if ( is_object( $model ) && isset( $model->id ) ) {
-					$model_obj           = new stdClass();
-					$model_obj->id       = $model->id;
-					$model_obj->object   = 'model';
-					$model_obj->owned_by = 'anthropic';
-					$model_obj->created  = isset( $model->created_at ) ? strtotime( $model->created_at ) : time();
-					if ( ! $model_obj->created ) {
-						$model_obj->created = time();
-					}
-					$all_models[] = $model_obj;
 				}
 			}
 		}
@@ -218,7 +172,7 @@ class WP_AI_API_Proxy {
 
 
 	/**
-	 * Proxies the request to the appropriate AI service (OpenAI, Anthropic, Google).
+	 * Proxies the request to the appropriate AI service (OpenAI).
 	 *
 	 * @param WP_REST_Request $request Incoming request data.
 	 * @return WP_Error|WP_REST_Response Vendor data or error.
@@ -229,38 +183,16 @@ class WP_AI_API_Proxy {
 		$body     = $request->get_body();
 		$headers  = $request->get_headers();
 
-		// Determine the target service based on the 'model' parameter in the request body
+		// Set OpenAI as the target service
 		$target_service = 'openai';
 		$target_url     = self::OPENAI_API_ROOT . $api_path;
 		$auth_header    = sprintf( 'Bearer %s', WP_AI_API_Options::get_openai_api_key() );
 
-		$json_params = $request->get_json_params();
-		$model       = $json_params['model'] ?? null;
-
-		if ( ! empty( $model ) ) {
-			if ( str_starts_with( $model, 'claude' ) ) {
-				$target_service = 'anthropic';
-				$target_url     = self::ANTHROPIC_API_ROOT . $api_path;
-				$auth_header    = WP_AI_API_Options::get_anthropic_api_key();
-			} elseif ( str_starts_with( $model, 'gemini' ) || str_starts_with( $model, 'gemma' ) ) {
-				$target_service = 'google';
-				$target_url  = self::GOOGLE_API_ROOT . $api_path;
-				$auth_header = sprintf( 'Bearer %s', WP_AI_API_Options::get_google_api_key() );
-			}
-		}
-
 		$outgoing_headers = array(
 			'Content-Type' => $headers['content_type'][0] ?? ( ! empty( $body ) ? 'application/json' : null ),
 			'User-Agent'   => 'WordPress AI API Proxy/' . WP_AI_API_PROXY_VERSION,
+			'Authorization' => $auth_header,
 		);
-
-		if ( $target_service === 'anthropic' ) {
-			$outgoing_headers['X-API-Key'] = $auth_header;
-			// @see https://docs.anthropic.com/en/api/versioning
-			$outgoing_headers['anthropic-version'] = '2023-06-01';
-		} else {
-			$outgoing_headers['Authorization'] = $auth_header;
-		}
 
 		$outgoing_headers = array_filter( $outgoing_headers );
 
@@ -302,12 +234,6 @@ class WP_AI_API_Proxy {
 			$client_headers['X-Request-ID'] = $response_headers['x-request-id'];
 		}
 
-		if ( isset( $response_headers['anthropic-ratelimit-requests-limit'] ) ) {
-			$client_headers['X-Anthropic-Ratelimit-Requests-Limit'] = $response_headers['anthropic-ratelimit-requests-limit'];
-			$client_headers['X-Anthropic-Ratelimit-Requests-Remaining'] = $response_headers['anthropic-ratelimit-requests-remaining'] ?? '';
-			$client_headers['X-Anthropic-Ratelimit-Requests-Reset'] = $response_headers['anthropic-ratelimit-requests-reset'] ?? '';
-		}
-
 		$wp_response = new WP_REST_Response( $response_body, $response_code );
 
 		foreach ( $client_headers as $key => $value ) {
@@ -332,7 +258,7 @@ class WP_AI_API_Proxy {
 	 * Returns the list of available models for a specific provider.
 	 * Uses caching.
 	 *
-	 * @param string $provider The provider key ('openai', 'anthropic', 'google').
+	 * @param string $provider The provider key ('openai').
 	 * @return array List of models (structure depends on provider) or empty array on error/cache miss failure.
 	 */
 	private function get_provider_model_list( string $provider ): array {
@@ -344,12 +270,6 @@ class WP_AI_API_Proxy {
 		switch ( $provider ) {
 			case 'openai':
 				$api_key = WP_AI_API_Options::get_openai_api_key();
-				break;
-			case 'anthropic':
-				$api_key = WP_AI_API_Options::get_anthropic_api_key();
-				break;
-			case 'google':
-				$api_key = WP_AI_API_Options::get_google_api_key();
 				break;
 		}
 		if ( empty( $api_key ) ) {
@@ -368,16 +288,6 @@ class WP_AI_API_Proxy {
 		$api_path = '';
 
 		switch ( $provider ) {
-			case 'anthropic':
-				// Anthropic doesn't have a standard /v1/models endpoint
-				return [];
-			case 'google':
-				$headers = [
-					'Authorization' => sprintf( 'Bearer %s', WP_AI_API_Options::get_google_api_key() ),
-					'User-Agent'    => 'WordPress AI API Proxy/' . WP_AI_API_PROXY_VERSION,
-				];
-				$api_path = self::GOOGLE_API_ROOT . 'models';
-				break;
 			case 'openai':
 				$headers = [
 					'Authorization' => sprintf( 'Bearer %s', WP_AI_API_Options::get_openai_api_key() ),
@@ -416,12 +326,6 @@ class WP_AI_API_Proxy {
 		$models_data = [];
 		if ( $provider === 'openai' && isset( $json_data->data ) && is_array( $json_data->data ) ) {
 			$models_data = $json_data->data;
-		} elseif ( $provider === 'google' && isset( $json_data->models ) && is_array( $json_data->models ) ) {
-			$models_data = $json_data->models;
-		} elseif ( $provider === 'anthropic' ) {
-			if ( isset( $json_data->data ) && is_array( $json_data->data ) ) {
-				$models_data = $json_data->data;
-			}
 		} else {
 			return [];
 		}

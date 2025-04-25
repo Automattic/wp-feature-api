@@ -1,6 +1,6 @@
 <?php
 /**
- * Options class for the AI API Proxy.
+ * Options class for the AI API Proxy & WP Feature Agent Demo.
  *
  * @package WordPress\Feature_API_Agent
  */
@@ -8,7 +8,7 @@
 namespace A8C\WpFeatureApiAgent;
 
 /**
- * Handles the settings page for the AI API Proxy.
+ * Handles the settings page for the AI API Proxy & WP Feature Agent Demo.
  */
 class WP_AI_API_Options {
 

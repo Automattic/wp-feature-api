@@ -1,6 +1,6 @@
 # WordPress Feature API Demo
 
-This demo plugin showcases how to use the WordPress Feature API, including registering features, and implementing WP Features as tools in Typescript based AI Agent.
+This demo plugin showcases how to use the WordPress Feature API, including registering features, and implementing WP Features as tools in a Typescript based AI Agent.
 
 ## Usage
 
