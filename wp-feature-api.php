@@ -48,7 +48,7 @@ function wp_feature_api_init() {
 
 	// Load demo plugin if enabled.
 	if ( WP_FEATURE_API_LOAD_DEMO ) {
-		wp_feature_api_load_demo_plugin();
+		wp_feature_api_load_agent_demo();
 	}
 }
 
@@ -95,6 +95,21 @@ function wp_feature_api_load_demo_plugin() {
 		}
 	}
 }
+
+/**
+ * Loads the WP Feature API Demo plugin.
+ *
+ * @since 0.1.0
+ * @return void
+ */
+function wp_feature_api_load_agent_demo() {
+	$demo_plugin_file = WP_FEATURE_API_PLUGIN_DIR . 'demo/wp-feature-api-agent/wp-feature-api-agent.php';
+
+	if ( file_exists( $demo_plugin_file ) ) {
+		require_once $demo_plugin_file;
+	}
+}
+
 
 /**
  * Displays an admin notice when the demo plugin is loaded.
