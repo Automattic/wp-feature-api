@@ -66,7 +66,7 @@ export const createAgent = ( deps: AgentDependencies ): Agent => {
 		const currentTurnHistory: Message[] = [ ...initialHistory ];
 
 		let loopCount = 0;
-		const MAX_LOOPS = 5;
+		const MAX_LOOPS = 10;
 
 		while ( loopCount < MAX_LOOPS ) {
 			loopCount++;
@@ -219,13 +219,19 @@ export const createAgent = ( deps: AgentDependencies ): Agent => {
 									error,
 								} );
 
+								let content: string;
+
+								if ( error ) {
+									content = `Error: ${ error }`;
+								} else {
+									content = JSON.stringify( result );
+								}
+
 								toolResultMessage = {
-									role: 'tool',
+									role: 'tool' as const,
 									tool_call_id: toolCallId,
 									name: toolName,
-									content: error
-										? `Error: ${ error }`
-										: JSON.stringify( result ),
+									content,
 								};
 							}
 						}
@@ -236,8 +242,10 @@ export const createAgent = ( deps: AgentDependencies ): Agent => {
 				const toolResults = await Promise.all( toolResultsPromises );
 
 				for ( const toolResultMsg of toolResults ) {
-					currentTurnHistory.push( toolResultMsg );
-					yield toolResultMsg;
+					if ( toolResultMsg ) {
+						currentTurnHistory.push( toolResultMsg );
+						yield toolResultMsg;
+					}
 				}
 			} catch ( error ) {
 				// eslint-disable-next-line no-console

@@ -47,8 +47,11 @@ export const insertParagraphBlock: Feature = {
 			);
 		}
 		try {
+			const content = args.content
+				.replace( /\\n/g, '\n' ) // First replace escaped newlines
+				.replace( /\n/g, '<br>' ); // Then replace actual newlines with <br>
 			const newBlock = createBlock( 'core/paragraph', {
-				content: args.content,
+				content,
 			} );
 			if ( ! newBlock ) {
 				throw new Error( 'Failed to create paragraph block.' );
@@ -173,8 +176,9 @@ export const insertQuoteBlock: Feature = {
 			);
 		}
 		try {
+			const value = args.value.replace( /\n/g, '<br>' );
 			const innerParagraph = createBlock( 'core/paragraph', {
-				content: args.value,
+				content: value,
 			} );
 
 			const newBlock = createBlock(
