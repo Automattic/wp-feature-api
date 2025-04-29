@@ -105,7 +105,10 @@ export const navigate: Feature = {
 				}
 			}
 
-			document.location.href = finalUrl;
+			// Use a timeout to ensure the success response is returned first
+			setTimeout( () => {
+				document.location.href = finalUrl;
+			}, 1000 );
 			return { success: true, url: finalUrl };
 		} catch ( error ) {
 			// eslint-disable-next-line no-console

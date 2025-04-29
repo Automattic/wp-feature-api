@@ -40,15 +40,15 @@ if ( ! defined( 'WP_FEATURE_API_LOAD_DEMO' ) ) {
 function wp_feature_api_init() {
 	require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/load.php';
 
-	// Register REST routes on init.
-	add_action( 'init', 'wp_feature_api_register_rest_routes' );
+	// Register REST routes on init. Late execution to ensure features are registered by plugins first.
+	add_action( 'init', 'wp_feature_api_register_rest_routes', 9999 );
 
 	// enqueue admin scripts.
 	add_action( 'admin_enqueue_scripts', 'wp_feature_api_enqueue_admin_scripts' );
 
 	// Load demo plugin if enabled.
 	if ( WP_FEATURE_API_LOAD_DEMO ) {
-		wp_feature_api_load_demo_plugin();
+		wp_feature_api_load_agent_demo();
 	}
 }
 
@@ -83,8 +83,8 @@ function wp_feature_api_register_rest_routes() {
  * @since 0.1.0
  * @return void
  */
-function wp_feature_api_load_demo_plugin() {
-	$demo_plugin_file = WP_FEATURE_API_PLUGIN_DIR . 'demo/wp-feature-api-demo/wp-feature-api-demo.php';
+function wp_feature_api_load_agent_demo() {
+	$demo_plugin_file = WP_FEATURE_API_PLUGIN_DIR . 'demo/wp-feature-api-agent/wp-feature-api-agent.php';
 
 	if ( file_exists( $demo_plugin_file ) ) {
 		require_once $demo_plugin_file;

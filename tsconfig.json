@@ -4,6 +4,6 @@
   "references": [
     { "path": "./packages/client" },
     { "path": "./packages/client-features" },
-    { "path": "./demo/wp-feature-api-demo" }
+    { "path": "./demo/wp-feature-api-agent" }
   ]
 }

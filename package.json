@@ -27,8 +27,7 @@
 		"serve": "wp-env start --xdebug",
 		"wp-env": "wp-env",
 		"clean": "npm run clean --workspaces --if-present && rm -rf build tsconfig.tsbuildinfo",
-		"composer:install": "composer install && cd demo/wp-feature-api-demo && composer install",
-		"setup": "npm install && npm run composer:install"
+		"setup": "npm install && composer install"
 	},
 	"keywords": [
 		"wordpress",
@@ -51,6 +50,7 @@
 		"@wordpress/element": "^5.35.0",
 		"@wordpress/i18n": "^4.58.0",
 		"@wordpress/plugins": "^7.22.0",
+		"@wordpress/icons": "^10.22.0",
 		"@wp-feature-api/client": "^1.0.0",
 		"@wp-feature-api/client-features": "^1.0.0",
 		"node-fetch": "^3.3.2"

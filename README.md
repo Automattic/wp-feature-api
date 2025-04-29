@@ -4,11 +4,11 @@ The WordPress Feature API is a system for exposing WordPress functionality in a 
 
 ## Key Features
 
--   **Unified Registry**: Central registry of features accessible from both client and server
--   **Standardized Format**: uses the MCP specification for the registry
--   **Reuses existing functionality**: existing WordPress functionality like REST endpoints are reused as features, making them more discoverable and easier to use by LLMs.
--   **Filterable**: Features can be filtered, categorized, and searched for more accurate feature matching.
--   **Extensible**: Easy to register new features from plugins and themes
+- **Unified Registry**: Central registry of features accessible from both client and server
+- **Standardized Format**: uses the MCP specification for the registry
+- **Reuses existing functionality**: existing WordPress functionality like REST endpoints are reused as features, making them more discoverable and easier to use by LLMs.
+- **Filterable**: Features can be filtered, categorized, and searched for more accurate feature matching.
+- **Extensible**: Easy to register new features from plugins and themes
 
 ## Project Structure
 
@@ -16,7 +16,7 @@ This project is structured as a monorepo using npm workspaces:
 
 - **`packages/client`**: The core client-side SDK (`@wp-feature-api/client`). Provides the API (`registerFeature`, `executeFeature`, `Feature` type) for interacting with the feature registry on the frontend and manages the underlying data store. Third-party plugins can use this to register their own client-side features.
 - **`packages/client-features`**: A library containing implementations of standard client-side features (e.g., block insertion, navigation). It depends on the client SDK and is used by the main plugin to register the core features.
-- **`demo/wp-feature-api-demo`**: A demo WordPress plugin showcasing how to use the Feature API, including registering both server-side and client-side features.
+- **`demo/wp-feature-api-agent`**: A demo WordPress plugin showcasing how to use the Feature API, including registering features, and implementing WP Features as tools in Typescript based AI Agent.
 - **`src/`**: Contains the main JavaScript entry point (`src/index.js`) for the core WordPress plugin. This script initializes the client SDK and registers the core client features when the plugin is active.
 - **`includes/`**: Contains the core PHP logic for the Feature API, including the registry, REST API endpoints, and server-side feature definitions.
 
@@ -36,11 +36,11 @@ An important aspect of the Feature API is its ability to filter features manuall
 
 Filtering can be done by:
 
--   Querying feature properties
--   Keyword search across name, description, and ID.
--   Categories
--   `is_eligible` boolean callback
--   Context matching for when we already have some context and want Features that can be fulfilled using that context.
+- Querying feature properties
+- Keyword search across name, description, and ID.
+- Categories
+- `is_eligible` boolean callback
+- Context matching for when we already have some context and want Features that can be fulfilled using that context.
 
 ## Getting Started
 
@@ -58,5 +58,7 @@ Run `npm run build` from the root directory. This command will build all the Jav
 1. Ensure dependencies are installed and code is built (see above).
 2. Use `@wordpress/env` (or your preferred local WordPress environment such as Studio) to start WordPress. You can use `npm run wp-env start` from the root directory.
 3. Activate the "WordPress Feature API" plugin.
-4. The demo plugin (`wp-feature-api-demo`) should load automatically (controlled by the `WP_FEATURE_API_LOAD_DEMO` constant in `wp-feature-api.php`). You should see an admin notice confirming this.
-5. Navigate to the "Feature API Demo" page added under the Tools menu in the WordPress admin to interact with the demo chat interface.
+4. The demo plugin (`wp-feature-api-agent`) should load automatically (controlled by the `WP_FEATURE_API_LOAD_DEMO` constant in `wp-feature-api.php`). You should see an admin notice confirming this.
+5. Navigate to the "WP Feature Agent Demo" page added under the Settings menu in the WordPress admin to configure your OpenAI API key.
+6. Refresh and see the AI Agent chat interface.
+7. Ask the AI Agent questions about your WordPress site and features. It has access to both server-side and client-side features.
