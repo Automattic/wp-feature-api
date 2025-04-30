@@ -11,6 +11,11 @@ import { select, dispatch } from '@wordpress/data';
 import type { Feature } from '@wp-feature-api/client';
 
 /**
+ * Internal dependencies
+ */
+import { isInEditor } from './utils';
+
+/**
  * Client-side feature to set the post title.
  */
 export const setTitle: Feature = {
@@ -20,6 +25,7 @@ export const setTitle: Feature = {
 	type: 'tool',
 	location: 'client',
 	categories: [ 'client', 'editor' ],
+	is_eligible: isInEditor,
 	input_schema: {
 		type: 'object',
 		properties: {
@@ -64,6 +70,7 @@ export const savePost: Feature = {
 	type: 'tool',
 	location: 'client',
 	categories: [ 'client', 'editor' ],
+	is_eligible: isInEditor,
 	output_schema: {
 		type: 'object',
 		properties: {
@@ -97,6 +104,7 @@ export const getEditorContent: Feature = {
 	type: 'resource',
 	location: 'client',
 	categories: [ 'core', 'editor' ],
+	is_eligible: isInEditor,
 	output_schema: {
 		type: 'object',
 		properties: {
