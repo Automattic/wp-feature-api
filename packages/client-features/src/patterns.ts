@@ -12,6 +12,11 @@ import { dispatch } from '@wordpress/data';
 import type { Feature } from '@wp-feature-api/client';
 
 /**
+ * Internal dependencies
+ */
+import { isInEditor } from './utils';
+
+/**
  * Internal utilities for pattern search
  * @param items
  * @param searchTerm
@@ -37,15 +42,59 @@ function searchItems( items: any[], searchTerm: string ) {
 }
 
 /**
+ * Fetches all patterns from the WordPress API
+ */
+async function fetchPatterns() {
+	const response = await fetch( '/wp-json/wp/v2/block-patterns/patterns' );
+
+	if ( ! response.ok ) {
+		throw new Error( 'Failed to fetch patterns' );
+	}
+
+	return await response.json();
+}
+
+/**
+ * Finds a specific pattern by name
+ * @param patternName Name of the pattern to find
+ */
+async function findPatternByName( patternName: string ) {
+	if ( ! patternName ) {
+		throw new Error( 'Pattern name is required' );
+	}
+
+	try {
+		const patterns = await fetchPatterns();
+		const pattern = patterns.find( ( p: any ) => p.name === patternName );
+
+		if ( ! pattern ) {
+			throw new Error(
+				`Pattern with name "${ patternName }" not found. Make sure to use the pattern's "name" field as the ID.`
+			);
+		}
+
+		return pattern;
+	} catch ( error ) {
+		throw new Error(
+			`Failed to fetch pattern: ${
+				error instanceof Error ? error.message : String( error )
+			}`
+		);
+	}
+}
+
+/**
  * Feature to search for patterns in the pattern directory.
  */
 export const searchPatterns: Feature = {
 	id: 'patterns/search',
 	name: __( 'Search Patterns' ),
-	description: __( 'Search for block patterns in the pattern directory.' ),
+	description: __(
+		'Search for block patterns in the pattern directory. Block patterns are predefined collections of blocks that create layouts and page sections. They help you quickly build sophisticated designs without starting from scratch, and can include anything from simple buttons to complete layouts that can be customized.'
+	),
 	type: 'resource',
 	location: 'client',
-	categories: [ 'client', 'patterns' ],
+	categories: [ 'client', 'patterns', 'layout' ],
 	input_schema: {
 		type: 'object',
 		properties: {
@@ -55,17 +104,14 @@ export const searchPatterns: Feature = {
 			},
 			category: {
 				type: 'string',
-				description: __( 'Category ID to filter patterns.' ),
+				description: __( 'Category ID to filter patterns by.' ),
 			},
-			per_page: {
-				type: 'number',
-				description: __( 'Number of patterns per page.' ),
-				default: 100,
-			},
-			page: {
-				type: 'number',
-				description: __( 'Page number.' ),
-				default: 1,
+			include_content: {
+				type: 'boolean',
+				description: __(
+					'If true, includes the pattern content in results. Default is false to reduce payload size. Pattern content can be fetched separately using the patterns/get-content feature.'
+				),
+				default: false,
 			},
 		},
 	},
@@ -77,14 +123,18 @@ export const searchPatterns: Feature = {
 				items: {
 					type: 'object',
 					properties: {
-						id: { type: 'number' },
+						name: { type: 'string' },
 						title: { type: 'string' },
-						content: { type: 'string' },
+						description: { type: 'string' },
 						categories: {
 							type: 'array',
 							items: { type: 'string' },
 						},
-						description: { type: 'string' },
+						keywords: {
+							type: 'array',
+							items: { type: 'string' },
+						},
+						content: { type: 'string' },
 					},
 				},
 			},
@@ -94,24 +144,17 @@ export const searchPatterns: Feature = {
 	callback: async ( args: {
 		search?: string;
 		category?: string;
-		per_page?: number;
-		page?: number;
+		include_content?: boolean;
 	} ) => {
-		// First get all patterns
-		const response = await fetch(
-			'/wp-json/wp/v2/block-patterns/patterns'
-		);
-
-		if ( ! response.ok ) {
-			throw new Error( 'Failed to fetch patterns' );
-		}
-
-		let patterns = await response.json();
+		// First get all patterns, as there is no way to paginate or filter the patterns in the block-patterns API
+		let patterns = await fetchPatterns();
 
 		// Apply category filter if specified
 		if ( args.category ) {
-			patterns = patterns.filter( ( pattern: any ) =>
-				pattern.categories.includes( args.category )
+			patterns = patterns.filter(
+				( pattern: any ) =>
+					pattern.categories &&
+					pattern.categories.includes( args.category )
 			);
 		}
 
@@ -120,14 +163,61 @@ export const searchPatterns: Feature = {
 			patterns = searchItems( patterns, args.search );
 		}
 
-		// Apply pagination
-		const page = args.page || 1;
-		const perPage = args.per_page || 100;
-		const start = ( page - 1 ) * perPage;
-		const end = start + perPage;
-		patterns = patterns.slice( start, end );
+		// Unless include_content is true, remove content field to reduce payload size
+		if ( ! args.include_content ) {
+			patterns = patterns.map( ( pattern: any ) => {
+				const { content, ...metadata } = pattern;
+				return metadata;
+			} );
+		}
 
 		return { patterns };
+	},
+};
+
+/**
+ * Feature to get a specific pattern's content by name.
+ */
+export const getPatternContent: Feature = {
+	id: 'patterns/get-content',
+	name: __( 'Get Pattern Content' ),
+	description: __( 'Retrieves the content of a specific pattern by name.' ),
+	type: 'resource',
+	location: 'client',
+	categories: [ 'client', 'patterns', 'layout' ],
+	input_schema: {
+		type: 'object',
+		properties: {
+			pattern: {
+				type: 'string',
+				description: __( 'The name of the pattern to retrieve.' ),
+			},
+		},
+		required: [ 'pattern' ],
+	},
+	output_schema: {
+		type: 'object',
+		properties: {
+			pattern: {
+				type: 'object',
+				properties: {
+					id: { type: 'number' },
+					name: { type: 'string' },
+					title: { type: 'string' },
+					content: { type: 'string' },
+					categories: {
+						type: 'array',
+						items: { type: 'string' },
+					},
+					description: { type: 'string' },
+				},
+			},
+		},
+		required: [ 'pattern' ],
+	},
+	callback: async ( args: { pattern: string } ) => {
+		const pattern = await findPatternByName( args.pattern );
+		return { pattern };
 	},
 };
 
@@ -137,10 +227,12 @@ export const searchPatterns: Feature = {
 export const getPatternCategories: Feature = {
 	id: 'patterns/get-categories',
 	name: __( 'Get Pattern Categories' ),
-	description: __( 'Retrieve all available block pattern categories.' ),
+	description: __(
+		'Retrieve all available block pattern categories. Categories help organize patterns by their purpose or design style (such as buttons, columns, headers, footers, content types, etc.), making it easier to find the right pattern for your specific needs. Use categories to filter patterns when searching for the layout components.'
+	),
 	type: 'resource',
 	location: 'client',
-	categories: [ 'client', 'patterns' ],
+	categories: [ 'client', 'patterns', 'layout' ],
 	output_schema: {
 		type: 'object',
 		properties: {
@@ -178,19 +270,22 @@ export const getPatternCategories: Feature = {
 export const insertPattern: Feature = {
 	id: 'patterns/insert',
 	name: __( 'Insert Pattern' ),
-	description: __( 'Insert a block pattern into the editor.' ),
+	description: __(
+		'Insert a block pattern into the editor. After selecting a pattern from the available options, this feature allows you to place it directly into your content where you can then customize it to match your needs.'
+	),
 	type: 'tool',
 	location: 'client',
-	categories: [ 'client', 'patterns', 'editor' ],
+	categories: [ 'client', 'patterns', 'layout', 'editor' ],
+	is_eligible: isInEditor,
 	input_schema: {
 		type: 'object',
 		properties: {
-			patternId: {
+			pattern: {
 				type: 'string',
-				description: __( 'The ID of the pattern to insert.' ),
+				description: __( 'The name of the pattern to insert.' ),
 			},
 		},
-		required: [ 'patternId' ],
+		required: [ 'pattern' ],
 	},
 	output_schema: {
 		type: 'object',
@@ -199,40 +294,18 @@ export const insertPattern: Feature = {
 		},
 		required: [ 'success' ],
 	},
-	callback: async ( args: { patternId: string; clientId?: string } ) => {
+	callback: async ( args: { pattern: string } ) => {
 		try {
-			// First fetch the pattern content
-			const response = await fetch(
-				'/wp-json/wp/v2/block-patterns/patterns'
-			);
+			const pattern = await findPatternByName( args.pattern );
 
-			if ( ! response.ok ) {
-				throw new Error( 'Failed to fetch patterns' );
-			}
-
-			const patterns = await response.json();
-			const pattern = patterns.find(
-				( p: any ) => p.name === args.patternId
-			);
-
-			if ( ! pattern ) {
+			if ( ! pattern.content ) {
 				throw new Error(
-					`Pattern with ID ${ args.patternId } not found`
+					`Pattern with name "${ args.pattern }" has no content.`
 				);
 			}
 
-			// Parse and insert the blocks
 			const blocks = parseBlocks( pattern.content );
-
-			if ( args.clientId ) {
-				dispatch( blockEditorStore ).insertBlocks(
-					blocks,
-					undefined,
-					args.clientId
-				);
-			} else {
-				dispatch( blockEditorStore ).insertBlocks( blocks );
-			}
+			dispatch( blockEditorStore ).insertBlocks( blocks );
 
 			return { success: true };
 		} catch ( error ) {

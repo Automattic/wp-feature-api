@@ -13,6 +13,7 @@ import {
 	searchPatterns,
 	getPatternCategories,
 	insertPattern,
+	getPatternContent,
 } from './patterns';
 
 /**
@@ -34,6 +35,7 @@ export const coreFeatures = [
 	getEditorContent,
 	// Pattern Features
 	searchPatterns,
+	getPatternContent,
 	getPatternCategories,
 	insertPattern,
 ];
