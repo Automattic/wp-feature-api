@@ -13,7 +13,7 @@ import type { Feature } from '@wp-feature-api/client';
 /**
  * Internal dependencies
  */
-import { isInEditor } from './utils';
+import { isInEditor, isInPostEditor } from './utils';
 
 /**
  * Client-side feature to set the post title.
@@ -25,7 +25,7 @@ export const setTitle: Feature = {
 	type: 'tool',
 	location: 'client',
 	categories: [ 'client', 'editor' ],
-	is_eligible: isInEditor,
+	is_eligible: isInPostEditor,
 	input_schema: {
 		type: 'object',
 		properties: {
@@ -64,9 +64,9 @@ export const setTitle: Feature = {
  * Client-side feature to save the post.
  */
 export const savePost: Feature = {
-	id: 'editor/save-post',
-	name: __( 'Save Post' ),
-	description: __( 'Triggers the save action for the current post.' ),
+	id: 'editor/save',
+	name: __( 'Save Editor' ),
+	description: __( 'Triggers the save action for the current editor.' ),
 	type: 'tool',
 	location: 'client',
 	categories: [ 'client', 'editor' ],
