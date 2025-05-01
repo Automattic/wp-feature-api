@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: WordPress Feature API
- * Plugin URI: https://wordpress.org/plugins/wp-feature-api/
+ * Plugin URI: https://github.com/Automattic/wp-feature-api
  * Description: A system for exposing server and client-side functionality in WordPress for use in LLMs and agentic systems.
  * Version: 0.1.0
- * Author: WordPress Contributors
- * Author URI: https://wordpress.org/
+ * Author: Automattic AI
+ * Author URI: https://automattic.ai/
  * Text Domain: wp-feature-api
  * License: GPL-2.0+
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
