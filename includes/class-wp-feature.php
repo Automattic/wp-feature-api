@@ -773,7 +773,7 @@ class WP_Feature implements \JsonSerializable {
 	 * @since 0.1.0
 	 * @return array|WP_Error The REST alias if found, WP_Error otherwise.
 	 */
-	private function get_rest_alias() {
+	public function get_rest_alias() {
 		$routes = rest_get_server()->get_routes();
 		$feature_route = $this->rest_alias;
 
