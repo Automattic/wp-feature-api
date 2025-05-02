@@ -13,11 +13,7 @@ import type { Feature } from '@wp-feature-api/client';
 /**
  * Internal dependencies
  */
-<<<<<<< HEAD
 import { isInEditor, isInPostEditor } from './utils';
-=======
-import { isInEditor } from './utils';
->>>>>>> ef0caba (Add eligibility checks for client features and introduce isInEditor utility function for blocks and editor features)
 
 /**
  * Client-side feature to set the post title.
@@ -29,11 +25,7 @@ export const setTitle: Feature = {
 	type: 'tool',
 	location: 'client',
 	categories: [ 'client', 'editor' ],
-<<<<<<< HEAD
 	is_eligible: isInPostEditor,
-=======
-	is_eligible: isInEditor,
->>>>>>> ef0caba (Add eligibility checks for client features and introduce isInEditor utility function for blocks and editor features)
 	input_schema: {
 		type: 'object',
 		properties: {
