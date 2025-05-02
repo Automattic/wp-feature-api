@@ -1,9 +1,15 @@
 /**
+ * WordPress dependencies
+ */
+import { select } from '@wordpress/data';
+
+/**
  * Helper function to check if we're in the post editor
  */
 export const isInPostEditor = (): boolean => {
 	try {
-		return !! document.querySelector( '.block-editor' );
+		const postType = select( 'core/editor' )?.getCurrentPostType();
+		return !! postType && ! isInSiteEditor();
 	} catch ( error ) {
 		return false;
 	}
@@ -14,7 +20,7 @@ export const isInPostEditor = (): boolean => {
  */
 export const isInSiteEditor = (): boolean => {
 	try {
-		return !! document.querySelector( '#site-editor' );
+		return !! select( 'core/edit-site' );
 	} catch ( error ) {
 		return false;
 	}
