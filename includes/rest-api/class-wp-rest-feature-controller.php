@@ -487,12 +487,15 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 		$resource_base = '/' . $this->rest_base . '/' . $feature->get_id();
 
 		// Register run endpoint for executing features.
+		// Use appropriate method based on feature type - GET for resources, POST for tools
+		$run_method = $feature->get_type() === 'resource' ? WP_REST_Server::READABLE : WP_REST_Server::CREATABLE;
+		
 		register_rest_route(
 			$this->namespace,
 			$resource_base . '/' . $this->run_path,
 			array(
 				array(
-					'methods'             => $feature->get_rest_method(),
+					'methods'             => $run_method,
 					'callback'            => function ( $request ) use ( $feature ) {
 						$result = $feature->call( $request );
 						return rest_ensure_response( $result );
@@ -516,12 +519,13 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 		);
 
 		// Register GET endpoint for retrieving a specific feature by ID.
+		// ALWAYS use GET (READABLE) for metadata endpoint regardless of feature type
 		register_rest_route(
 			$this->namespace,
 			$resource_base,
 			array(
 				array(
-					'methods'             => $feature->get_rest_method(),
+					'methods'             => WP_REST_Server::READABLE, // Always use GET for feature metadata
 					'callback'            => function ( $request ) use ( $feature ) {
 						$data     = $this->prepare_item_for_response( $feature, $request );
 						return rest_ensure_response( $data );
