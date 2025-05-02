@@ -16,7 +16,14 @@ import type { Feature, FeaturesState } from '../types';
 // Select all features
 export const getRegisteredFeatures = createSelector(
 	( state: FeaturesState ): Feature[] => {
-		return Object.values( state.featuresById );
+		return Object.values( state.featuresById ).filter( ( feature ) => {
+			// If there's no is_eligible function, feature is always eligible
+			if ( typeof feature.is_eligible !== 'function' ) {
+				return true;
+			}
+
+			return feature.is_eligible();
+		} );
 	},
 	( state: FeaturesState ) => [ state.featuresById ]
 );
@@ -25,7 +32,17 @@ export const getRegisteredFeatures = createSelector(
 export const getRegisteredFeature = (
 	state: FeaturesState,
 	id: string
-): Feature | null => state.featuresById[ id ] || null;
+): Feature | null => {
+	const feature = state.featuresById[ id ] || null;
+
+	// If feature doesn't exist or there's no is_eligible function, return as is
+	if ( ! feature || typeof feature.is_eligible !== 'function' ) {
+		return feature;
+	}
+
+	// Check if the feature is eligible
+	return feature.is_eligible() ? feature : null;
+};
 
 // Return the feature callback
 export const getRegisteredFeatureCallback = createRegistrySelector(

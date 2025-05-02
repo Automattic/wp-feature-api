@@ -17,6 +17,7 @@ export interface Feature {
 	output_schema?: Record< string, any >;
 	location: 'server' | 'client';
 	icon?: any;
+	is_eligible?: () => boolean;
 	callback?: (
 		args: any,
 		context: {

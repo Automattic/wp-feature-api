@@ -12,6 +12,11 @@ import { dispatch } from '@wordpress/data';
 import type { Feature } from '@wp-feature-api/client';
 
 /**
+ * Internal dependencies
+ */
+import { isInEditor } from './utils';
+
+/**
  * Client-side feature to insert a paragraph block.
  */
 export const insertParagraphBlock: Feature = {
@@ -23,6 +28,7 @@ export const insertParagraphBlock: Feature = {
 	type: 'tool',
 	location: 'client',
 	categories: [ 'core', 'editor', 'blocks' ],
+	is_eligible: isInEditor,
 	input_schema: {
 		type: 'object',
 		properties: {
@@ -80,6 +86,7 @@ export const insertHeadingBlock: Feature = {
 	type: 'tool',
 	location: 'client',
 	categories: [ 'core', 'editor', 'blocks' ],
+	is_eligible: isInEditor,
 	input_schema: {
 		type: 'object',
 		properties: {
@@ -145,6 +152,7 @@ export const insertQuoteBlock: Feature = {
 	type: 'tool',
 	location: 'client',
 	categories: [ 'core', 'editor', 'blocks' ],
+	is_eligible: isInEditor,
 	input_schema: {
 		type: 'object',
 		properties: {
@@ -213,6 +221,7 @@ export const insertListBlock: Feature = {
 	type: 'tool',
 	location: 'client',
 	categories: [ 'core', 'editor', 'blocks' ],
+	is_eligible: isInEditor,
 	input_schema: {
 		type: 'object',
 		properties: {
