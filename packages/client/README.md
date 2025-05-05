@@ -17,6 +17,26 @@ This package provides the core client-side SDK for the WordPress Feature API. It
 npm install @automattic/wp-feature-api
 ```
 
+## WordPress Dependencies
+
+This package relies on WordPress core packages that may need to be properly loaded before using this package in WordPress or wp-admin.
+
+```php
+// When enqueueing your script that uses @automattic/wp-feature-api, include these dependencies:
+wp_enqueue_script(
+    'your-script-handle',
+    'path/to/your/script.js',
+    [
+		'wp-data',
+		'wp-core-data',
+		'wp-api-fetch',
+		'wp-plugins'
+    ],
+    '1.0.0',
+    true
+);
+```
+
 ## Usage
 
 ```js
