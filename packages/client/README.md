@@ -1,4 +1,4 @@
-# WordPress Feature API - Client SDK (@wp-feature-api/client)
+# WordPress Feature API - Client SDK (@automattic/wp-feature-api)
 
 This package provides the core client-side SDK for the WordPress Feature API. It allows client-side code running in the WordPress admin to register, discover, and execute features.
 
@@ -13,10 +13,29 @@ This package provides the core client-side SDK for the WordPress Feature API. It
 
 ## Installation
 
-This package is intended to be used within in `wp-feature-api` monorepo or consumed by third-party WordPress plugins once the package is published.
+```bash
+npm install @automattic/wp-feature-api
+```
 
-Within the monorepo, dependencies are managed via the root `package.json` and npm workspaces.
+## Usage
+
+```js
+import { registerFeature, executeFeature } from '@automattic/wp-feature-api';
+
+// Register a feature
+registerFeature({
+  id: 'my-feature',
+  title: 'My Feature',
+  callback: async (args) => {
+    // Feature implementation
+    return 'result';
+  }
+});
+
+// Execute a feature
+const result = await executeFeature('my-feature', { someArg: 'value' });
+```
 
 ## Build
 
-This package is built using `@wordpress/scripts`. Run `npm run build` from the monorepo root.
+This package is built using `@wordpress/scripts`. Run `npm run build` to build locally.

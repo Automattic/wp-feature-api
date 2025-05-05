@@ -1,0 +1,22 @@
+# Source files
+src/
+
+# Development files
+node_modules/
+tsconfig.tsbuildinfo
+*.log
+*.tgz
+
+# Configuration files
+webpack.config.js
+tsconfig.json
+
+# Test files
+__tests__/
+*.test.ts
+*.test.js
+
+# Miscellaneous
+.DS_Store
+.vscode
+.idea

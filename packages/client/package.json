@@ -1,13 +1,14 @@
 {
-  "name": "@wp-feature-api/client",
-  "version": "1.0.0",
+  "name": "@automattic/wp-feature-api",
+  "version": "0.1.0",
   "description": "Client-side SDK for WordPress Feature API",
   "main": "build/index.js",
   "types": "build-types/index.d.ts",
   "scripts": {
-    "build": "wp-scripts build && tsc --emitDeclarationOnly --outDir build",
+    "build": "wp-scripts build && tsc --emitDeclarationOnly --outDir build-types",
     "lint:js": "wp-scripts lint-js",
-    "clean": "rm -rf build build-types tsconfig.tsbuildinfo"
+    "clean": "rm -rf build build-types tsconfig.tsbuildinfo",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "@wordpress/api-fetch": "^6.55.0",
@@ -24,5 +25,21 @@
   },
   "devDependencies": {
     "@wordpress/scripts": "^30.13.0"
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Automattic/wp-feature-api.git",
+    "directory": "packages/client"
+  },
+  "author": "Automattic",
+  "license": "GPL-2.0-or-later",
+  "keywords": [
+    "wordpress",
+    "api",
+    "llm",
+    "ai"
+  ]
 }
