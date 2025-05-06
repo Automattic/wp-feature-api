@@ -13,7 +13,7 @@ import {
 import type { Tool, ToolResult } from '../types/messages';
 import type { ToolProvider } from './tool-executor';
 
-// Helper function to convert a string to its hex representation
+// Helper function to hash a string to a hex value using the djb2 hash algorithm
 function stringToHex(str: string): string {
 	let hash = 5381;
 	for (let i = 0; i < str.length; i++) {
