@@ -14,15 +14,14 @@ import type { Tool, ToolResult } from '../types/messages';
 import type { ToolProvider } from './tool-executor';
 
 // Helper function to convert a string to its hex representation
-function stringToHex( str: string ): string {
-	let hex = '';
-	for ( let i = 0; i < str.length; i++ ) {
-		const charCode = str.charCodeAt( i );
-		const hexValue = charCode.toString( 16 );
-		// Pad with leading zero if needed
-		hex += hexValue.padStart( 2, '0' );
+function stringToHex(str: string): string {
+	let hash = 0;
+	for (let i = 0; i < str.length; i++) {
+		const char = str.charCodeAt(i);
+		hash = ((hash << 5) - hash) + char;
+		hash = hash & hash; // Convert to 32bit integer
 	}
-	return hex;
+	return Math.abs(hash).toString(16);
 }
 
 /**
