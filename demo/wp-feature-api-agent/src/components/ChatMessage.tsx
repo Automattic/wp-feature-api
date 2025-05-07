@@ -2,6 +2,7 @@
  * WordPress dependencies
  */
 import { Spinner } from '@wordpress/components';
+import { useContext } from '@wordpress/element';
 
 /**
  * External dependencies
@@ -12,6 +13,7 @@ import Markdown from 'react-markdown';
  * Internal dependencies
  */
 import type { Message } from '../types/messages';
+import { ConversationContext } from '../context/ConversationProvider';
 
 interface MessageProps {
 	text: string;
@@ -25,27 +27,6 @@ export const UserMessage = ( { text }: MessageProps ) => (
 		<Markdown>{ text }</Markdown>
 	</div>
 );
-
-/**
- * Helper to decode hex tool names back to original feature IDs for display
- * @param hex
- */
-function hexToString( hex: string ): string {
-	if ( hex.length % 2 !== 0 ) {
-		return hex;
-	}
-
-	try {
-		return (
-			hex
-				.match( /.{1,2}/g )
-				?.map( ( byte ) => String.fromCharCode( parseInt( byte, 16 ) ) )
-				.join( '' ) || hex
-		);
-	} catch ( error ) {
-		return hex;
-	}
-}
 
 /**
  * Helper to attempt parsing JSON and formatting, falling back to raw string
@@ -70,17 +51,19 @@ function formatToolContent( content: string | null ): string {
  */
 export const AssistantMessage = ( { message }: { message: Message } ) => {
 	const { content, role, name, tool_calls: toolCalls } = message;
+	const context = useContext( ConversationContext );
+	const toolNameMap = context?.toolNameMap || {};
 
 	// Tool Message Rendering
 	if ( role === 'tool' ) {
-		const decodedName = name ? hexToString( name ) : 'unknown tool';
+		const displayName = name ? toolNameMap[ name ] || name : 'unknown tool';
 		const formattedContent = formatToolContent( content );
 		const hasError = content?.toLowerCase().includes( 'error:' );
 
 		return (
 			<div className="demo-chat-message demo-chat-message-tool">
 				<details open={ hasError }>
-					<summary>Tool Result: { decodedName }</summary>
+					<summary>Tool Result: { displayName }</summary>
 					<pre>
 						<code>{ formattedContent }</code>
 					</pre>
@@ -97,7 +80,8 @@ export const AssistantMessage = ( { message }: { message: Message } ) => {
 		toolCalls.length > 0
 	) {
 		const firstToolName = toolCalls[ 0 ].function?.name
-			? hexToString( toolCalls[ 0 ].function.name )
+			? toolNameMap[ toolCalls[ 0 ].function.name ] ||
+			  toolCalls[ 0 ].function.name
 			: 'unknown tool';
 		displayContent = `*Using tool: ${ firstToolName }...*`;
 	}

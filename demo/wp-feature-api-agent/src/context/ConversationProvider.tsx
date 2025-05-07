@@ -14,6 +14,7 @@ import {
  * External dependencies
  */
 import { type ReactNode, type Dispatch, type SetStateAction } from 'react';
+import { Spinner } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -29,6 +30,7 @@ export interface ConversationContextType {
 	sendMessage: ( query: string ) => Promise< void >;
 	isLoading: boolean;
 	clearConversation: () => void;
+	toolNameMap: Record< string, string >;
 }
 
 export const ConversationContext =
@@ -67,6 +69,9 @@ export const ConversationProvider = ( {
 	const [ toolExecutor, setToolExecutor ] = useState< ToolExecutor | null >(
 		null
 	);
+	const [ toolNameMap, setToolNameMap ] = useState<
+		Record< string, string >
+	>( {} );
 	const isInitializing = useRef( false );
 
 	useEffect( () => {
@@ -86,6 +91,15 @@ export const ConversationProvider = ( {
 			const provider = createWpFeatureToolProvider();
 			try {
 				await executor.addProvider( provider );
+
+				// Build hash-to-feature-name map, so we can display the feature name in the UI.
+				const tools = await Promise.resolve( provider.getTools() );
+				const nameMap: Record< string, string > = {};
+				for ( const tool of tools ) {
+					nameMap[ tool.name ] = tool.displayName;
+				}
+				setToolNameMap( nameMap );
+
 				setToolExecutor( executor );
 			} catch ( error ) {
 				// eslint-disable-next-line no-console
@@ -171,13 +185,24 @@ export const ConversationProvider = ( {
 			sendMessage,
 			isLoading,
 			clearConversation,
+			toolNameMap,
 		} ),
-		[ messages, setMessages, sendMessage, isLoading, clearConversation ]
+		[
+			messages,
+			setMessages,
+			sendMessage,
+			isLoading,
+			clearConversation,
+			toolNameMap,
+		]
 	);
+
+	// Wait until the tool name map is populated before rendering the chat UI.
+	const isReady = Object.keys( toolNameMap ).length > 0;
 
 	return (
 		<ConversationContext.Provider value={ contextValue }>
-			{ children }
+			{ ! isReady ? <div /> : children }
 		</ConversationContext.Provider>
 	);
 };

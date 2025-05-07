@@ -25,6 +25,7 @@ export interface Message {
 
 export interface Tool {
 	name: string;
+	displayName: string;
 	description: string;
 	parameters: Record< string, any >;
 	execute: ( args: Record< string, unknown > ) => Promise< ToolResult >;

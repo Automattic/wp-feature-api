@@ -219,5 +219,6 @@ module.exports = {
 				},
 			},
 		],
+		'no-bitwise': 'off',
 	},
 };
