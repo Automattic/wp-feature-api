@@ -9,6 +9,10 @@ const DependencyExtractionWebpackPlugin = require( '@wordpress/dependency-extrac
 const path = require( 'path' );
 module.exports = {
 	...defaultConfig,
+	externals: {
+		...defaultConfig.externals,
+		'@automattic/wp-feature-api': 'wp.features',
+	},
 	plugins: [
 		...defaultConfig.plugins.filter(
 			( plugin ) =>
@@ -23,10 +27,6 @@ module.exports = {
 		...defaultConfig.resolve,
 		alias: {
 			...defaultConfig.resolve?.alias,
-			'@wp-feature-api/client': path.resolve(
-				__dirname,
-				'packages/client/src'
-			),
 			'@wp-feature-api/client-features': path.resolve(
 				__dirname,
 				'packages/client-features/src'
