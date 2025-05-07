@@ -63,7 +63,7 @@ function wp_feature_api_enqueue_admin_scripts() {
 		return;
 	}
 	$assets = require WP_FEATURE_API_PLUGIN_DIR . 'build/index.asset.php';
-	wp_enqueue_script( 'wp_feature_api_script', WP_FEATURE_API_PLUGIN_URL . 'build/index.js', $assets['dependencies'], $assets['version'], true );
+	wp_enqueue_script( 'wp-features', WP_FEATURE_API_PLUGIN_URL . 'build/index.js', $assets['dependencies'], $assets['version'], true );
 }
 
 /**

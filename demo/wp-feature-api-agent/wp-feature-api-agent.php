@@ -66,7 +66,7 @@ function wp_feature_api_agent_enqueue_assets() {
 	wp_enqueue_script(
 		'wp-feature-api-agent-script',
 		WP_AI_API_PROXY_URL . 'build/index.js',
-		$script_asset['dependencies'],
+		array_merge( $script_asset['dependencies'], array( 'wp-features' ) ),
 		$script_asset['version'],
 		true // Load in footer.
 	);
