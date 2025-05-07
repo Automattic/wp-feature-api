@@ -32,17 +32,17 @@ $asset_file = include( plugin_dir_path( __FILE__ ) . 'build/index.asset.php' ); 
 wp_enqueue_script(
     'your-plugin-script-handle',
     plugin_dir_url( __FILE__ ) . 'build/index.js',
-    array_merge( $asset_file['dependencies'], array( 'wp-features' ) ), // Add 'wp-features'
+    array_merge( $asset_file['dependencies'], array( 'wp-features' ) ), // Add 'wp-features' to the dependencies
     $asset_file['version'],
     true
 );
 ```
 
-If you are not using `@wordpress/scripts` to generate an `index.asset.php` file, ensure you manually add relevant dependencies like `wp-data`, `wp-core-data`, `wp-api-fetch`, `wp-plugins`, in addition to `wp-features`.
+If you are not using `@wordpress/scripts` to generate an `index.asset.php` file, you may need to add relevant dependencies like `wp-data`, `wp-core-data`, `wp-api-fetch`, `wp-plugins`, in addition to `wp-features`.
 
 ## Webpack Configuration
 
-To ensure that your plugin uses the single instance of the client SDK provided by the main `wp-feature-api` plugin (and to avoid bundling the SDK code into your plugin), you need to configure `@automattic/wp-feature-api` as an external in your webpack configuration.
+To ensure that your plugin uses the client SDK provided by the main `wp-feature-api` plugin (and to avoid bundling the SDK code into your plugin), you need to configure `@automattic/wp-feature-api` as an external in your webpack configuration.
 
 This tells webpack to expect `@automattic/wp-feature-api` to be available globally as `window.wp.features` at runtime.
 
@@ -54,12 +54,7 @@ module.exports = {
     '@automattic/wp-feature-api': ['wp', 'features'],
     // It's good practice to also externalize other @wordpress packages
     '@wordpress/data': 'wp.data',
-    '@wordpress/element': 'wp.element',
-    '@wordpress/api-fetch': 'wp.apiFetch',
-    '@wordpress/i18n': 'wp.i18n',
-    '@wordpress/plugins': 'wp.plugins',
-    '@wordpress/core-data': 'wp.coreData',
-    // Add any other @wordpress packages you use directly
+    // Add any other @wordpress packages you use directly...
   }
 };
 ```
