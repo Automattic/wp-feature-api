@@ -24,7 +24,7 @@
   "author": "Automattic",
   "license": "GPL-2.0-or-later",
   "dependencies": {
-    "@wp-feature-api/client": "1.0.0",
+    "@automattic/wp-feature-api": "*",
     "@wordpress/api-fetch": "^6.55.0",
     "@wordpress/components": "^25.16.0",
     "@wordpress/data": "^10.22.0",

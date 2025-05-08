@@ -11,7 +11,6 @@ module.exports = {
 	...defaultConfig,
 	externals: {
 		...defaultConfig.externals,
-		'@automattic/wp-feature-api': 'wp.features',
 	},
 	plugins: [
 		...defaultConfig.plugins.filter(

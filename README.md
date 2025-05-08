@@ -14,7 +14,7 @@ The WordPress Feature API is a system for exposing WordPress functionality in a 
 
 This project is structured as a monorepo using npm workspaces:
 
-- **`packages/client`**: The core client-side SDK (`@wp-feature-api/client`). Provides the API (`registerFeature`, `executeFeature`, `Feature` type) for interacting with the feature registry on the frontend and manages the underlying data store. Third-party plugins can use this to register their own client-side features.
+- **`packages/client`**: The core client-side SDK (`@automattic/wp-feature-api`). Provides the API (`registerFeature`, `executeFeature`, `Feature` type) for interacting with the feature registry on the frontend and manages the underlying data store. Third-party plugins can use this to register their own client-side features.
 - **`packages/client-features`**: A library containing implementations of standard client-side features (e.g., block insertion, navigation). It depends on the client SDK and is used by the main plugin to register the core features.
 - **`demo/wp-feature-api-agent`**: A demo WordPress plugin showcasing how to use the Feature API, including registering features, and implementing WP Features as tools in Typescript based AI Agent.
 - **`src/`**: Contains the main JavaScript entry point (`src/index.js`) for the core WordPress plugin. This script initializes the client SDK and registers the core client features when the plugin is active.

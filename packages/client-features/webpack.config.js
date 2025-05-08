@@ -25,7 +25,10 @@ module.exports = {
 		...defaultConfig.resolve,
 		alias: {
 			...defaultConfig.resolve?.alias,
-			'@wp-feature-api/client': path.resolve( __dirname, '../client' ),
+			'@automattic/wp-feature-api': path.resolve(
+				__dirname,
+				'../client'
+			),
 		},
 	},
 	externals: {

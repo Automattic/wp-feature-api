@@ -19,7 +19,7 @@ import {
 /**
  * External dependencies
  */
-import { registerFeature } from '@wp-feature-api/client';
+import { registerFeature } from '@automattic/wp-feature-api';
 
 export const coreFeatures = [
 	// Navigation

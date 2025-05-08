@@ -5,7 +5,7 @@ import {
 	getRegisteredFeatures,
 	executeFeature,
 	type Feature,
-} from '@wp-feature-api/client';
+} from '@automattic/wp-feature-api';
 
 /**
  * Internal dependencies

@@ -12,34 +12,34 @@ This document provides comprehensive technical documentation for the WordPress F
 
 ## 2. Summary Section
 
-The WordPress Feature API provides a standardized way to register and discover distinct units of functionality within a WordPress site. These units, called "Features," represent either data retrieval actions (**Resources**) or data modification/creation actions (**Tools**). It acts as a central registry, accessible from both PHP (server-side) and JavaScript (client-side), making it easier for core, plugins, themes, and external systems (like AI agents) to understand and interact with the capabilities available on a specific site. Key components include server-side registration using `wp_register_feature`, client-side registration via `@wp-feature-api/client`, REST API endpoints for discovery and execution, and a flexible system for defining inputs, outputs, permissions, and eligibility for each feature.
+The WordPress Feature API provides a standardized way to register and discover distinct units of functionality within a WordPress site. These units, called "Features," represent either data retrieval actions (**Resources**) or data modification/creation actions (**Tools**). It acts as a central registry, accessible from both PHP (server-side) and JavaScript (client-side), making it easier for core, plugins, themes, and external systems (like AI agents) to understand and interact with the capabilities available on a specific site. Key components include server-side registration using `wp_register_feature`, client-side registration via `@automattic/wp-feature-api`, REST API endpoints for discovery and execution, and a flexible system for defining inputs, outputs, permissions, and eligibility for each feature.
 
 ## 3. Architecture Overview
 
 The Feature API employs a registry pattern with distinct server-side and client-side components, unified through a REST API transport layer.
 
-1.  **Server-Side (PHP):**
-    *   `WP_Feature_Registry`: A singleton class managing all registered features.
-    *   `WP_Feature`: Represents a single feature (Resource or Tool) with properties like ID, name, description, type, schemas, callbacks, permissions, etc.
-    *   `WP_Feature_Repository_Interface`: Defines how features are stored (default: `WP_Feature_Repository_Memory` for in-memory storage per request).
-    *   `WP_Feature_Query`: Class for filtering and searching features.
-    *   `WP_REST_Feature_Controller`: Exposes features via the WP REST API (`/wp/v2/features`).
-    *   `wp_register_feature()`: Global function for easy feature registration.
+1. **Server-Side (PHP):**
+    * `WP_Feature_Registry`: A singleton class managing all registered features.
+    * `WP_Feature`: Represents a single feature (Resource or Tool) with properties like ID, name, description, type, schemas, callbacks, permissions, etc.
+    * `WP_Feature_Repository_Interface`: Defines how features are stored (default: `WP_Feature_Repository_Memory` for in-memory storage per request).
+    * `WP_Feature_Query`: Class for filtering and searching features.
+    * `WP_REST_Feature_Controller`: Exposes features via the WP REST API (`/wp/v2/features`).
+    * `wp_register_feature()`: Global function for easy feature registration.
 
-2.  **Client-Side (JavaScript - `@wp-feature-api/client`):**
-    *   **Data Store (`@wordpress/data`)**: Manages the state of registered features on the client.
-    *   **API Functions (`registerFeature`, `executeFeature`, `getRegisteredFeatures`, etc.)**: Provide the interface for interacting with the client-side registry.
-    *   **Synchronization:** Fetches server-side features via the REST API upon initialization and resolves them alongside client-registered features.
+2. **Client-Side (JavaScript - `@automattic/wp-feature-api`):**
+    * **Data Store (`@wordpress/data`)**: Manages the state of registered features on the client.
+    * **API Functions (`registerFeature`, `executeFeature`, `getRegisteredFeatures`, etc.)**: Provide the interface for interacting with the client-side registry.
+    * **Synchronization:** Fetches server-side features via the REST API upon initialization and resolves them alongside client-registered features.
 
-3.  **Transport Layer (WP REST API):**
-    *   `GET /wp/v2/features`: Lists features (discoverability).
-    *   `GET /wp/v2/features/{feature-id}`: Gets details of a specific feature.
-    *   `POST|GET /wp/v2/features/{feature-id}/run`: Executes a feature (handles input validation, permissions, calling the feature's callback).
+3. **Transport Layer (WP REST API):**
+    * `GET /wp/v2/features`: Lists features (discoverability).
+    * `GET /wp/v2/features/{feature-id}`: Gets details of a specific feature.
+    * `POST|GET /wp/v2/features/{feature-id}/run`: Executes a feature (handles input validation, permissions, calling the feature's callback).
 
-4.  **Extensibility:**
-    *   Plugins/Themes register features using `wp_register_feature` (PHP) or `registerFeature` (JS).
-    *   Features can be Resources (data retrieval) or Tools (actions).
-    *   `rest_alias` allows exposing existing WP REST endpoints as features easily.
+4. **Extensibility:**
+    * Plugins/Themes register features using `wp_register_feature` (PHP) or `registerFeature` (JS).
+    * Features can be Resources (data retrieval) or Tools (actions).
+    * `rest_alias` allows exposing existing WP REST endpoints as features easily.
 
 **Diagrammatic Flow (Conceptual):**
 
@@ -52,7 +52,7 @@ The Feature API employs a registry pattern with distinct server-side and client-
        |  |(uses client API)         |  |(discovery/execution)        |  |(uses PHP API)
        v  |                          v  |                              v  |
 +---------------------+      +-------------------------+      +------------------------+
-| @wp-feature-api/client |<----->| WP_REST_Feature_Controller|<---->| WP_Feature_Registry    |
+| @automattic/wp-feature-api |<----->| WP_REST_Feature_Controller|<---->| WP_Feature_Registry    |
 | (Data Store, API fns)|      | (Handles REST Req/Res)  |      | (Manages Features)     |
 +---------------------+      +-------------------------+      +------------------------+
                                                                        |
@@ -67,9 +67,9 @@ The Feature API employs a registry pattern with distinct server-side and client-
 
 ### Server-Side (PHP)
 
-*   **`WP_Feature_Registry`**: The central singleton registry. Accessed via `wp_feature_registry()`. Manages feature storage and retrieval.
-*   **`WP_Feature`**: Represents a single feature. Created internally when using `wp_register_feature`. Provides methods like `call()`, `is_eligible()`, `get_input_schema()`.
-*   **`wp_register_feature( array|WP_Feature $args )`**: The primary function to register a server-side feature.
+* **`WP_Feature_Registry`**: The central singleton registry. Accessed via `wp_feature_registry()`. Manages feature storage and retrieval.
+* **`WP_Feature`**: Represents a single feature. Created internally when using `wp_register_feature`. Provides methods like `call()`, `is_eligible()`, `get_input_schema()`.
+* **`wp_register_feature( array|WP_Feature $args )`**: The primary function to register a server-side feature.
 
     ```php
     <?php
@@ -110,16 +110,16 @@ The Feature API employs a registry pattern with distinct server-side and client-
     }
     ```
 
-### Client-Side (JavaScript - `@wp-feature-api/client`)
+### Client-Side (JavaScript - `@automattic/wp-feature-api`)
 
-*   **`store` (`@wordpress/data` store)**: Manages client-side feature state.
-*   **`registerFeature( feature: Feature )`**: Registers a client-side feature.
-*   **`executeFeature( featureId: string, args: any )`**: Executes a feature (client or server).
-*   **`getRegisteredFeatures()`**: Retrieves all currently known features (client + resolved server).
+* **`store` (`@wordpress/data` store)**: Manages client-side feature state.
+* **`registerFeature( feature: Feature )`**: Registers a client-side feature.
+* **`executeFeature( featureId: string, args: any )`**: Executes a feature (client or server).
+* **`getRegisteredFeatures()`**: Retrieves all currently known features (client + resolved server).
 
     ```javascript
     // In your client-side code (e.g., block editor script)
-    import { registerFeature, executeFeature, getRegisteredFeatures } from '@wp-feature-api/client';
+    import { registerFeature, executeFeature, getRegisteredFeatures } from '@automattic/wp-feature-api';
     import { store as editorStore } from '@wordpress/editor';
     import { dispatch } from '@wordpress/data';
 
@@ -178,8 +178,8 @@ The primary way to extend the API is by registering your own Features, either as
 
 Use the `wp_register_feature()` function, typically hooked into the `init` action.
 
-*   **What it does:** Adds a PHP-based capability to the central registry, making it discoverable and executable via PHP calls (`$feature->call()`) or the REST API.
-*   **When to use:** For functionality implemented in PHP, interacting with WordPress core, database, or other server-side resources.
+* **What it does:** Adds a PHP-based capability to the central registry, making it discoverable and executable via PHP calls (`$feature->call()`) or the REST API.
+* **When to use:** For functionality implemented in PHP, interacting with WordPress core, database, or other server-side resources.
 
 **Complete Code Example:**
 
@@ -194,7 +194,7 @@ Use the `wp_register_feature()` function, typically hooked into the `init` actio
 
  // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+ exit;
 }
 
 /**
@@ -204,22 +204,22 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return mixed|WP_Error Option value on success, WP_Error on failure.
  */
 function my_custom_features_get_option_callback( $context ) {
-	if ( ! isset( $context['option_name'] ) ) {
-		return new WP_Error( 'missing_option_name', __( 'Option name is required.', 'my-custom-features' ) );
-	}
+ if ( ! isset( $context['option_name'] ) ) {
+  return new WP_Error( 'missing_option_name', __( 'Option name is required.', 'my-custom-features' ) );
+ }
 
-	$option_name = sanitize_key( $context['option_name'] );
-	$value = get_option( $option_name );
+ $option_name = sanitize_key( $context['option_name'] );
+ $value = get_option( $option_name );
 
-	if ( false === $value ) {
+ if ( false === $value ) {
         // Distinguish between 'option does not exist' and 'option is false'
-		$all_options = wp_load_alloptions();
+  $all_options = wp_load_alloptions();
         if (!array_key_exists($option_name, $all_options)) {
              return new WP_Error( 'option_not_found', sprintf( __( 'Option "%s" not found.', 'my-custom-features' ), $option_name ), array( 'status' => 404 ) );
         }
-	}
+ }
 
-	return $value;
+ return $value;
 }
 
 /**
@@ -229,23 +229,23 @@ function my_custom_features_get_option_callback( $context ) {
  * @return bool|WP_Error True on success, WP_Error on failure.
  */
 function my_custom_features_update_option_callback( $context ) {
-	if ( ! isset( $context['option_name'] ) || ! isset( $context['option_value'] ) ) {
-		return new WP_Error( 'missing_params', __( 'Both option_name and option_value are required.', 'my-custom-features' ) );
-	}
+ if ( ! isset( $context['option_name'] ) || ! isset( $context['option_value'] ) ) {
+  return new WP_Error( 'missing_params', __( 'Both option_name and option_value are required.', 'my-custom-features' ) );
+ }
 
-	$option_name = sanitize_key( $context['option_name'] );
-	// Sanitize based on expected type - this is basic, complex types need more care
-	$option_value = sanitize_text_field( $context['option_value'] );
+ $option_name = sanitize_key( $context['option_name'] );
+ // Sanitize based on expected type - this is basic, complex types need more care
+ $option_value = sanitize_text_field( $context['option_value'] );
 
-	$success = update_option( $option_name, $option_value );
+ $success = update_option( $option_name, $option_value );
 
-	if ( ! $success ) {
-		// update_option returns false if value is the same or on failure
+ if ( ! $success ) {
+  // update_option returns false if value is the same or on failure
         // We might want to check if the value actually changed if needed
         return new WP_Error( 'update_failed', sprintf( __( 'Failed to update option "%s".', 'my-custom-features' ), $option_name ) );
-	}
+ }
 
-	return true;
+ return true;
 }
 
 
@@ -253,78 +253,78 @@ function my_custom_features_update_option_callback( $context ) {
  * Registers the custom features.
  */
 function my_custom_features_register() {
-	// Ensure Feature API is available
-	if ( ! function_exists( 'wp_register_feature' ) || ! class_exists( '\WP_Feature' ) ) {
-		add_action( 'admin_notices', function() {
-			echo '<div class="notice notice-error"><p>My Custom Features plugin requires the WordPress Feature API plugin to be active.</p></div>';
-		});
-		return;
-	}
+ // Ensure Feature API is available
+ if ( ! function_exists( 'wp_register_feature' ) || ! class_exists( '\WP_Feature' ) ) {
+  add_action( 'admin_notices', function() {
+   echo '<div class="notice notice-error"><p>My Custom Features plugin requires the WordPress Feature API plugin to be active.</p></div>';
+  });
+  return;
+ }
 
-	// --- Get Option Feature (Resource) ---
-	wp_register_feature( array(
-		'id'          => 'my-custom-features/get-option',
-		'name'        => __( 'Get WordPress Option', 'my-custom-features' ),
-		'description' => __( 'Retrieves the value of a specific WordPress option from the options table.', 'my-custom-features' ),
-		'type'        => \WP_Feature::TYPE_RESOURCE, // Read-only
-		'callback'    => 'my_custom_features_get_option_callback',
-		'permission_callback' => function() {
-			// Only allow users who can manage options
-			return current_user_can( 'manage_options' );
-		},
-		'input_schema' => array(
-			'type' => 'object',
-			'properties' => array(
-				'option_name' => array(
-					'type' => 'string',
-					'description' => __( 'The name of the option to retrieve.', 'my-custom-features' ),
+ // --- Get Option Feature (Resource) ---
+ wp_register_feature( array(
+  'id'          => 'my-custom-features/get-option',
+  'name'        => __( 'Get WordPress Option', 'my-custom-features' ),
+  'description' => __( 'Retrieves the value of a specific WordPress option from the options table.', 'my-custom-features' ),
+  'type'        => \WP_Feature::TYPE_RESOURCE, // Read-only
+  'callback'    => 'my_custom_features_get_option_callback',
+  'permission_callback' => function() {
+   // Only allow users who can manage options
+   return current_user_can( 'manage_options' );
+  },
+  'input_schema' => array(
+   'type' => 'object',
+   'properties' => array(
+    'option_name' => array(
+     'type' => 'string',
+     'description' => __( 'The name of the option to retrieve.', 'my-custom-features' ),
                     'required' => true, // Mark as required in description/docs
-				),
-			),
+    ),
+   ),
             // Formal required declaration for validation
             'required' => ['option_name'],
-		),
-		'output_schema' => array(
-			// Type can be mixed (string, int, bool, array, object)
-			'type' => array('string', 'integer', 'boolean', 'array', 'object', 'null'),
-			'description' => __( 'The value of the requested option.', 'my-custom-features' ),
-		),
-		'categories'  => array( 'my-custom-features', 'options', 'site-settings' ),
-	) );
+  ),
+  'output_schema' => array(
+   // Type can be mixed (string, int, bool, array, object)
+   'type' => array('string', 'integer', 'boolean', 'array', 'object', 'null'),
+   'description' => __( 'The value of the requested option.', 'my-custom-features' ),
+  ),
+  'categories'  => array( 'my-custom-features', 'options', 'site-settings' ),
+ ) );
 
-	// --- Update Option Feature (Tool) ---
+ // --- Update Option Feature (Tool) ---
     wp_register_feature( array(
-		'id'          => 'my-custom-features/update-option',
-		'name'        => __( 'Update WordPress Option', 'my-custom-features' ),
-		'description' => __( 'Updates the value of a specific WordPress option in the options table.', 'my-custom-features' ),
-		'type'        => \WP_Feature::TYPE_TOOL, // Action/Write
-		'callback'    => 'my_custom_features_update_option_callback',
-		'permission_callback' => function() {
-			return current_user_can( 'manage_options' );
-		},
-		'input_schema' => array(
-			'type' => 'object',
-			'properties' => array(
-				'option_name' => array(
-					'type' => 'string',
-					'description' => __( 'The name of the option to update.', 'my-custom-features' ),
+  'id'          => 'my-custom-features/update-option',
+  'name'        => __( 'Update WordPress Option', 'my-custom-features' ),
+  'description' => __( 'Updates the value of a specific WordPress option in the options table.', 'my-custom-features' ),
+  'type'        => \WP_Feature::TYPE_TOOL, // Action/Write
+  'callback'    => 'my_custom_features_update_option_callback',
+  'permission_callback' => function() {
+   return current_user_can( 'manage_options' );
+  },
+  'input_schema' => array(
+   'type' => 'object',
+   'properties' => array(
+    'option_name' => array(
+     'type' => 'string',
+     'description' => __( 'The name of the option to update.', 'my-custom-features' ),
                     'required' => true,
-				),
+    ),
                 'option_value' => array(
                     // Allow various primitive types for option value
-					'type' => array('string', 'integer', 'boolean', 'null'),
-					'description' => __( 'The new value for the option.', 'my-custom-features' ),
+     'type' => array('string', 'integer', 'boolean', 'null'),
+     'description' => __( 'The new value for the option.', 'my-custom-features' ),
                     'required' => true,
-				),
-			),
+    ),
+   ),
             'required' => ['option_name', 'option_value'],
-		),
-		'output_schema' => array(
-			'type' => 'boolean',
-			'description' => __( 'True if the option was successfully updated, false otherwise (or if value was unchanged).', 'my-custom-features' ),
-		),
-		'categories'  => array( 'my-custom-features', 'options', 'site-settings' ),
-	) );
+  ),
+  'output_schema' => array(
+   'type' => 'boolean',
+   'description' => __( 'True if the option was successfully updated, false otherwise (or if value was unchanged).', 'my-custom-features' ),
+  ),
+  'categories'  => array( 'my-custom-features', 'options', 'site-settings' ),
+ ) );
 }
 add_action( 'init', 'my_custom_features_register', 20 ); // Priority 20 to run after core features
 
@@ -332,29 +332,29 @@ add_action( 'init', 'my_custom_features_register', 20 ); // Priority 20 to run a
 
 **Explanation of Parameters and Options:**
 
-*   `id` (string, required): Unique, namespaced identifier (e.g., `my-plugin/feature-name`). Use lowercase alphanumeric, hyphens, slashes. *Do not* include the type prefix (`resource-` or `tool-`) here.
-*   `name` (string, required): Human-readable, translatable name.
-*   `description` (string, required): Detailed, translatable explanation for developers and AI. Explain purpose, inputs, outputs.
-*   `type` (string, required): `WP_Feature::TYPE_RESOURCE` (like GET) or `WP_Feature::TYPE_TOOL` (like POST/PUT/DELETE).
-*   `callback` (callable|null): The PHP function/method to execute. Receives one argument: `$context` (associative array of validated input). Should return the result or a `WP_Error`. Can be `null` if it's a `rest_alias` or handled purely by filters.
-*   `permission_callback` (callable|string[]|string|null): Determines if the current user can run the feature.
-    *   `callable`: Function returning `true`, `false`, or `WP_Error`. Receives `WP_User` and `WP_Feature` objects.
-    *   `string[]`: Array of WordPress capabilities (e.g., `['edit_posts', 'manage_options']`). Checks if the user has *all* capabilities.
-    *   `string`: A single WordPress capability (e.g., `'manage_options'`).
-    *   `null` (or omitted): Defaults to denying access. Use `__return_true` for public features (use with caution). Often inferred for `rest_alias`.
-*   `is_eligible` (callable|null): Determines if the feature is available *in the current context*. Returns `true` or `false`. Useful for checking if dependent plugins are active, settings are enabled, etc. Defaults to `true`.
-*   `input_schema` (array|null): JSON Schema definition of expected input `$context`. Used for validation by the REST API and documentation.
-*   `output_schema` (array|null): JSON Schema definition of the expected return value from the `callback`. Used for documentation and potentially response validation.
-*   `categories` (string[]|null): Array of category slugs for organization and filtering.
-*   `meta` (array|null): Associative array for arbitrary metadata.
-*   `rest_alias` (string|false): If set to a WP REST route (e.g., `/wp/v2/posts/(?P<id>[\d]+)`), the feature acts as an alias for that endpoint. Input/output schemas and permissions might be inferred. Defaults to `false`.
+* `id` (string, required): Unique, namespaced identifier (e.g., `my-plugin/feature-name`). Use lowercase alphanumeric, hyphens, slashes. *Do not* include the type prefix (`resource-` or `tool-`) here.
+* `name` (string, required): Human-readable, translatable name.
+* `description` (string, required): Detailed, translatable explanation for developers and AI. Explain purpose, inputs, outputs.
+* `type` (string, required): `WP_Feature::TYPE_RESOURCE` (like GET) or `WP_Feature::TYPE_TOOL` (like POST/PUT/DELETE).
+* `callback` (callable|null): The PHP function/method to execute. Receives one argument: `$context` (associative array of validated input). Should return the result or a `WP_Error`. Can be `null` if it's a `rest_alias` or handled purely by filters.
+* `permission_callback` (callable|string[]|string|null): Determines if the current user can run the feature.
+  * `callable`: Function returning `true`, `false`, or `WP_Error`. Receives `WP_User` and `WP_Feature` objects.
+  * `string[]`: Array of WordPress capabilities (e.g., `['edit_posts', 'manage_options']`). Checks if the user has *all* capabilities.
+  * `string`: A single WordPress capability (e.g., `'manage_options'`).
+  * `null` (or omitted): Defaults to denying access. Use `__return_true` for public features (use with caution). Often inferred for `rest_alias`.
+* `is_eligible` (callable|null): Determines if the feature is available *in the current context*. Returns `true` or `false`. Useful for checking if dependent plugins are active, settings are enabled, etc. Defaults to `true`.
+* `input_schema` (array|null): JSON Schema definition of expected input `$context`. Used for validation by the REST API and documentation.
+* `output_schema` (array|null): JSON Schema definition of the expected return value from the `callback`. Used for documentation and potentially response validation.
+* `categories` (string[]|null): Array of category slugs for organization and filtering.
+* `meta` (array|null): Associative array for arbitrary metadata.
+* `rest_alias` (string|false): If set to a WP REST route (e.g., `/wp/v2/posts/(?P<id>[\d]+)`), the feature acts as an alias for that endpoint. Input/output schemas and permissions might be inferred. Defaults to `false`.
 
 ### Registering Client-Side Features (JavaScript)
 
-Use the `registerFeature` function exported by the `@wp-feature-api/client` package.
+Use the `registerFeature` function exported by the `@automattic/wp-feature-api` package.
 
-*   **What it does:** Adds a JavaScript-based capability to the client-side registry. The feature's `callback` function executes directly in the user's browser.
-*   **When to use:** For functionality that interacts directly with the browser environment, the DOM, or client-side WordPress components like the Block Editor or Site Editor.
+* **What it does:** Adds a JavaScript-based capability to the client-side registry. The feature's `callback` function executes directly in the user's browser.
+* **When to use:** For functionality that interacts directly with the browser environment, the DOM, or client-side WordPress components like the Block Editor or Site Editor.
 
 **Complete Code Example:**
 
@@ -370,7 +370,7 @@ import { dispatch, select } from '@wordpress/data';
 /**
  * Feature API Client dependencies
  */
-import { registerFeature } from '@wp-feature-api/client'; // Assuming this is correctly imported/available
+import { registerFeature } from '@automattic/wp-feature-api'; // Assuming this is correctly imported/available
 
 /**
  * Client-side Feature: Show Admin Notice
@@ -461,13 +461,13 @@ const showAdminNoticeFeature = {
  * This would typically run within a script enqueued for the WordPress admin
  */
 function registerMyClientFeatures() {
-	if (typeof registerFeature === 'function') {
- 		registerFeature(showAdminNoticeFeature);
+ if (typeof registerFeature === 'function') {
+   registerFeature(showAdminNoticeFeature);
         console.log('Registered client-side feature: show-notice');
 
         // Example Usage (e.g., in another part of your client-side code):
         /*
-        import { executeFeature } from '@wp-feature-api/client';
+        import { executeFeature } from '@automattic/wp-feature-api';
 
         async function triggerNotice() {
           try {
@@ -483,9 +483,9 @@ function registerMyClientFeatures() {
         // Call triggerNotice() when needed, e.g., after an action
         */
 
-	} else {
-		console.error('Feature API client `registerFeature` not available.');
-	}
+ } else {
+  console.error('Feature API client `registerFeature` not available.');
+ }
 }
 
 // You might register this within a WordPress plugin initialization
@@ -497,11 +497,11 @@ registerMyClientFeatures();
 
 **Explanation of Parameters and Options:**
 
-*   **`id`, `name`, `description`, `type`, `categories`, `input_schema`, `output_schema`, `meta`**: Same meaning as server-side features.
-*   **`location`** (string, required): **Must be set to `'client'`**. This tells the registry the callback is JavaScript and executes browser-side.
-*   **`callback`** (function, required): The JavaScript function to execute. It receives the `args` object based on the `input_schema`. It should return the result or throw an error.
-*   **`is_eligible`** (function|null): Optional JavaScript function returning `true` or `false`. Can check browser context, DOM elements, or client-side state (e.g., using `@wordpress/data` selectors like in the example).
-*   **`icon`** (any): Optional. Can be a Dashicon slug (string) or a React SVG component for use in UI integrations like the Command Palette.
+* **`id`, `name`, `description`, `type`, `categories`, `input_schema`, `output_schema`, `meta`**: Same meaning as server-side features.
+* **`location`** (string, required): **Must be set to `'client'`**. This tells the registry the callback is JavaScript and executes browser-side.
+* **`callback`** (function, required): The JavaScript function to execute. It receives the `args` object based on the `input_schema`. It should return the result or throw an error.
+* **`is_eligible`** (function|null): Optional JavaScript function returning `true` or `false`. Can check browser context, DOM elements, or client-side state (e.g., using `@wordpress/data` selectors like in the example).
+* **`icon`** (any): Optional. Can be a Dashicon slug (string) or a React SVG component for use in UI integrations like the Command Palette.
 
 ## 6. Advanced Examples
 
@@ -522,93 +522,93 @@ This requires the WooCommerce and WooCommerce Smooth Generator plugins to be act
 
 // --- Permission & Eligibility Callbacks ---
 function wcgs_snippet_check_permission() {
-	// Allow users who can manage WC or install plugins
-	return current_user_can( 'install_plugins' ) || current_user_can( 'manage_woocommerce' );
+ // Allow users who can manage WC or install plugins
+ return current_user_can( 'install_plugins' ) || current_user_can( 'manage_woocommerce' );
 }
 
 function wcgs_snippet_check_eligibility() {
-	// Check if WC and the specific Generator class exist
-	return function_exists( 'WC' ) && class_exists( '\WC\SmoothGenerator\Generator\Product' );
+ // Check if WC and the specific Generator class exist
+ return function_exists( 'WC' ) && class_exists( '\WC\SmoothGenerator\Generator\Product' );
 }
 
 // --- Callback Adapter Functions ---
 
 /** Adapter for Product generator. */
 function wcgs_snippet_run_product_generator( array $context ) {
-	if ( ! class_exists( '\WC\SmoothGenerator\Generator\Product' ) ) return new \WP_Error( 'wcgs_missing_generator', 'Product generator class not found.' );
-	$amount = $context['amount'] ?? 10;
-	// Only pass allowed arguments to the batch function
-	$args   = wp_array_slice_assoc( $context, array( 'type', 'use-existing-terms' ) );
-	return \WC\SmoothGenerator\Generator\Product::batch( (int) $amount, $args );
+ if ( ! class_exists( '\WC\SmoothGenerator\Generator\Product' ) ) return new \WP_Error( 'wcgs_missing_generator', 'Product generator class not found.' );
+ $amount = $context['amount'] ?? 10;
+ // Only pass allowed arguments to the batch function
+ $args   = wp_array_slice_assoc( $context, array( 'type', 'use-existing-terms' ) );
+ return \WC\SmoothGenerator\Generator\Product::batch( (int) $amount, $args );
 }
 
 // ... (Similar adapter functions for Order, Customer, Coupon, Term generators - see original snippet)
 function wcgs_snippet_run_order_generator( array $context ) {
-	if ( ! class_exists( '\WC\SmoothGenerator\Generator\Order' ) ) return new \WP_Error( 'wcgs_missing_generator', 'Order generator class not found.' );
-	$amount = $context['amount'] ?? 10;
-	$args   = wp_array_slice_assoc( $context, array( 'date-start', 'date-end', 'status', 'coupons', 'skip-order-attribution' ) );
-	return \WC\SmoothGenerator\Generator\Order::batch( (int) $amount, $args );
+ if ( ! class_exists( '\WC\SmoothGenerator\Generator\Order' ) ) return new \WP_Error( 'wcgs_missing_generator', 'Order generator class not found.' );
+ $amount = $context['amount'] ?? 10;
+ $args   = wp_array_slice_assoc( $context, array( 'date-start', 'date-end', 'status', 'coupons', 'skip-order-attribution' ) );
+ return \WC\SmoothGenerator\Generator\Order::batch( (int) $amount, $args );
 }
 function wcgs_snippet_run_customer_generator( array $context ) {
-	if ( ! class_exists( '\WC\SmoothGenerator\Generator\Customer' ) ) return new \WP_Error( 'wcgs_missing_generator', 'Customer generator class not found.' );
-	$amount = $context['amount'] ?? 10;
-	$args   = wp_array_slice_assoc( $context, array( 'country', 'type' ) );
-	return \WC\SmoothGenerator\Generator\Customer::batch( (int) $amount, $args );
+ if ( ! class_exists( '\WC\SmoothGenerator\Generator\Customer' ) ) return new \WP_Error( 'wcgs_missing_generator', 'Customer generator class not found.' );
+ $amount = $context['amount'] ?? 10;
+ $args   = wp_array_slice_assoc( $context, array( 'country', 'type' ) );
+ return \WC\SmoothGenerator\Generator\Customer::batch( (int) $amount, $args );
 }
 function wcgs_snippet_run_coupon_generator( array $context ) {
-	if ( ! class_exists( '\WC\SmoothGenerator\Generator\Coupon' ) ) return new \WP_Error( 'wcgs_missing_generator', 'Coupon generator class not found.' );
-	$amount = $context['amount'] ?? 10;
-	$args   = wp_array_slice_assoc( $context, array( 'min', 'max' ) );
-	return \WC\SmoothGenerator\Generator\Coupon::batch( (int) $amount, $args );
+ if ( ! class_exists( '\WC\SmoothGenerator\Generator\Coupon' ) ) return new \WP_Error( 'wcgs_missing_generator', 'Coupon generator class not found.' );
+ $amount = $context['amount'] ?? 10;
+ $args   = wp_array_slice_assoc( $context, array( 'min', 'max' ) );
+ return \WC\SmoothGenerator\Generator\Coupon::batch( (int) $amount, $args );
 }
 function wcgs_snippet_run_term_generator( array $context ) {
-	if ( ! class_exists( '\WC\SmoothGenerator\Generator\Term' ) ) return new \WP_Error( 'wcgs_missing_generator', 'Term generator class not found.' );
-	$taxonomy = $context['taxonomy'] ?? null;
-	$amount   = $context['amount'] ?? 10;
-	$args     = wp_array_slice_assoc( $context, array( 'max-depth', 'parent' ) );
-	if ( is_null( $taxonomy ) ) return new \WP_Error( 'missing_taxonomy', __( 'Taxonomy argument is required for generating terms.', 'wc-smooth-generator' ) );
-	if ( ! taxonomy_exists( $taxonomy ) || ! in_array( $taxonomy, array( 'product_cat', 'product_tag' ), true ) ) return new \WP_Error( 'invalid_taxonomy', __( 'Invalid taxonomy provided. Use "product_cat" or "product_tag".', 'wc-smooth-generator' ) );
-	return \WC\SmoothGenerator\Generator\Term::batch( (int) $amount, $taxonomy, $args );
+ if ( ! class_exists( '\WC\SmoothGenerator\Generator\Term' ) ) return new \WP_Error( 'wcgs_missing_generator', 'Term generator class not found.' );
+ $taxonomy = $context['taxonomy'] ?? null;
+ $amount   = $context['amount'] ?? 10;
+ $args     = wp_array_slice_assoc( $context, array( 'max-depth', 'parent' ) );
+ if ( is_null( $taxonomy ) ) return new \WP_Error( 'missing_taxonomy', __( 'Taxonomy argument is required for generating terms.', 'wc-smooth-generator' ) );
+ if ( ! taxonomy_exists( $taxonomy ) || ! in_array( $taxonomy, array( 'product_cat', 'product_tag' ), true ) ) return new \WP_Error( 'invalid_taxonomy', __( 'Invalid taxonomy provided. Use "product_cat" or "product_tag".', 'wc-smooth-generator' ) );
+ return \WC\SmoothGenerator\Generator\Term::batch( (int) $amount, $taxonomy, $args );
 }
 
 /**
  * Main registration function hooked to 'init'.
  */
 function wc_smooth_generator_register_features_snippet() {
-	if ( ! function_exists( 'wp_register_feature' ) || ! class_exists( '\WP_Feature' ) || ! function_exists( 'WC' ) ) {
-		return; // Exit if dependencies aren't met
-	}
+ if ( ! function_exists( 'wp_register_feature' ) || ! class_exists( '\WP_Feature' ) || ! function_exists( 'WC' ) ) {
+  return; // Exit if dependencies aren't met
+ }
 
-	$output_schema_ids = array(
-		'type'        => 'array',
-		'items'       => array( 'type' => 'integer' ),
-		'description' => __( 'An array containing the IDs of the generated items.', 'wc-smooth-generator' ),
-	);
+ $output_schema_ids = array(
+  'type'        => 'array',
+  'items'       => array( 'type' => 'integer' ),
+  'description' => __( 'An array containing the IDs of the generated items.', 'wc-smooth-generator' ),
+ );
 
-	// --- Register Product Generator ---
-	wp_register_feature( array(
-		'id'                  => 'wc-smooth-generator/generate-products',
-		'name'                => __( 'Generate WooCommerce Products', 'wc-smooth-generator' ),
-		'description'         => __( 'Generates WooCommerce products (simple/variable). Specify amount, optionally type (simple/variable) and use-existing-terms (boolean).', 'wc-smooth-generator' ),
-		'type'                => \WP_Feature::TYPE_TOOL,
-		'callback'            => 'wcgs_snippet_run_product_generator',
-		'permission_callback' => 'wcgs_snippet_check_permission',
-		'is_eligible'         => 'wcgs_snippet_check_eligibility',
-		'input_schema'        => array(
-			'type'       => 'object',
-			'properties' => array(
-				'amount'             => array( 'type' => 'integer', 'description' => __( 'Number of products.', 'wc-smooth-generator' ), 'default' => 10, 'minimum' => 1 ),
-				'type'               => array( 'type' => 'string', 'description' => __( 'Type (simple/variable). Defaults to mix.', 'wc-smooth-generator' ), 'enum' => array( 'simple', 'variable' ) ),
-				'use-existing-terms' => array( 'type' => 'boolean', 'description' => __( 'Only use existing categories/tags.', 'wc-smooth-generator' ), 'default' => false ),
-			),
-			'required' => ['amount']
-		),
-		'output_schema'       => $output_schema_ids,
-		'categories'          => array( 'wc-smooth-generator', 'data-generation', 'woocommerce', 'testing', 'product' ),
-	) );
+ // --- Register Product Generator ---
+ wp_register_feature( array(
+  'id'                  => 'wc-smooth-generator/generate-products',
+  'name'                => __( 'Generate WooCommerce Products', 'wc-smooth-generator' ),
+  'description'         => __( 'Generates WooCommerce products (simple/variable). Specify amount, optionally type (simple/variable) and use-existing-terms (boolean).', 'wc-smooth-generator' ),
+  'type'                => \WP_Feature::TYPE_TOOL,
+  'callback'            => 'wcgs_snippet_run_product_generator',
+  'permission_callback' => 'wcgs_snippet_check_permission',
+  'is_eligible'         => 'wcgs_snippet_check_eligibility',
+  'input_schema'        => array(
+   'type'       => 'object',
+   'properties' => array(
+    'amount'             => array( 'type' => 'integer', 'description' => __( 'Number of products.', 'wc-smooth-generator' ), 'default' => 10, 'minimum' => 1 ),
+    'type'               => array( 'type' => 'string', 'description' => __( 'Type (simple/variable). Defaults to mix.', 'wc-smooth-generator' ), 'enum' => array( 'simple', 'variable' ) ),
+    'use-existing-terms' => array( 'type' => 'boolean', 'description' => __( 'Only use existing categories/tags.', 'wc-smooth-generator' ), 'default' => false ),
+   ),
+   'required' => ['amount']
+  ),
+  'output_schema'       => $output_schema_ids,
+  'categories'          => array( 'wc-smooth-generator', 'data-generation', 'woocommerce', 'testing', 'product' ),
+ ) );
 
     // --- Register Order Generator ---
-	wp_register_feature( array(
+ wp_register_feature( array(
         'id'                  => 'wc-smooth-generator/generate-orders',
         'name'                => __( 'Generate WooCommerce Orders', 'wc-smooth-generator' ),
         'description'         => __( 'Generates WooCommerce orders. Specify amount, optionally date range (date-start/date-end YYYY-MM-DD), status (completed/processing/etc.), coupons (boolean), skip-order-attribution (boolean).', 'wc-smooth-generator' ),
@@ -632,7 +632,7 @@ function wc_smooth_generator_register_features_snippet() {
         'categories'          => array( 'wc-smooth-generator', 'data-generation', 'woocommerce', 'testing', 'order' ),
     ) );
 
-	// ... (Registrations for Customer, Coupon, Term generators using respective adapter functions)
+ // ... (Registrations for Customer, Coupon, Term generators using respective adapter functions)
 
 }
 add_action( 'init', 'wc_smooth_generator_register_features_snippet', 20 );
@@ -649,58 +649,58 @@ This requires the Code Snippets plugin to be active. It exposes various snippet 
  */
 
 if ( ! defined( 'CS_FEATURE_API_PREFIX' ) ) {
-	define( 'CS_FEATURE_API_PREFIX', 'code-snippets/' ); // Use slash for better namespacing
+ define( 'CS_FEATURE_API_PREFIX', 'code-snippets/' ); // Use slash for better namespacing
 }
 
 // --- Permission & Eligibility ---
 function cs_feature_api_permission_callback() {
-	// Leverages Code Snippets' internal permission check
-	return function_exists( '\Code_Snippets\code_snippets' ) && \Code_Snippets\code_snippets()->current_user_can();
+ // Leverages Code Snippets' internal permission check
+ return function_exists( '\Code_Snippets\code_snippets' ) && \Code_Snippets\code_snippets()->current_user_can();
 }
 function cs_feature_api_eligibility_callback() {
-	// Check if Feature API and Code Snippets functions are available
-	return function_exists( 'wp_register_feature' ) && class_exists( '\WP_Feature' ) && function_exists( '\Code_Snippets\get_snippets' );
+ // Check if Feature API and Code Snippets functions are available
+ return function_exists( 'wp_register_feature' ) && class_exists( '\WP_Feature' ) && function_exists( '\Code_Snippets\get_snippets' );
 }
 
 // --- Helper ---
 function cs_feature_api_prepare_snippet_for_response( $snippet ) {
-	if ( ! $snippet instanceof \Code_Snippets\Snippet || ! $snippet->id ) return null;
-	$data = $snippet->get_fields();
-	// Add useful read-only fields
-	$data['type']       = $snippet->type;
-	$data['scope_name'] = $snippet->scope_name;
-	$data['tags_list']  = $snippet->tags_list;
-	$data['description'] = $data['desc'] ?? ''; // Rename desc to description
-	unset($data['desc']);
-	return $data;
+ if ( ! $snippet instanceof \Code_Snippets\Snippet || ! $snippet->id ) return null;
+ $data = $snippet->get_fields();
+ // Add useful read-only fields
+ $data['type']       = $snippet->type;
+ $data['scope_name'] = $snippet->scope_name;
+ $data['tags_list']  = $snippet->tags_list;
+ $data['description'] = $data['desc'] ?? ''; // Rename desc to description
+ unset($data['desc']);
+ return $data;
 }
 
 // --- Adapter Functions ---
 function cs_feature_api_list_snippets_callback( array $context ) {
-	$ids      = isset( $context['ids'] ) && is_array( $context['ids'] ) ? array_map( 'intval', $context['ids'] ) : [];
-	$network  = isset( $context['network'] ) ? (bool) $context['network'] : null; // Allow boolean input
-	$snippets = \Code_Snippets\get_snippets( $ids, $network );
-	return array_values( array_filter( array_map( 'cs_feature_api_prepare_snippet_for_response', $snippets ) ) );
+ $ids      = isset( $context['ids'] ) && is_array( $context['ids'] ) ? array_map( 'intval', $context['ids'] ) : [];
+ $network  = isset( $context['network'] ) ? (bool) $context['network'] : null; // Allow boolean input
+ $snippets = \Code_Snippets\get_snippets( $ids, $network );
+ return array_values( array_filter( array_map( 'cs_feature_api_prepare_snippet_for_response', $snippets ) ) );
 }
 
 function cs_feature_api_get_snippet_callback( array $context ) {
     if ( empty( $context['id'] ) || ! is_numeric( $context['id'] ) ) return new \WP_Error( 'missing_id', 'Snippet ID is required.' );
-	$id      = intval( $context['id'] );
+ $id      = intval( $context['id'] );
     $network = isset( $context['network'] ) ? (bool) $context['network'] : null;
-	$snippet = \Code_Snippets\get_snippet( $id, $network );
-	if ( !$snippet || !$snippet->id ) return new \WP_Error( 'not_found', 'Snippet not found.', [ 'status' => 404 ] );
-	$prepared = cs_feature_api_prepare_snippet_for_response( $snippet );
-	return $prepared ?? new \WP_Error( 'prepare_failed', 'Failed to prepare snippet data.' );
+ $snippet = \Code_Snippets\get_snippet( $id, $network );
+ if ( !$snippet || !$snippet->id ) return new \WP_Error( 'not_found', 'Snippet not found.', [ 'status' => 404 ] );
+ $prepared = cs_feature_api_prepare_snippet_for_response( $snippet );
+ return $prepared ?? new \WP_Error( 'prepare_failed', 'Failed to prepare snippet data.' );
 }
 
 function cs_feature_api_create_snippet_callback( array $context ) {
-	$snippet = new \Code_Snippets\Snippet( $context ); // Pass context directly
-	$snippet->network = isset( $context['network'] ) ? (bool) $context['network'] : \Code_Snippets\DB::validate_network_param();
-	$snippet->id = 0; // Ensure it's treated as new
-	$result = \Code_Snippets\save_snippet( $snippet );
-	if ( !$result || !$result->id ) return new \WP_Error( 'create_failed', 'Failed to create snippet.' );
-	$prepared = cs_feature_api_prepare_snippet_for_response( $result );
-	return $prepared ?? new \WP_Error( 'prepare_failed', 'Failed to prepare created snippet data.' );
+ $snippet = new \Code_Snippets\Snippet( $context ); // Pass context directly
+ $snippet->network = isset( $context['network'] ) ? (bool) $context['network'] : \Code_Snippets\DB::validate_network_param();
+ $snippet->id = 0; // Ensure it's treated as new
+ $result = \Code_Snippets\save_snippet( $snippet );
+ if ( !$result || !$result->id ) return new \WP_Error( 'create_failed', 'Failed to create snippet.' );
+ $prepared = cs_feature_api_prepare_snippet_for_response( $result );
+ return $prepared ?? new \WP_Error( 'prepare_failed', 'Failed to prepare created snippet data.' );
 }
 
 function cs_feature_api_activate_snippet_callback( array $context ) {
@@ -724,64 +724,64 @@ function cs_feature_api_activate_snippet_callback( array $context ) {
  * Main registration function hooked to 'init'.
  */
 function cs_feature_api_register_features() {
-	if ( ! cs_feature_api_eligibility_callback() ) return;
+ if ( ! cs_feature_api_eligibility_callback() ) return;
 
-	// --- Define Schemas ---
-	$snippet_output_schema = [ /* ... Full schema as defined in original snippet ... */ ];
+ // --- Define Schemas ---
+ $snippet_output_schema = [ /* ... Full schema as defined in original snippet ... */ ];
     $snippet_id_input_schema = [ /* ... Schema with id and network(boolean) ... */ ];
-	$snippet_ids_input_schema = [ /* ... Schema with ids(array) and network(boolean) ... */ ];
+ $snippet_ids_input_schema = [ /* ... Schema with ids(array) and network(boolean) ... */ ];
     $snippet_create_input_schema = [ /* ... Schema for create (no ID, boolean network) ... */ ];
     $snippet_update_input_schema = [ /* ... Schema for update (requires ID, boolean network) ... */ ];
 
 
-	// --- Register Features ---
+ // --- Register Features ---
 
-	// List Snippets (Resource)
-	wp_register_feature( array(
-		'id'                  => CS_FEATURE_API_PREFIX . 'list',
-		'name'                => __( 'List Code Snippets', 'code-snippets' ),
-		'description'         => __( 'Retrieves a list of code snippets. Can optionally filter by specific IDs.', 'code-snippets' ),
-		'type'                => \WP_Feature::TYPE_RESOURCE,
-		'callback'            => 'cs_feature_api_list_snippets_callback',
-		'permission_callback' => 'cs_feature_api_permission_callback',
-		'input_schema'        => [
-			'type' => 'object',
-			'properties' => [
+ // List Snippets (Resource)
+ wp_register_feature( array(
+  'id'                  => CS_FEATURE_API_PREFIX . 'list',
+  'name'                => __( 'List Code Snippets', 'code-snippets' ),
+  'description'         => __( 'Retrieves a list of code snippets. Can optionally filter by specific IDs.', 'code-snippets' ),
+  'type'                => \WP_Feature::TYPE_RESOURCE,
+  'callback'            => 'cs_feature_api_list_snippets_callback',
+  'permission_callback' => 'cs_feature_api_permission_callback',
+  'input_schema'        => [
+   'type' => 'object',
+   'properties' => [
                 'ids'     => [ 'type' => 'array', 'items' => [ 'type' => 'integer' ] ],
-				'network' => [ 'type' => 'boolean', 'description' => 'Retrieve network snippets? (Multisite only)' ],
-			],
-		],
-		'output_schema'       => [ 'type'  => 'array', 'items' => $snippet_output_schema ],
-		'categories'          => [ 'code-snippets', 'list' ],
-	) );
+    'network' => [ 'type' => 'boolean', 'description' => 'Retrieve network snippets? (Multisite only)' ],
+   ],
+  ],
+  'output_schema'       => [ 'type'  => 'array', 'items' => $snippet_output_schema ],
+  'categories'          => [ 'code-snippets', 'list' ],
+ ) );
 
     // Get Snippet (Resource)
-	wp_register_feature( array(
-		'id'                  => CS_FEATURE_API_PREFIX . 'get',
-		'name'                => __( 'Get Code Snippet', 'code-snippets' ),
-		'description'         => __( 'Retrieves details for a specific code snippet by ID.', 'code-snippets' ),
-		'type'                => \WP_Feature::TYPE_RESOURCE,
-		'callback'            => 'cs_feature_api_get_snippet_callback',
-		'permission_callback' => 'cs_feature_api_permission_callback',
-		'input_schema'        => $snippet_id_input_schema,
-		'output_schema'       => $snippet_output_schema,
-		'categories'          => [ 'code-snippets', 'get' ],
-	) );
+ wp_register_feature( array(
+  'id'                  => CS_FEATURE_API_PREFIX . 'get',
+  'name'                => __( 'Get Code Snippet', 'code-snippets' ),
+  'description'         => __( 'Retrieves details for a specific code snippet by ID.', 'code-snippets' ),
+  'type'                => \WP_Feature::TYPE_RESOURCE,
+  'callback'            => 'cs_feature_api_get_snippet_callback',
+  'permission_callback' => 'cs_feature_api_permission_callback',
+  'input_schema'        => $snippet_id_input_schema,
+  'output_schema'       => $snippet_output_schema,
+  'categories'          => [ 'code-snippets', 'get' ],
+ ) );
 
     // Create Snippet (Tool)
-	wp_register_feature( array(
-		'id'                  => CS_FEATURE_API_PREFIX . 'create',
-		'name'                => __( 'Create Code Snippet', 'code-snippets' ),
-		'description'         => __( 'Creates a new code snippet. Provide name, code, scope, and optionally description, tags, priority, network.', 'code-snippets' ),
-		'type'                => \WP_Feature::TYPE_TOOL,
-		'callback'            => 'cs_feature_api_create_snippet_callback',
-		'permission_callback' => 'cs_feature_api_permission_callback',
-		'input_schema'        => $snippet_create_input_schema,
-		'output_schema'       => $snippet_output_schema,
-		'categories'          => [ 'code-snippets', 'create' ],
-	) );
+ wp_register_feature( array(
+  'id'                  => CS_FEATURE_API_PREFIX . 'create',
+  'name'                => __( 'Create Code Snippet', 'code-snippets' ),
+  'description'         => __( 'Creates a new code snippet. Provide name, code, scope, and optionally description, tags, priority, network.', 'code-snippets' ),
+  'type'                => \WP_Feature::TYPE_TOOL,
+  'callback'            => 'cs_feature_api_create_snippet_callback',
+  'permission_callback' => 'cs_feature_api_permission_callback',
+  'input_schema'        => $snippet_create_input_schema,
+  'output_schema'       => $snippet_output_schema,
+  'categories'          => [ 'code-snippets', 'create' ],
+ ) );
 
-	// Activate Snippet (Tool)
+ // Activate Snippet (Tool)
     wp_register_feature( array(
         'id'                  => CS_FEATURE_API_PREFIX . 'activate',
         'name'                => __( 'Activate Code Snippet', 'code-snippets' ),
@@ -794,7 +794,7 @@ function cs_feature_api_register_features() {
         'categories'          => [ 'code-snippets', 'activation', 'update' ],
     ) );
 
-	// ... (Registrations for update, delete, deactivate, clone, export - using respective callbacks and schemas)
+ // ... (Registrations for update, delete, deactivate, clone, export - using respective callbacks and schemas)
 
 }
 add_action( 'init', 'cs_feature_api_register_features', 20 ); // Run after core features
@@ -926,12 +926,12 @@ function my_api_find_all_my_features() {
 
 ### Registering a Client-Side Feature (JS)
 
-*(Requires `@wp-feature-api/client` package and its dependencies to be enqueued)*
+*(Requires `@automattic/wp-feature-api` package and its dependencies to be enqueued)*
 
 ```javascript
 // Add this to your admin JavaScript file
 
-import { registerFeature } from '@wp-feature-api/client';
+import { registerFeature } from '@automattic/wp-feature-api';
 import { dispatch } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
 import { __ } from '@wordpress/i18n'; // If using translations
@@ -991,12 +991,12 @@ registerMyClientFeature();
 
 ### Executing Any Feature (Client-Side JS)
 
-*(Requires `@wp-feature-api/client` package)*
+*(Requires `@automattic/wp-feature-api` package)*
 
 ```javascript
 // Add this to your admin JavaScript file where you need to execute a feature
 
-import { executeFeature } from '@wp-feature-api/client';
+import { executeFeature } from '@automattic/wp-feature-api';
 
 async function useFeatures() {
   try {
@@ -1043,12 +1043,15 @@ async function useFeatures() {
 
 The core Feature API plugin currently has minimal direct configuration.
 
-*   **Demo Plugin Loading:** The primary configuration is enabling the demo agent plugin (`demo/wp-feature-api-agent`). This is controlled by the `WP_FEATURE_API_LOAD_DEMO` PHP constant. Define it as `true` in your `wp-config.php` to load the demo.
+* **Demo Plugin Loading:** The primary configuration is enabling the demo agent plugin (`demo/wp-feature-api-agent`). This is controlled by the `WP_FEATURE_API_LOAD_DEMO` PHP constant. Define it as `true` in your `wp-config.php` to load the demo.
+
     ```php
     // In wp-config.php
     define( 'WP_FEATURE_API_LOAD_DEMO', true );
     ```
-*   **Feature Repository:** The underlying storage mechanism can be changed using the `wp_feature_repository` filter. By default, it uses `WP_Feature_Repository_Memory`. Advanced users could filter this to use a custom database-backed repository.
+
+* **Feature Repository:** The underlying storage mechanism can be changed using the `wp_feature_repository` filter. By default, it uses `WP_Feature_Repository_Memory`. Advanced users could filter this to use a custom database-backed repository.
+
     ```php
     <?php
     // Example: Using a hypothetical custom database repository
@@ -1057,8 +1060,9 @@ The core Feature API plugin currently has minimal direct configuration.
     //    return new My_Custom_DB_Repository();
     // } );
     ```
-*   **Schema Adapters:** Filters `wp_feature_input_schema_adapter` and `wp_feature_output_schema_adapter` allow specifying a custom class (extending `WP_Feature_Schema_Adapter`) to transform schemas for specific consumers (like different LLM providers).
-*   **Demo Settings:** The included demo plugin (`wp-feature-api-agent`) adds its own settings page ("Settings" > "WP Feature Agent Demo") to configure the OpenAI API key required for its functionality. This demonstrates *how* settings could be added for features or related systems, but these settings are specific to the demo itself.
+
+* **Schema Adapters:** Filters `wp_feature_input_schema_adapter` and `wp_feature_output_schema_adapter` allow specifying a custom class (extending `WP_Feature_Schema_Adapter`) to transform schemas for specific consumers (like different LLM providers).
+* **Demo Settings:** The included demo plugin (`wp-feature-api-agent`) adds its own settings page ("Settings" > "WP Feature Agent Demo") to configure the OpenAI API key required for its functionality. This demonstrates *how* settings could be added for features or related systems, but these settings are specific to the demo itself.
 
 Programmatic access to configuration would typically involve standard WordPress methods like `get_option()` if features stored settings, or checking constants like `WP_FEATURE_API_LOAD_DEMO`.
 
@@ -1068,20 +1072,22 @@ Integrating the Feature API into your theme or plugin primarily involves registe
 
 **Best Practices:**
 
-1.  **Namespace IDs:** Always prefix your feature IDs with a unique namespace related to your plugin or theme (e.g., `my-plugin/action`, `my-theme/get-setting`). This prevents collisions with core features or other plugins.
-2.  **Use `init` Hook:** Register features within a function hooked to the `init` action, ideally with a priority greater than 10 (e.g., 20) to ensure core features and potentially other foundational features are registered first.
-3.  **Check for Existence:** Before calling `wp_register_feature` or other API functions, check if they exist to ensure compatibility if the Feature API plugin is not active.
+1. **Namespace IDs:** Always prefix your feature IDs with a unique namespace related to your plugin or theme (e.g., `my-plugin/action`, `my-theme/get-setting`). This prevents collisions with core features or other plugins.
+2. **Use `init` Hook:** Register features within a function hooked to the `init` action, ideally with a priority greater than 10 (e.g., 20) to ensure core features and potentially other foundational features are registered first.
+3. **Check for Existence:** Before calling `wp_register_feature` or other API functions, check if they exist to ensure compatibility if the Feature API plugin is not active.
+
     ```php
     if ( ! function_exists( 'wp_register_feature' ) ) {
         return; // Feature API not active, do nothing
     }
     // ... proceed with registration ...
     ```
-4.  **Clear Descriptions:** Write comprehensive descriptions. Explain the purpose, expected inputs, and potential outputs clearly. This is vital for AI agent usability.
-5.  **Define Schemas:** Provide `input_schema` and `output_schema` using JSON Schema format whenever possible. This enables validation and helps consumers understand data structures.
-6.  **Implement Permissions:** Use `permission_callback` to restrict access appropriately based on user roles or capabilities (`current_user_can`). Avoid `__return_true` unless the feature is genuinely public.
-7.  **Use Eligibility Checks:** If your feature relies on specific conditions (plugin active, setting enabled), implement an `is_eligible` callback.
-8.  **Categorize:** Use the `categories` array to group your features logically. Include your namespace as a category.
+
+4. **Clear Descriptions:** Write comprehensive descriptions. Explain the purpose, expected inputs, and potential outputs clearly. This is vital for AI agent usability.
+5. **Define Schemas:** Provide `input_schema` and `output_schema` using JSON Schema format whenever possible. This enables validation and helps consumers understand data structures.
+6. **Implement Permissions:** Use `permission_callback` to restrict access appropriately based on user roles or capabilities (`current_user_can`). Avoid `__return_true` unless the feature is genuinely public.
+7. **Use Eligibility Checks:** If your feature relies on specific conditions (plugin active, setting enabled), implement an `is_eligible` callback.
+8. **Categorize:** Use the `categories` array to group your features logically. Include your namespace as a category.
 
 **Complete Working Example (Plugin Integration):**
 
@@ -1195,32 +1201,32 @@ add_action( 'init', 'my_plugin_features_register_all', 20 );
 
 Common issues and solutions when working with the Feature API:
 
-*   **Issue:** `Call to undefined function wp_register_feature()` or `Class 'WP_Feature' not found`.
-    *   **Solution:** Ensure the "WordPress Feature API" plugin is installed and activated. If registering features in your own plugin, make sure your registration code runs *after* the Feature API plugin has loaded (e.g., use the `init` hook with a priority of 11 or higher, or check `function_exists('wp_register_feature')` before calling it).
-*   **Issue:** Feature not appearing when calling `wp_get_features()` or via the REST API (`/wp/v2/features`).
-    *   **Solution:**
-        1.  **Check Eligibility:** Verify the feature's `is_eligible` callback (if defined) returns `true` in the current context. Temporarily remove the `is_eligible` check to confirm if this is the cause.
-        2.  **Check Registration Hook/Priority:** Ensure `wp_register_feature` is called correctly on the `init` hook (or a later suitable hook) and that the Feature API itself has loaded first.
-        3.  **Check ID:** Double-check the feature `id` for typos and ensure it follows the naming conventions (lowercase alphanumeric, hyphens, slashes, no leading/trailing/double slashes).
-*   **Issue:** Calling `$feature->call()` or the REST `/run` endpoint returns a permission error (e.g., `rest_forbidden` or custom `WP_Error`).
-    *   **Solution:**
-        1.  **Verify `permission_callback`:** Check the logic within the feature's `permission_callback`. Ensure it correctly evaluates the current user's capabilities (`current_user_can`).
-        2.  **Check Authentication:** If using the REST API, ensure the request is properly authenticated (e.g., logged-in user cookie, Application Password, OAuth token depending on setup).
-        3.  **Check `rest_alias` Permissions:** If using `rest_alias`, the permissions are often inherited from the underlying REST endpoint. Verify the user has the required capabilities for that specific REST route.
-*   **Issue:** Calling `$feature->call()` or the REST `/run` endpoint returns an input validation error.
-    *   **Solution:**
-        1.  **Check `input_schema`:** Review the feature's `input_schema` definition.
-        2.  **Check Input Context:** Ensure the `$context` array passed to `$feature->call()` or the JSON body sent to the REST endpoint matches the structure and data types defined in the `input_schema`, including required fields.
-        3.  **Schema Adapter:** Be aware that the schema might be transformed by `WP_Feature_Schema_Adapter` (especially for OpenAI compatibility rules like making fields required/nullable). Check the adapter logic if customization is involved.
-*   **Issue:** Feature works via PHP (`$feature->call()`) but fails via REST API `/run` endpoint (or vice-versa).
-    *   **Solution:**
-        1.  **Permissions:** REST API calls go through standard WordPress REST authentication and permission checks *in addition* to the feature's `permission_callback`. Ensure both layers allow access.
-        2.  **Input Formatting:** Check how input is provided. PHP calls use an array `$context`. REST `POST` calls expect a JSON body. REST `GET` calls (for resources) might use URL query parameters, especially for `rest_alias`. Ensure the data matches the expected format for the method.
-        3.  **Serialization:** Data returned via REST is JSON encoded. Ensure your callback returns data that serializes correctly.
-*   **Issue:** Client-side feature registered with `registerFeature` doesn't work or isn't found.
-    *   **Solution:**
-        1.  **Check `location`:** Ensure the feature definition has `location: 'client'`.
-        2.  **Check JS Execution:** Verify the JavaScript file containing the `registerFeature` call is correctly enqueued and executing in the browser *after* the `@wp-feature-api/client` script has loaded. Check the browser console for errors.
-        3.  **Check `is_eligible` (Client):** If the client-side feature has an `is_eligible` function, ensure it returns `true` in the browser context where you expect it to be available.
-*   **Issue:** REST API returns unexpected schema (e.g., all fields required, `additionalProperties: false`).
-    *   **Solution:** This is likely due to the default `WP_Feature_Schema_Adapter` applying OpenAI compatibility rules. You can customize this behavior using the `wp_feature_input_schema_adapter` / `wp_feature_output_schema_adapter` filters if needed, or adjust your registered schema to anticipate these transformations.
+* **Issue:** `Call to undefined function wp_register_feature()` or `Class 'WP_Feature' not found`.
+  * **Solution:** Ensure the "WordPress Feature API" plugin is installed and activated. If registering features in your own plugin, make sure your registration code runs *after* the Feature API plugin has loaded (e.g., use the `init` hook with a priority of 11 or higher, or check `function_exists('wp_register_feature')` before calling it).
+* **Issue:** Feature not appearing when calling `wp_get_features()` or via the REST API (`/wp/v2/features`).
+  * **Solution:**
+        1. **Check Eligibility:** Verify the feature's `is_eligible` callback (if defined) returns `true` in the current context. Temporarily remove the `is_eligible` check to confirm if this is the cause.
+        2. **Check Registration Hook/Priority:** Ensure `wp_register_feature` is called correctly on the `init` hook (or a later suitable hook) and that the Feature API itself has loaded first.
+        3. **Check ID:** Double-check the feature `id` for typos and ensure it follows the naming conventions (lowercase alphanumeric, hyphens, slashes, no leading/trailing/double slashes).
+* **Issue:** Calling `$feature->call()` or the REST `/run` endpoint returns a permission error (e.g., `rest_forbidden` or custom `WP_Error`).
+  * **Solution:**
+        1. **Verify `permission_callback`:** Check the logic within the feature's `permission_callback`. Ensure it correctly evaluates the current user's capabilities (`current_user_can`).
+        2. **Check Authentication:** If using the REST API, ensure the request is properly authenticated (e.g., logged-in user cookie, Application Password, OAuth token depending on setup).
+        3. **Check `rest_alias` Permissions:** If using `rest_alias`, the permissions are often inherited from the underlying REST endpoint. Verify the user has the required capabilities for that specific REST route.
+* **Issue:** Calling `$feature->call()` or the REST `/run` endpoint returns an input validation error.
+  * **Solution:**
+        1. **Check `input_schema`:** Review the feature's `input_schema` definition.
+        2. **Check Input Context:** Ensure the `$context` array passed to `$feature->call()` or the JSON body sent to the REST endpoint matches the structure and data types defined in the `input_schema`, including required fields.
+        3. **Schema Adapter:** Be aware that the schema might be transformed by `WP_Feature_Schema_Adapter` (especially for OpenAI compatibility rules like making fields required/nullable). Check the adapter logic if customization is involved.
+* **Issue:** Feature works via PHP (`$feature->call()`) but fails via REST API `/run` endpoint (or vice-versa).
+  * **Solution:**
+        1. **Permissions:** REST API calls go through standard WordPress REST authentication and permission checks *in addition* to the feature's `permission_callback`. Ensure both layers allow access.
+        2. **Input Formatting:** Check how input is provided. PHP calls use an array `$context`. REST `POST` calls expect a JSON body. REST `GET` calls (for resources) might use URL query parameters, especially for `rest_alias`. Ensure the data matches the expected format for the method.
+        3. **Serialization:** Data returned via REST is JSON encoded. Ensure your callback returns data that serializes correctly.
+* **Issue:** Client-side feature registered with `registerFeature` doesn't work or isn't found.
+  * **Solution:**
+        1. **Check `location`:** Ensure the feature definition has `location: 'client'`.
+        2. **Check JS Execution:** Verify the JavaScript file containing the `registerFeature` call is correctly enqueued and executing in the browser *after* the `@automattic/wp-feature-api` script has loaded. Check the browser console for errors.
+        3. **Check `is_eligible` (Client):** If the client-side feature has an `is_eligible` function, ensure it returns `true` in the browser context where you expect it to be available.
+* **Issue:** REST API returns unexpected schema (e.g., all fields required, `additionalProperties: false`).
+  * **Solution:** This is likely due to the default `WP_Feature_Schema_Adapter` applying OpenAI compatibility rules. You can customize this behavior using the `wp_feature_input_schema_adapter` / `wp_feature_output_schema_adapter` filters if needed, or adjust your registered schema to anticipate these transformations.

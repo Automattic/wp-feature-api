@@ -10,7 +10,7 @@
     "clean": "rm -rf build build-types tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@wp-feature-api/client": "^1.0.0",
+    "@automattic/wp-feature-api": "*",
     "@wordpress/api-fetch": "^6.55.0",
     "@wordpress/block-editor": "^14.16.0",
     "@wordpress/blocks": "^14.10.0",

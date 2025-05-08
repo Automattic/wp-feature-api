@@ -8,7 +8,7 @@ import { select, dispatch } from '@wordpress/data';
 /**
  * External dependencies
  */
-import type { Feature } from '@wp-feature-api/client';
+import type { Feature } from '@automattic/wp-feature-api';
 
 /**
  * Internal dependencies

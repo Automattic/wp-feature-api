@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * External dependencies
  */
-import type { Feature } from '@wp-feature-api/client';
+import type { Feature } from '@automattic/wp-feature-api';
 
 /**
  * Client-side feature for browser navigation.
