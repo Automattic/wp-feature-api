@@ -62,3 +62,7 @@ Run `npm run build` from the root directory. This command will build all the Jav
 5. Navigate to the "WP Feature Agent Demo" page added under the Settings menu in the WordPress admin to configure your OpenAI API key.
 6. Refresh and see the AI Agent chat interface.
 7. Ask the AI Agent questions about your WordPress site and features. It has access to both server-side and client-side features.
+
+## Contributing
+
+We welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute to this project.
