@@ -11,6 +11,7 @@ build-types
 build-wp
 node_modules
 wp-feature-api.zip
+wp-feature-api-agent.zip
 coverage
 .phpunit.result.cache
 .reassure
