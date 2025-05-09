@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { navigate } from './navigation';
+import { navigate, currentUrl } from './navigation';
 import {
 	insertParagraphBlock,
 	insertHeadingBlock,
@@ -24,6 +24,7 @@ import { registerFeature } from '@automattic/wp-feature-api';
 export const coreFeatures = [
 	// Navigation
 	navigate,
+	currentUrl,
 	// Block Insertion
 	insertParagraphBlock,
 	insertHeadingBlock,

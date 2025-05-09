@@ -103,3 +103,19 @@ export const navigate: Feature = {
 		}
 	},
 };
+
+
+/**
+ * Client-side resource to tell which URL is currently being viewed.
+ */
+export const currentUrl: Feature = {
+	id: 'resource-current-url',
+	name: __( 'Current URL' ),
+	description: __( 'Returns the current URL.' ),
+	type: 'resource',
+	location: 'client',
+	categories: [ 'core', 'navigation' ],
+	callback: () => {
+		return { url: location.href };
+	},
+};
