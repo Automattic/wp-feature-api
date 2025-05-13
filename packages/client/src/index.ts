@@ -19,13 +19,6 @@ const publicApi = {
 	getRegisteredFeatures,
 };
 
-if ( typeof window !== 'undefined' ) {
-	// @ts-ignore
-	window.wp = window.wp || {};
-	// @ts-ignore
-	window.wp.features = publicApi;
-}
-
 export { store };
 export * from './types';
 export {
@@ -37,3 +30,5 @@ export {
 };
 export * from './command-integration';
 export { publicApi as wpFeatures };
+
+export default publicApi;

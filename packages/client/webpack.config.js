@@ -2,6 +2,7 @@
  * WordPress dependencies
  */
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
+const DependencyExtractionWebpackPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
 
 module.exports = {
 	...defaultConfig,
@@ -13,8 +14,9 @@ module.exports = {
 		filename: '[name].js',
 		path: __dirname + '/build',
 		library: {
-			name: 'wpFeatureApiClient',
-			type: 'umd',
+			name: [ 'wp', 'features' ],
+			type: 'window',
+			export: 'default',
 		},
 	},
 	externals: {
@@ -27,4 +29,11 @@ module.exports = {
 		'@wordpress/element': 'wp.element',
 		'@wordpress/i18n': 'wp.i18n',
 	},
+	plugins: [
+		...defaultConfig.plugins.filter(
+			( plugin ) =>
+				plugin.constructor.name !== 'DependencyExtractionWebpackPlugin'
+		),
+		new DependencyExtractionWebpackPlugin(),
+	],
 };

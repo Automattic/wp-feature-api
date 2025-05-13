@@ -51,7 +51,7 @@ This tells webpack to expect `@automattic/wp-feature-api` to be available global
 module.exports = {
   // ... other webpack config
   externals: {
-    '@automattic/wp-feature-api': ['wp', 'features'],
+    '@automattic/wp-feature-api': 'wp.features',
     // It's good practice to also externalize other @wordpress packages
     '@wordpress/data': 'wp.data',
     // Add any other @wordpress packages you use directly...

@@ -2,6 +2,7 @@
  * WordPress dependencies
  */
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
+const DependencyExtractionWebpackPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
 /**
  * External dependencies
  */
@@ -17,8 +18,8 @@ module.exports = {
 		filename: '[name].js',
 		path: __dirname + '/build',
 		library: {
-			name: 'wpFeatureApiCoreFeatures',
-			type: 'umd',
+			type: 'window',
+			export: 'default',
 		},
 	},
 	resolve: {
@@ -38,5 +39,13 @@ module.exports = {
 		'@wordpress/blocks': 'wp.blocks',
 		'@wordpress/data': 'wp.data',
 		'@wordpress/i18n': 'wp.i18n',
+		'@automattic/wp-feature-api': 'wp.features',
 	},
+	plugins: [
+		...defaultConfig.plugins.filter(
+			( plugin ) =>
+				plugin.constructor.name !== 'DependencyExtractionWebpackPlugin'
+		),
+		new DependencyExtractionWebpackPlugin(),
+	],
 };
