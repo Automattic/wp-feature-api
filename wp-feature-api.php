@@ -118,87 +118,102 @@ if ( ! has_action( 'plugins_loaded', 'wp_feature_api_version_resolver' ) ) {
 	add_action( 'plugins_loaded', 'wp_feature_api_version_resolver', 999 );
 }
 
-/**
- * Initializes the WordPress Feature API core components.
- *
- * @since 0.1.0
- * @return void
- */
-function wp_feature_api_initialize() {
-	// Register REST routes on init. Late execution to ensure features are registered by plugins first.
-	add_action( 'init', 'wp_feature_api_register_rest_routes', 9999 );
+// Initialize function.
+if ( ! function_exists( 'wp_feature_api_initialize' ) ) {
+	/**
+	 * Initializes the WordPress Feature API core components.
+	 *
+	 * @since 0.1.0
+	 * @return void
+	 */
+	function wp_feature_api_initialize() {
+		// Register REST routes on init. Late execution to ensure features are registered by plugins first.
+		add_action( 'init', 'wp_feature_api_register_rest_routes', 9999 );
 
-	// enqueue admin scripts.
-	add_action( 'admin_enqueue_scripts', 'wp_feature_api_enqueue_admin_scripts' );
+		// enqueue admin scripts.
+		add_action( 'admin_enqueue_scripts', 'wp_feature_api_enqueue_admin_scripts' );
 
-	// Load demo plugin if enabled.
-	if ( WP_FEATURE_API_LOAD_DEMO ) {
-		wp_feature_api_load_agent_demo();
-	}
-}
-
-/**
- * Enqueues admin scripts.
- *
- * @since 0.1.0
- * @return void
- */
-function wp_feature_api_enqueue_admin_scripts() {
-	if ( ! is_admin() ) {
-		return;
-	}
-	$assets = require WP_FEATURE_API_PLUGIN_DIR . 'build/index.asset.php';
-	wp_enqueue_script( 'wp-features', WP_FEATURE_API_PLUGIN_URL . 'build/index.js', $assets['dependencies'], $assets['version'], true );
-}
-
-/**
- * Registers the REST API routes for the Feature API.
- *
- * @since 0.1.0
- * @return void
- */
-function wp_feature_api_register_rest_routes() {
-	$controller = new WP_REST_Feature_Controller();
-	$controller->register_routes();
-}
-
-/**
- * Loads the WP Feature API Demo plugin.
- *
- * @since 0.1.0
- * @return void
- */
-function wp_feature_api_load_agent_demo() {
-	$demo_plugin_file = WP_FEATURE_API_PLUGIN_DIR . 'demo/wp-feature-api-agent/wp-feature-api-agent.php';
-
-	if ( file_exists( $demo_plugin_file ) ) {
-		require_once $demo_plugin_file;
-
-		// Notify admin that demo plugin is loaded if in admin area.
-		if ( is_admin() ) {
-			add_action( 'admin_notices', 'wp_feature_api_demo_loaded_notice' );
+		// Load demo plugin if enabled.
+		if ( WP_FEATURE_API_LOAD_DEMO ) {
+			wp_feature_api_load_agent_demo();
 		}
 	}
 }
 
-/**
- * Displays an admin notice when the demo plugin is loaded.
- *
- * @since 0.1.0
- * @return void
- */
-function wp_feature_api_demo_loaded_notice() {
-	?>
-	<div class="notice notice-info is-dismissible">
-		<p>
-			<?php
-			printf(
-				/* translators: %s: WP_FEATURE_API_LOAD_DEMO constant */
-				esc_html__( 'WordPress Feature API Demo plugin is loaded. To disable it, set %s to false in your wp-config.php file.', 'wp-feature-api' ),
-				'<code>WP_FEATURE_API_LOAD_DEMO</code>'
-			);
-			?>
-		</p>
-	</div>
-	<?php
+// Admin script function.
+if ( ! function_exists( 'wp_feature_api_enqueue_admin_scripts' ) ) {
+	/**
+	 * Enqueues admin scripts.
+	 *
+	 * @since 0.1.0
+	 * @return void
+	 */
+	function wp_feature_api_enqueue_admin_scripts() {
+		if ( ! is_admin() ) {
+			return;
+		}
+		$assets = require WP_FEATURE_API_PLUGIN_DIR . 'build/index.asset.php';
+		wp_enqueue_script( 'wp-features', WP_FEATURE_API_PLUGIN_URL . 'build/index.js', $assets['dependencies'], $assets['version'], true );
+	}
+}
+
+// REST routes function.
+if ( ! function_exists( 'wp_feature_api_register_rest_routes' ) ) {
+	/**
+	 * Registers the REST API routes for the Feature API.
+	 *
+	 * @since 0.1.0
+	 * @return void
+	 */
+	function wp_feature_api_register_rest_routes() {
+		$controller = new WP_REST_Feature_Controller();
+		$controller->register_routes();
+	}
+}
+
+// Demo plugin loader function.
+if ( ! function_exists( 'wp_feature_api_load_agent_demo' ) ) {
+	/**
+	 * Loads the WP Feature API Demo plugin.
+	 *
+	 * @since 0.1.0
+	 * @return void
+	 */
+	function wp_feature_api_load_agent_demo() {
+		$demo_plugin_file = WP_FEATURE_API_PLUGIN_DIR . 'demo/wp-feature-api-agent/wp-feature-api-agent.php';
+
+		if ( file_exists( $demo_plugin_file ) ) {
+			require_once $demo_plugin_file;
+
+			// Notify admin that demo plugin is loaded if in admin area.
+			if ( is_admin() ) {
+				add_action( 'admin_notices', 'wp_feature_api_demo_loaded_notice' );
+			}
+		}
+	}
+}
+
+// Demo plugin notice function.
+if ( ! function_exists( 'wp_feature_api_demo_loaded_notice' ) ) {
+	/**
+	 * Displays an admin notice when the demo plugin is loaded.
+	 *
+	 * @since 0.1.0
+	 * @return void
+	 */
+	function wp_feature_api_demo_loaded_notice() {
+		?>
+		<div class="notice notice-info is-dismissible">
+			<p>
+				<?php
+				printf(
+					/* translators: %s: WP_FEATURE_API_LOAD_DEMO constant */
+					esc_html__( 'WordPress Feature API Demo plugin is loaded. To disable it, set %s to false in your wp-config.php file.', 'wp-feature-api' ),
+					'<code>WP_FEATURE_API_LOAD_DEMO</code>'
+				);
+				?>
+			</p>
+		</div>
+		<?php
+	}
 }

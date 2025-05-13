@@ -19,8 +19,7 @@
   },
   "autoload": {
     "files": [
-      "includes/wp-feature.php",
-      "includes/load.php"
+      "includes/wp-feature.php"
     ],
     "classmap": [
       "includes/"
