@@ -44,7 +44,7 @@ Filtering can be done by:
 
 ## Getting Started
 
-### Installation
+### Installation (Development)
 
 1. Clone the repository.
 2. Run `npm run setup` to install all dependencies (both PHP and JavaScript).
@@ -52,6 +52,99 @@ Filtering can be done by:
 ### Building
 
 Run `npm run build` from the root directory. This command will build all the JavaScript packages (`client`, `client-features`, `demo`) and the main plugin script (`src/index.js`).
+
+### Using WordPress Feature API in Your Plugin via Composer
+
+Plugin developers can include the WordPress Feature API in their plugins using Composer.
+
+#### 1. Add as a Composer dependency
+
+```json
+{
+  "require": {
+    "automattic/wp-feature-api": "^0.1.1"
+  }
+}
+```
+
+#### 2. Safe loading in your plugin
+
+To safely load the Feature API and handle potential version conflicts when multiple plugins bundle it:
+
+```php
+// Plugin bootstrap code
+function my_plugin_init() {
+    // Load our bundled version of Feature API
+    require_once __DIR__ . '/vendor/automattic/wp-feature-api/wp-feature-api.php';
+    
+    // Register our version - the highest version across all plugins will be used
+    wp_feature_api_register_version( '0.1.1', __DIR__ . '/vendor/automattic/wp-feature-api/wp-feature-api.php' );
+
+    // Register features once we know API is available
+    add_action( 'wp_feature_api_init', 'my_plugin_register_features' );
+}
+add_action( 'plugins_loaded', 'my_plugin_init', 15 ); // Early enough to register before resolver runs
+
+/**
+ * Register features provided by this plugin
+ */
+function my_plugin_register_features() {
+    // Register your features here
+    wp_register_feature( 'my-plugin/example-feature', array(
+        'name' => 'Example Feature',
+        'description' => 'An example feature from my plugin',
+        'callback' => 'my_plugin_example_feature_callback',
+        'type' => 'tool',
+        'input_schema' => array(
+            'type' => 'object',
+            'properties' => array(
+                'example_param' => array(
+                    'type' => 'string',
+                    'description' => 'An example parameter',
+                ),
+            ),
+        ),
+    ) );
+}
+```
+
+#### 3. Version conflict handling (optional)
+
+If you need a specific minimum version of the Feature API, you can check the active version:
+
+```php
+/**
+ * Display admin notice if Feature API version is too low
+ */
+function my_plugin_feature_api_version_notice() {
+    ?>
+    <div class="notice notice-warning">
+        <p>
+            <?php
+            printf(
+                /* translators: %1$s: Plugin name, %2$s: Required version, %3$s: Current version */
+                esc_html__(
+                    '%1$s requires WordPress Feature API version %2$s or higher, but version %3$s is currently loaded. Some features may not work properly.',
+                    'my-plugin-textdomain'
+                ),
+                '<strong>My Plugin</strong>',
+                '0.1.1',
+                wp_feature_api_get_version()
+            );
+            ?>
+        </p>
+    </div>
+    <?php
+}
+
+// Check version after WP Feature API is fully initialized
+add_action( 'wp_feature_api_init', function() {
+    $min_version = '0.1.1';
+    if ( version_compare( wp_feature_api_get_version(), $min_version, '<' ) ) {
+        add_action( 'admin_notices', 'my_plugin_feature_api_version_notice' );
+    }
+} );
+```
 
 ### Running the Demo
 
