@@ -18,7 +18,8 @@ class WP_Feature_Register {
 	 * Registers WordPress hooks.
 	 */
 	public function init() {
-		add_action( 'init', array( $this, 'register_features' ) );
+		// Register features immediately - we're already in the wp_feature_api_init action
+		$this->register_features();
 	}
 
 	/**

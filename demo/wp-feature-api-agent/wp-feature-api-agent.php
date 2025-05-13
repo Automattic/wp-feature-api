@@ -49,7 +49,7 @@ function wp_ai_api_proxy_init() {
 	$feature_register_instance->init();
 }
 
-add_action( 'plugins_loaded', 'wp_ai_api_proxy_init', 20 );
+add_action( 'wp_feature_api_init', 'wp_ai_api_proxy_init' );
 
 /**
  * Enqueues scripts and styles for the admin area.
