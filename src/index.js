@@ -1,6 +1,7 @@
 /**
- * External dependencies
+ * Internal dependencies
  */
-import { registerCoreFeatures } from '@wp-feature-api/client-features';
+import { coreFeatures } from '../packages/client-features/src';
+import { registerFeature } from '../packages/client/src/api';
 
-registerCoreFeatures();
+coreFeatures.filter( ( feature ) => !! feature ).forEach( registerFeature );
