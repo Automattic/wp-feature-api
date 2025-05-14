@@ -3,6 +3,7 @@
  */
 import type { Message } from '../types/messages';
 import type { ToolExecutor } from './tool-executor';
+import { defaultSystemPrompt } from './system-prompt';
 
 /**
  * Defines the shape of the function responsible for making API calls.
@@ -61,7 +62,19 @@ export const createAgent = ( deps: AgentDependencies ): Agent => {
 		const userMessage: Message = { role: 'user', content: query };
 		yield userMessage;
 
-		const initialHistory: Message[] = [ ...currentMessages, userMessage ];
+		const systemMessage: Message = {
+			role: 'system',
+			content: defaultSystemPrompt,
+		};
+
+		// If the first message in currentMessages is already a system message, don't add another one
+		const hasSystemMessage =
+			currentMessages.length > 0 &&
+			currentMessages[ 0 ].role === 'system';
+
+		const initialHistory: Message[] = hasSystemMessage
+			? [ ...currentMessages, userMessage ]
+			: [ systemMessage, ...currentMessages, userMessage ];
 
 		const currentTurnHistory: Message[] = [ ...initialHistory ];
 
