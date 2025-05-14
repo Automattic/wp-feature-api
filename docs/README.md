@@ -58,3 +58,21 @@ This documentation provides a comprehensive guide to the WordPress Feature API, 
 10. **MCP Integration (Conceptual)**
     * Relationship between Feature API and MCP
     * The MCP Adapter Concept
+11. **Feature API Agent Demo**
+    * Demo Overview
+    * Key Concepts Illustrated
+    * Technical Implementation
+    * Architecture
+    * Server-Side Features
+    * Client-Side Implementation
+    * Chat Interface
+    * LLM Tool Use via Feature API
+    * Agent Orchestration
+    * Backend Proxy
+12. **Release Process**
+    * Distribution Formats
+    * Automated Release Process
+    * Creating a Release
+    * WordPress Plugin ZIP
+    * Composer Package
+    * NPM Package
