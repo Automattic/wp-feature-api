@@ -64,7 +64,7 @@ Plugin developers should include the WordPress Feature API in their plugins usin
 ```json
 {
   "require": {
-    "automattic/wp-feature-api": "^0.1.2"
+    "automattic/wp-feature-api": "^0.1.4" // Make sure to use the latest version
   }
 }
 ```
