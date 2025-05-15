@@ -67,7 +67,10 @@ import { registerFeature, executeFeature } from '@automattic/wp-feature-api';
 // Register a feature
 registerFeature({
   id: 'my-feature',
-  title: 'My Feature',
+  name: 'My Feature',
+  description: 'My Feature Description',
+  type: 'tool',
+  location: 'client',
   callback: async (args) => {
     // Feature implementation
     return 'result';
