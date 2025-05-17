@@ -178,7 +178,55 @@ class WP_Feature implements \JsonSerializable {
 	 * @since 0.1.0
 	 * @var array
 	 */
-	private $location;
+        private $location;
+
+       /**
+        * Current version of the feature.
+        *
+        * @since 0.1.0
+        * @var string
+        */
+       private $version = '';
+
+       /**
+        * Version when this feature becomes deprecated.
+        *
+        * @since 0.1.0
+        * @var string
+        */
+       private $deprecated_version = '';
+
+       /**
+        * Version when this feature was introduced.
+        *
+        * @since 0.1.0
+        * @var string
+        */
+       private $since_version = '';
+
+       /**
+        * Alternative feature IDs.
+        *
+        * @since 0.1.0
+        * @var array
+        */
+       private $alternatives = array();
+
+       /**
+        * Message explaining why the feature is deprecated.
+        *
+        * @since 0.1.0
+        * @var string
+        */
+       private $deprecated_message = '';
+
+       /**
+        * Mapping of available versions to their specific args.
+        *
+        * @since 0.1.0
+        * @var array
+        */
+       private $versions = array();
 
 	/**
 	 * Constructor.
@@ -398,9 +446,59 @@ class WP_Feature implements \JsonSerializable {
 	 * @since 0.1.0
 	 * @return array The feature location.
 	 */
-	public function get_location() {
-		return self::LOCATION_SERVER;
-	}
+        public function get_location() {
+                return self::LOCATION_SERVER;
+        }
+
+       /**
+        * Gets the feature version.
+        *
+        * @since 0.1.0
+        * @return string Version string.
+        */
+       public function get_version() {
+               return $this->version;
+       }
+
+       /**
+        * Gets the deprecated version string.
+        *
+        * @since 0.1.0
+        * @return string Deprecated version.
+        */
+       public function get_deprecated_version() {
+               return $this->deprecated_version;
+       }
+
+       /**
+        * Gets the version when the feature was introduced.
+        *
+        * @since 0.1.0
+        * @return string Since version.
+        */
+       public function get_since_version() {
+               return $this->since_version;
+       }
+
+       /**
+        * Gets the message explaining deprecation.
+        *
+        * @since 0.1.0
+        * @return string Deprecation message.
+        */
+       public function get_deprecated_message() {
+               return $this->deprecated_message;
+       }
+
+       /**
+        * Gets defined versions.
+        *
+        * @since 0.1.0
+        * @return array Versions map.
+        */
+       public function get_versions() {
+               return $this->versions;
+       }
 
 	/**
 	 * Whether the feature has a REST alias.
@@ -454,9 +552,9 @@ class WP_Feature implements \JsonSerializable {
 		}
 
 		// Validate the input against the schema if available.
-		if ( ! empty( $this->input_schema ) ) {
-			$valid = $this->validate_input( $context );
-			if ( is_wp_error( $valid ) ) {
+                if ( ! empty( $this->input_schema ) ) {
+                        $valid = $this->validate_input( $context );
+                        if ( is_wp_error( $valid ) ) {
 				/**
 				 * Fires when input validation fails for a feature.
 				 *
@@ -467,9 +565,27 @@ class WP_Feature implements \JsonSerializable {
 				 */
 				do_action( 'wp_feature_input_validation_failed', $valid, $context, $this );
 				do_action( $this->get_filter_id() . '_input_validation_failed', $valid, $context, $this );
-				return $valid;
-			}
-		}
+                                return $valid;
+                        }
+                }
+
+               if ( $this->isDeprecated() ) {
+                       /**
+                        * Fires when a deprecated feature version is executed.
+                        *
+                        * @since 0.1.0
+                        * @param string $feature_id        The feature ID.
+                        * @param string $version_used      The version being used.
+                        * @param string $deprecated_version The version marked deprecated.
+                        * @param array  $alternatives       Suggested alternatives.
+                        */
+                       do_action( 'wp_feature_deprecated_run', $this->get_id(), $this->version, $this->deprecated_version, $this->alternatives );
+
+                       $should_run = apply_filters( 'wp_feature_handle_deprecated', true, $this->version, $this );
+                       if ( ! $should_run ) {
+                               return new WP_Error( 'deprecated_feature', __( 'This feature version is deprecated.', 'wp-feature-api' ) );
+                       }
+               }
 
 		/**
 		 * Fires before a feature is run.
@@ -542,20 +658,26 @@ class WP_Feature implements \JsonSerializable {
 	private function set_props( $args ) {
 		$args = wp_parse_args(
 			$args,
-			array(
-				'type'         => self::TYPE_DEFAULT,
-				'name'         => '',
-				'description'  => '',
-				'meta'         => array(),
-				'categories'   => array(),
-				'input_schema' => array(),
-				'output_schema' => array(),
-				'callback'     => null,
-				'permission_callback' => null,
-				'is_eligible'       => null,
-				'rest_alias'   => false,
-			)
-		);
+                       array(
+                               'type'               => self::TYPE_DEFAULT,
+                               'name'               => '',
+                               'description'        => '',
+                               'meta'               => array(),
+                               'categories'         => array(),
+                               'input_schema'       => array(),
+                               'output_schema'      => array(),
+                               'callback'           => null,
+                               'permission_callback' => null,
+                               'is_eligible'        => null,
+                               'rest_alias'         => false,
+                               'version'            => '',
+                               'deprecated_version' => '',
+                               'since_version'      => '',
+                               'alternatives'       => array(),
+                               'deprecated_message' => '',
+                               'versions'           => array(),
+                       )
+               );
 
 		if ( empty( $args['name'] ) ) {
 			return new WP_Error( 'missing_name', __( 'Feature name is required.', 'wp-feature-api' ) );
@@ -581,8 +703,8 @@ class WP_Feature implements \JsonSerializable {
 		$this->description = sanitize_text_field( $args['description'] );
 		$this->type        = $args['type'];
 
-		// Meta should be an array.
-		$this->meta = is_array( $args['meta'] ) ? $args['meta'] : array();
+               // Meta should be an array.
+               $this->meta = is_array( $args['meta'] ) ? $args['meta'] : array();
 
 		// Categories should be an array.
 		$this->categories = is_array( $args['categories'] ) ? $args['categories'] : array();
@@ -600,11 +722,39 @@ class WP_Feature implements \JsonSerializable {
 		// Filter must be callable or null.
 		$this->is_eligible = is_callable( $args['is_eligible'] ) || null === $args['is_eligible'] ? $args['is_eligible'] : null;
 
-		// Rest alias must be false or a string.
-		$this->rest_alias = false === $args['rest_alias'] || is_string( $args['rest_alias'] ) ? $args['rest_alias'] : false;
 
-		return true;
-	}
+               // Rest alias must be false or a string.
+               $this->rest_alias = false === $args['rest_alias'] || is_string( $args['rest_alias'] ) ? $args['rest_alias'] : false;
+
+               // Versioning fields.
+               $this->version            = sanitize_text_field( $args['version'] );
+               $this->deprecated_version = sanitize_text_field( $args['deprecated_version'] );
+               $this->since_version      = sanitize_text_field( $args['since_version'] );
+               $this->alternatives       = is_array( $args['alternatives'] ) ? $args['alternatives'] : array();
+               $this->deprecated_message = sanitize_text_field( $args['deprecated_message'] );
+               $this->versions           = is_array( $args['versions'] ) ? $args['versions'] : array();
+
+               if ( empty( $this->version ) && ! empty( $this->versions ) ) {
+                       $vers = array_keys( $this->versions );
+                       usort( $vers, 'version_compare' );
+                       $this->version = end( $vers );
+               }
+
+               if ( ! empty( $this->versions ) && isset( $this->versions[ $this->version ] ) ) {
+                       $ver_args = $this->versions[ $this->version ];
+                       if ( isset( $ver_args['input_schema'] ) ) {
+                               $this->input_schema = $ver_args['input_schema'];
+                       }
+                       if ( isset( $ver_args['output_schema'] ) ) {
+                               $this->output_schema = $ver_args['output_schema'];
+                       }
+                       if ( isset( $ver_args['callback'] ) && is_callable( $ver_args['callback'] ) ) {
+                               $this->callback = $ver_args['callback'];
+                       }
+               }
+
+               return true;
+       }
 
 
 	/**
@@ -672,10 +822,16 @@ class WP_Feature implements \JsonSerializable {
 			'type'          => $this->type,
 			'meta'          => $this->meta,
 			'categories'    => $this->categories,
-			'input_schema'  => $this->get_input_schema(),
-			'output_schema' => $this->get_output_schema(),
-			'location'      => $this->get_location(),
-		);
+                       'input_schema'  => $this->get_input_schema(),
+                       'output_schema' => $this->get_output_schema(),
+                       'location'      => $this->get_location(),
+                       'version'            => $this->version,
+                       'since_version'      => $this->since_version,
+                       'deprecated_version' => $this->deprecated_version,
+                       'alternatives'       => $this->alternatives,
+                       'deprecated_message' => $this->deprecated_message,
+                       'versions'           => $this->versions,
+               );
 
 		/**
 		 * Filters the feature data when converting to an array.
@@ -716,18 +872,42 @@ class WP_Feature implements \JsonSerializable {
 	 * @since 0.1.0
 	 * @return array The alternate types.
 	 */
-	public function get_alternate_types() {
-		$alternate_types = array_diff( self::TYPES, array( $this->type ) );
-		$alternate_features = array();
-		foreach ( $alternate_types as $type ) {
-			$feature = wp_feature_registry()->find( $this->id, $type );
-			if ( $feature instanceof WP_Feature ) {
-				$alternate_features[] = $feature;
-			}
-		}
+       public function get_alternate_types() {
+               $alternate_types = array_diff( self::TYPES, array( $this->type ) );
+               $alternate_features = array();
+               foreach ( $alternate_types as $type ) {
+                       $feature = wp_feature_registry()->find( $this->id, $type );
+                       if ( $feature instanceof WP_Feature ) {
+                               $alternate_features[] = $feature;
+                       }
+               }
 
-		return $alternate_features;
-	}
+               return $alternate_features;
+       }
+
+       /**
+        * Determines if the current version is deprecated.
+        *
+        * @since 0.1.0
+        * @return bool Whether the feature is deprecated.
+        */
+       public function isDeprecated() {
+               if ( empty( $this->deprecated_version ) ) {
+                       return false;
+               }
+
+               return version_compare( $this->version, $this->deprecated_version, '>=' );
+       }
+
+       /**
+        * Gets the alternative feature IDs.
+        *
+        * @since 0.1.0
+        * @return array Alternative feature IDs.
+        */
+       public function getAlternatives() {
+               return $this->alternatives;
+       }
 
 	/**
 	 * Sets the feature from a REST alias.

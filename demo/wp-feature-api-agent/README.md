@@ -1,6 +1,6 @@
 # WordPress Feature API Demo
 
-This demo plugin showcases how to use the WordPress Feature API, including registering features, and implementing WP Features as tools in a Typescript based AI Agent.
+This demo plugin showcases how to use the WordPress Feature API, including registering versioned features and implementing WP Features as tools in a TypeScript based AI Agent.
 
 ## Usage
 
@@ -12,3 +12,5 @@ This demo plugin showcases how to use the WordPress Feature API, including regis
 4. Navigate to "Settings" -> "WP Feature Agent Demo" in the WordPress admin to configure your OpenAI API key.
 5. Refresh and see the AI Agent chat interface.
 6. Ask the AI Agent questions about your WordPress site and features. It has access to both server-side and client-side features.
+
+The `demo/site-info` feature is registered with multiple versions. Version `2.0.0` adds extra details like the site's character set and post count.
