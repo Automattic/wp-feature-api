@@ -12,3 +12,8 @@ This demo plugin showcases how to use the WordPress Feature API, including regis
 4. Navigate to "Settings" -> "WP Feature Agent Demo" in the WordPress admin to configure your OpenAI API key.
 5. Refresh and see the AI Agent chat interface.
 6. Ask the AI Agent questions about your WordPress site and features. It has access to both server-side and client-side features.
+7. Features in this demo are grouped under the `demo` group. You can query only these features using `wp_get_features( array( 'group' => 'demo' ) )` or via the client library:
+
+   ```javascript
+   const demoFeatures = await getRegisteredFeatures( { group: 'demo' } );
+   ```

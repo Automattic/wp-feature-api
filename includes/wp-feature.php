@@ -23,7 +23,18 @@ function wp_feature_registry() {
  * @return bool True if the feature was registered, false otherwise.
  */
 function wp_register_feature( $feature ) {
-	return wp_feature_registry()->register( $feature );
+        return wp_feature_registry()->register( $feature );
+}
+
+/**
+ * Registers a feature group.
+ *
+ * @since 0.1.0
+ * @param WP_Feature_Group|array|string $group Group data.
+ * @return bool True if the group was registered, false otherwise.
+ */
+function wp_register_feature_group( $group ) {
+       return wp_feature_registry()->register_group( $group );
 }
 
 /**

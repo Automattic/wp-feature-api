@@ -36,8 +36,10 @@ export const createWpFeatureToolProvider = (): ToolProvider => {
 	 */
 	const getTools = async (): Promise< Tool[] > => {
 		try {
-			// Fetch all registered features using the API
-			const features: Feature[] | null = await getRegisteredFeatures();
+               // Fetch demo-specific features using the API
+               const features: Feature[] | null = await getRegisteredFeatures( {
+                       group: 'demo',
+               } );
 
 			if ( ! features ) {
 				// eslint-disable-next-line no-console

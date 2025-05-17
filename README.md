@@ -39,6 +39,7 @@ Filtering can be done by:
 - Querying feature properties
 - Keyword search across name, description, and ID.
 - Categories
+- Feature groups
 - `is_eligible` boolean callback
 - Context matching for when we already have some context and want Features that can be fulfilled using that context.
 

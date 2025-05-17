@@ -11,6 +11,8 @@ require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-registry.php
 require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature.php';
 // Include the WP_Feature_Query class.
 require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-query.php';
+// Include the WP_Feature_Group class.
+require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-group.php';
 // Include global functions.
 require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/wp-feature.php';
 // Initialize the REST API endpoints.

@@ -37,15 +37,23 @@ class WP_Feature_Registry {
 	 * @since 0.1.0
 	 * @var array
 	 */
-	private $features = array();
+       private $features = array();
 
-	/**
-	 * The categories collection.
-	 *
-	 * @since 0.1.0
-	 * @var WP_Feature_Categories
-	 */
-	private $categories = null;
+       /**
+        * The categories collection.
+        *
+        * @since 0.1.0
+        * @var WP_Feature_Categories
+        */
+       private $categories = null;
+
+       /**
+        * Registered feature groups.
+        *
+        * @since 0.1.0
+        * @var array
+        */
+       private $groups = array();
 
 	/**
 	 * Private constructor to prevent direct instantiation.
@@ -56,8 +64,9 @@ class WP_Feature_Registry {
 	private function __construct() {
 		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/interface-wp-feature-repository.php';
 		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-repository-memory.php';
-		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-category.php';
-		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-categories.php';
+               require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-category.php';
+               require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-categories.php';
+               require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-group.php';
 
 		$default_repository = new WP_Feature_Repository_Memory();
 		$repository = apply_filters( 'wp_feature_repository', $default_repository );
@@ -271,9 +280,49 @@ class WP_Feature_Registry {
 	 * @param string $id The category ID.
 	 * @return WP_Feature_Category|null The category if found, null otherwise.
 	 */
-	public function get_category( $id ) {
-		return $this->categories->get( $id );
-	}
+        public function get_category( $id ) {
+                return $this->categories->get( $id );
+        }
+
+       /**
+        * Registers a feature group.
+        *
+        * @since 0.1.0
+        * @param WP_Feature_Group|array|string $group Group data.
+        * @return bool True on success, false otherwise.
+        */
+       public function register_group( $group ) {
+               $group_obj = WP_Feature_Group::make( $group );
+
+               if ( ! $group_obj ) {
+                       return false;
+               }
+
+               $this->groups[ $group_obj->get_slug() ] = $group_obj;
+
+               return true;
+       }
+
+       /**
+        * Gets a feature group by slug.
+        *
+        * @since 0.1.0
+        * @param string $slug Group slug.
+        * @return WP_Feature_Group|null Group object or null if not found.
+        */
+       public function get_group( $slug ) {
+               return isset( $this->groups[ $slug ] ) ? $this->groups[ $slug ] : null;
+       }
+
+       /**
+        * Gets all registered groups.
+        *
+        * @since 0.1.0
+        * @return array
+        */
+       public function get_groups() {
+               return $this->groups;
+       }
 
 	/**
 	 * Removes a feature from the repository and cache.

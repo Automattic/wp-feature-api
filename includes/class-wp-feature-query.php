@@ -33,13 +33,14 @@ class WP_Feature_Query {
 			array(
 				'type'       => array(),
 				'categories' => array(),
-				'location'   => array(),
-				'input_schema' => array(),
-				'output_schema' => array(),
-				'search'     => '',
-			)
-		);
-	}
+                               'location'   => array(),
+                               'input_schema' => array(),
+                               'output_schema' => array(),
+                               'group'      => '',
+                               'search'     => '',
+                       )
+               );
+       }
 
 	/**
 	 * Get the schema for the query.
@@ -92,31 +93,35 @@ class WP_Feature_Query {
 					),
 				),
 			),
-			'output_schema' => array(
-				'description' => __( 'Filter features by their output schema.', 'features-api' ),
-				'type' => 'object',
-				'properties' => array(
-					'match' => array(
-						'type' => 'string',
-						'enum' => array( 'all', 'any' ),
-						'default' => 'any',
-					),
-					'fields' => array(
-						'type' => 'array',
-						'items' => array(
-							'type' => 'string',
-						),
-					),
-					'required' => array(
-						'fields',
-					),
-				),
-			),
-			'search' => array(
-				'description' => __( 'Search features by name, description, or ID.', 'features-api' ),
-				'type' => 'string',
-			),
-		);
+                       'output_schema' => array(
+                               'description' => __( 'Filter features by their output schema.', 'features-api' ),
+                               'type' => 'object',
+                               'properties' => array(
+                                       'match' => array(
+                                               'type' => 'string',
+                                               'enum' => array( 'all', 'any' ),
+                                               'default' => 'any',
+                                       ),
+                                       'fields' => array(
+                                               'type' => 'array',
+                                               'items' => array(
+                                                       'type' => 'string',
+                                               ),
+                                       ),
+                                       'required' => array(
+                                               'fields',
+                                       ),
+                               ),
+                       ),
+                       'group' => array(
+                               'description' => __( 'Filter features by their group.', 'features-api' ),
+                               'type'        => 'string',
+                       ),
+                       'search' => array(
+                               'description' => __( 'Search features by name, description, or ID.', 'features-api' ),
+                               'type' => 'string',
+                       ),
+               );
 	}
 
 	/**
@@ -147,16 +152,27 @@ class WP_Feature_Query {
 			return false;
 		}
 
-		// Check categories.
-		if ( ! empty( $this->args['categories'] ) ) {
-			$feature_categories = $feature->get_categories();
-			$matches_category   = true;
-			foreach ( $this->args['categories'] as $category ) {
-				if ( ! in_array( $category, $feature_categories, true ) ) {
-					return false;
-				}
-			}
-		}
+               // Check categories.
+               if ( ! empty( $this->args['categories'] ) ) {
+                       $feature_categories = $feature->get_categories();
+                       $matches_category   = true;
+                       foreach ( $this->args['categories'] as $category ) {
+                               if ( ! in_array( $category, $feature_categories, true ) ) {
+                                       return false;
+                               }
+                       }
+               }
+
+               // Check group.
+               if ( ! empty( $this->args['group'] ) ) {
+                       $group = wp_feature_registry()->get_group( $this->args['group'] );
+                       if ( ! $group ) {
+                               return false;
+                       }
+                       if ( ! in_array( $feature->get_id(), $group->get_features(), true ) ) {
+                               return false;
+                       }
+               }
 
 		// Check input schema.
 		if ( ! empty( $this->args['input_schema'] ) ) {

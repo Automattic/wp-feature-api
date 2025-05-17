@@ -28,19 +28,29 @@ class WP_Feature_Register {
 	 * @since 0.1.0
 	 * @return void
 	 */
-	public function register_features() {
-		/** Global Features */
-		wp_register_feature(
-			array(
-				'id'          => 'demo/site-info',
-				'name'        => __( 'Site Information', 'wp-feature-api-agent' ),
-				'description' => __( 'Get basic information about the WordPress site. This includes the name, description, URL, version, language, timezone, date format, time format, active plugins, and active theme.', 'wp-feature-api-agent' ),
-				'type'        => WP_Feature::TYPE_RESOURCE,
-				'categories'  => array( 'demo', 'site', 'information' ),
-				'callback'    => array( $this, 'site_info_callback' ),
-			)
-		);
-	}
+        public function register_features() {
+                /** Global Features */
+                wp_register_feature(
+                        array(
+                                'id'          => 'demo/site-info',
+                                'name'        => __( 'Site Information', 'wp-feature-api-agent' ),
+                                'description' => __( 'Get basic information about the WordPress site. This includes the name, description, URL, version, language, timezone, date format, time format, active plugins, and active theme.', 'wp-feature-api-agent' ),
+                                'type'        => WP_Feature::TYPE_RESOURCE,
+                                'categories'  => array( 'demo', 'site', 'information' ),
+                                'callback'    => array( $this, 'site_info_callback' ),
+                        )
+                );
+
+               // Register a feature group for demo features.
+               wp_register_feature_group(
+                       array(
+                               'id'          => 'demo',
+                               'name'        => __( 'Demo', 'wp-feature-api-agent' ),
+                               'description' => __( 'Features included with the WP Feature API demo.', 'wp-feature-api-agent' ),
+                               'features'    => array( 'demo/site-info' ),
+                       )
+               );
+        }
 
 	/**
 	 * Callback for the site info feature.

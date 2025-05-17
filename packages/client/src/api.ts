@@ -45,9 +45,11 @@ export function getRegisteredFeature( featureId: string ): Feature | null {
  *
  * @return An array of all registered feature definition objects, or null if the store is not ready.
  */
-export async function getRegisteredFeatures(): Promise< Feature[] | null > {
-	const features = await resolveSelect( store )?.getRegisteredFeatures();
-	return features || null;
+export async function getRegisteredFeatures(
+       query: Record< string, unknown > = {}
+): Promise< Feature[] | null > {
+       const features = await resolveSelect( store )?.getRegisteredFeatures( query );
+       return features || null;
 }
 
 /**

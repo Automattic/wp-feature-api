@@ -115,7 +115,7 @@ The Feature API employs a registry pattern with distinct server-side and client-
 * **`store` (`@wordpress/data` store)**: Manages client-side feature state.
 * **`registerFeature( feature: Feature )`**: Registers a client-side feature.
 * **`executeFeature( featureId: string, args: any )`**: Executes a feature (client or server).
-* **`getRegisteredFeatures()`**: Retrieves all currently known features (client + resolved server).
+* **`getRegisteredFeatures( query? )`**: Retrieves features, optionally filtered using a query (e.g., `{ group: 'demo' }`).
 
     ```javascript
     // In your client-side code (e.g., block editor script)
@@ -164,9 +164,9 @@ The Feature API employs a registry pattern with distinct server-side and client-
         console.error('Error during update and save:', error);
       }
 
-      // Discover available features
-      const allFeatures = await getRegisteredFeatures();
-      console.log('Available Features:', allFeatures);
+      // Discover available features from the "demo" group
+      const allFeatures = await getRegisteredFeatures( { group: 'demo' } );
+      console.log('Demo Features:', allFeatures);
     }
     ```
 

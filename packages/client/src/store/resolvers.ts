@@ -10,13 +10,13 @@ import { ENTITY_KIND, ENTITY_NAME } from './constants';
 import { receiveFeatures, receiveFeature } from './actions';
 import { store } from './index';
 
-export function getRegisteredFeatures() {
-	return async ( { dispatch, registry } ) => {
-		const features = await registry
-			.resolveSelect( coreStore )
-			.getEntityRecords( ENTITY_KIND, ENTITY_NAME );
-		dispatch( receiveFeatures( features ) );
-	};
+export function getRegisteredFeatures( query: Record< string, unknown > = {} ) {
+       return async ( { dispatch, registry } ) => {
+               const features = await registry
+                       .resolveSelect( coreStore )
+                       .getEntityRecords( ENTITY_KIND, ENTITY_NAME, query );
+               dispatch( receiveFeatures( features ) );
+       };
 }
 
 export function getRegisteredFeature( id: string ) {
