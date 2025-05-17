@@ -30,14 +30,14 @@ class WP_Feature_Registry {
 	 */
 	private $repository = null;
 
-	/**
-	 * In-memory cache of feature IDs.
-	 * Separated by type.
-	 *
-	 * @since 0.1.0
-	 * @var array
-	 */
-	private $features = array();
+       /**
+        * In-memory cache of feature IDs keyed by ID for quick lookup.
+        * Separated by type.
+        *
+        * @since 0.1.0
+        * @var array
+        */
+       private $features = array();
 
 	/**
 	 * The categories collection.
@@ -300,40 +300,41 @@ class WP_Feature_Registry {
 	 * @since 0.1.0
 	 * @return void
 	 */
-	private function cache_clear() {
-		$this->features = array();
-	}
+       private function cache_clear() {
+               $this->features = array();
+       }
 
-	/**
-	 * Removes a feature ID from the cache.
-	 *
-	 * @since 0.1.0
-	 * @param WP_Feature $feature The feature to remove.
-	 * @return void
-	 */
-	private function cache_delete( $feature ) {
-		unset( $this->features[ $feature->get_id() ] );
-	}
+       /**
+        * Removes a feature ID from the cache.
+        *
+        * @since 0.1.0
+        * @param string|WP_Feature $feature The feature or feature ID to remove.
+        * @return void
+        */
+       private function cache_delete( $feature ) {
+               $feature_id = $feature instanceof WP_Feature ? $feature->get_id() : $feature;
+               unset( $this->features[ $feature_id ] );
+       }
 
-	/**
-	 * Checks if a feature is cached.
-	 *
-	 * @since 0.1.0
-	 * @param WP_Feature $feature The feature to check.
-	 * @return bool True if the feature is cached, false otherwise.
-	 */
-	private function cache_has( $feature ) {
-		return isset( $this->features[ $feature->get_id() ] );
-	}
+       /**
+        * Checks if a feature is cached.
+        *
+        * @since 0.1.0
+        * @param string|WP_Feature $feature The feature or feature ID to check.
+        * @return bool True if the feature is cached, false otherwise.
+        */
+       private function cache_has( $feature ) {
+               $feature_id = $feature instanceof WP_Feature ? $feature->get_id() : $feature;
+               return isset( $this->features[ $feature_id ] );
+       }
 
-	/**
-	 * Caches a feature.
-	 *
-	 * @since 0.1.0
-	 * @param WP_Feature $feature The feature to cache.
-	 */
-	private function cache_put( $feature ) {
-		$this->features[] = $feature->get_id();
-		sort( $this->features );
-	}
+       /**
+        * Caches a feature.
+        *
+        * @since 0.1.0
+        * @param WP_Feature $feature The feature to cache.
+        */
+       private function cache_put( $feature ) {
+               $this->features[ $feature->get_id() ] = true;
+       }
 }
