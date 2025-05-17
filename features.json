@@ -1,0 +1,18 @@
+[
+    {
+        "id": "demo/site-info",
+        "name": "Site Information",
+        "description": "Get basic information about the WordPress site.",
+        "type": "resource",
+        "categories": ["demo", "site", "information"],
+        "server_callback": "includes/feature-callbacks/site-info.php"
+    },
+    {
+        "id": "demo/client-alert",
+        "name": "Client Alert",
+        "description": "Show an alert in the browser.",
+        "type": "tool",
+        "categories": ["demo", "client"],
+        "client_callback": "includes/feature-callbacks/client-alert.js"
+    }
+]
