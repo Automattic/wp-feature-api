@@ -317,19 +317,23 @@ class WP_Feature_Schema_Adapter {
 				continue;
 			}
 
-			/**
-			 * Handle oneOf multiple types
-			 *
-			 * @todo: This is a cheap shortcut to shut-off 'oneOf' for now.
-			 */
-			if (
-				isset( $value['oneOf'] ) &&
-				is_array( $value['oneOf'] )
-			) {
-				$value['type']  = 'array';
-				$value['items'] = $value['oneOf'][0];
-				unset( $value['oneOf'] );
-			}
+                       /**
+                        * Handle oneOf multiple types.
+                        *
+                        * Recursively process each schema option rather than
+                        * forcing the first option into an array. This allows
+                        * valid union types to be preserved.
+                        */
+                       if (
+                               isset( $value['oneOf'] ) &&
+                               is_array( $value['oneOf'] )
+                       ) {
+                               foreach ( $value['oneOf'] as $index => $option ) {
+                                       if ( is_array( $option ) ) {
+                                               $value['oneOf'][ $index ] = $this->rule_strict_object_encoding( $rule_name, $option );
+                                       }
+                               }
+                       }
 
 			/**
 			 * Handle enum objects
