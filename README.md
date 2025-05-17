@@ -42,6 +42,36 @@ Filtering can be done by:
 - `is_eligible` boolean callback
 - Context matching for when we already have some context and want Features that can be fulfilled using that context.
 
+## Feature Versioning and Deprecation
+
+Features can evolve over time. Provide `version` metadata when registering a feature and optionally set `deprecated_version`, `alternatives`, and a `versions` map for version-specific behavior.
+
+```php
+wp_register_feature( 'my-plugin/report', array(
+    'name'        => 'Report',
+    'description' => 'Generates a report.',
+    'version'     => '2.0.0',
+    'deprecated_version' => '3.0.0',
+    'alternatives' => array( 'my-plugin/new-report' ),
+    'versions'    => array(
+        '1.0.0' => array(
+            'callback' => 'my_plugin_report_v1',
+        ),
+        '2.0.0' => array(
+            'callback' => 'my_plugin_report_v2',
+        ),
+    ),
+) );
+```
+
+Deprecated execution triggers the `wp_feature_deprecated_run` action. Use the `wp_feature_handle_deprecated` filter to prevent running outdated versions. The `wp_feature_rest_response` filter can add custom headers with version information.
+
+```php
+if ( $feature->is_deprecated() ) {
+    $alternatives = $feature->get_alternatives();
+}
+```
+
 ## Getting Started
 
 ### Development

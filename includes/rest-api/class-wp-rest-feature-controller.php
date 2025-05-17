@@ -203,12 +203,21 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 
 		$response = rest_ensure_response( $data );
 		$links = $this->get_links( $feature );
-		if ( ! empty( $links ) ) {
-			$response->add_links( $links );
-		}
+               if ( ! empty( $links ) ) {
+                       $response->add_links( $links );
+               }
 
-		return $response;
-	}
+               /**
+                * Filter the REST response for a feature.
+                *
+                * @since 0.1.0
+                * @param WP_REST_Response $response The response object.
+                * @param WP_Feature       $feature  The feature object.
+                */
+               $response = apply_filters( 'wp_feature_rest_response', $response, $feature );
+
+               return $response;
+       }
 
 	/**
 	 * Retrieves the query params for collections.

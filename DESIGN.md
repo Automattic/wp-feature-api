@@ -263,14 +263,14 @@ const feature = wp.features.find('woocommerce/product/report', {
 });
 
 // Check if feature is deprecated
-if (feature.isDeprecated()) {
+if (feature.is_deprecated()) {
 	console.warn(
 		`Feature ${feature.id} is deprecated. ${feature.deprecated_message}`
 	);
 }
 
 // Get suggested alternatives
-const alternatives = feature.getAlternatives();
+const alternatives = feature.get_alternatives();
 ```
 
 Notify or quiet deprecation:
@@ -310,7 +310,7 @@ Add version information to REST response headers:
 // Add version information to REST response headers
 add_filter('wp_feature_rest_response', function($response, $feature) {
     $response->header('X-WP-Feature-Version', $feature->version);
-    if ($feature->isDeprecated()) {
+    if ($feature->is_deprecated()) {
         $response->header('X-WP-Feature-Deprecated', 'true');
         $response->header('X-WP-Feature-Alternatives', implode(',', $feature->alternatives));
     }
