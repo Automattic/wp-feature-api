@@ -67,19 +67,29 @@ export async function executeFeature(
 		throw new Error( `Feature not found: ${ featureId }` );
 	}
 
-	try {
-		if ( feature.location === 'client' ) {
-			const callback =
-				select( store ).getRegisteredFeatureCallback( featureId );
+        try {
+                if ( feature.location === 'client' ) {
+                        let callback =
+                                select( store ).getRegisteredFeatureCallback( featureId );
 
-			if ( typeof callback !== 'function' ) {
-				throw new Error(
-					`No callback registered for client feature: ${ featureId }`
-				);
-			}
+                        if ( typeof callback !== 'function' && feature.client_callback ) {
+                                const module = await import(
+                                        /* webpackIgnore: true */ feature.client_callback
+                                );
+                                callback = module.default || module;
+                                if ( typeof callback === 'function' ) {
+                                        dispatch( store ).registerFeatureCallback( featureId, callback );
+                                }
+                        }
 
-			return await callback( args );
-		}
+                        if ( typeof callback !== 'function' ) {
+                                throw new Error(
+                                        `No callback registered for client feature: ${ featureId }`
+                                );
+                        }
+
+                        return await callback( args );
+                }
 
 		// Server-side features
 		const method = feature.type === 'tool' ? 'POST' : 'GET';

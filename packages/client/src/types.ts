@@ -15,9 +15,14 @@ export interface Feature {
 	categories: string[];
 	input_schema?: Record< string, any >;
 	output_schema?: Record< string, any >;
-	location: 'server' | 'client';
-	icon?: any;
-	is_eligible?: () => boolean;
+        location: 'server' | 'client';
+        icon?: any;
+       /**
+        * Path to the module exporting the callback for this client feature.
+        * Used when the callback is lazily loaded from a features.json file.
+        */
+       client_callback?: string;
+        is_eligible?: () => boolean;
 	callback?: (
 		args: any,
 		context: {

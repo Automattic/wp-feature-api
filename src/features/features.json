@@ -1,0 +1,16 @@
+[
+  {
+    "id": "tool-navigate",
+    "name": "Navigate Browser",
+    "description": "Navigates the browser to a specified URL in WordPress.",
+    "type": "tool",
+    "location": "client",
+    "categories": ["core", "navigation"],
+    "input_schema": {
+      "type": "object",
+      "properties": {"url": {"type": "string", "ui_hint": "url", "pattern": "^/"}},
+      "required": ["url"]
+    },
+    "client_callback": "../packages/client-features/src/navigation.ts"
+  }
+]
