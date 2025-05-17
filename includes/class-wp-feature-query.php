@@ -36,7 +36,8 @@ class WP_Feature_Query {
 				'location'   => array(),
 				'input_schema' => array(),
 				'output_schema' => array(),
-				'search'     => '',
+                               'search'     => '',
+                               'embedding'  => array(),
 			)
 		);
 	}
@@ -112,12 +113,19 @@ class WP_Feature_Query {
 					),
 				),
 			),
-			'search' => array(
-				'description' => __( 'Search features by name, description, or ID.', 'features-api' ),
-				'type' => 'string',
-			),
-		);
-	}
+                       'search' => array(
+                               'description' => __( 'Search features by name, description, or ID.', 'features-api' ),
+                               'type' => 'string',
+                       ),
+                       'embedding' => array(
+                               'description' => __( 'Embedding vector for semantic search.', 'features-api' ),
+                               'type' => 'array',
+                               'items' => array(
+                                       'type' => 'number',
+                               ),
+                       ),
+               );
+       }
 
 	/**
 	 * Gets the query arguments.

@@ -73,5 +73,34 @@ interface WP_Feature_Repository_Interface {
 	 * @since 0.1.0
 	 * @return void
 	 */
-	public function clear();
+       public function clear();
+
+       /**
+        * Stores an embedding vector for a feature.
+        *
+        * @since 0.1.0
+        * @param string $feature_id The feature ID.
+        * @param array  $vector     The embedding vector.
+        * @return void
+        */
+       public function store_embedding( $feature_id, $vector );
+
+       /**
+        * Retrieves the embedding vector for a feature if available.
+        *
+        * @since 0.1.0
+        * @param string $feature_id The feature ID.
+        * @return array|null The embedding vector or null.
+        */
+       public function get_embedding( $feature_id );
+
+       /**
+        * Queries features by similarity to an embedding vector.
+        *
+        * @since 0.1.0
+        * @param array $vector The embedding vector to compare.
+        * @param int   $limit  Optional. Maximum results to return. Default 5.
+        * @return array Array of matching features ordered by similarity.
+        */
+       public function query_by_embedding( $vector, $limit = 5 );
 }
