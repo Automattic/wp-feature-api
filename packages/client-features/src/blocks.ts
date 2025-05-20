@@ -15,6 +15,7 @@ import type { Feature } from '@automattic/wp-feature-api';
  * Internal dependencies
  */
 import { isInEditor } from './utils';
+import { getStyleSchema } from './styles';
 
 /**
  * Client-side feature to insert a paragraph block.
@@ -36,6 +37,7 @@ export const insertParagraphBlock: Feature = {
 				type: 'string',
 				description: __( 'Text content for the paragraph.' ),
 			},
+			style: getStyleSchema( 'core/paragraph' ),
 		},
 	},
 	output_schema: {
@@ -46,18 +48,25 @@ export const insertParagraphBlock: Feature = {
 		},
 		required: [ 'success', 'blockType' ],
 	},
-	callback: ( args: { content: string } ) => {
+	callback: ( args: {
+		content: string;
+		style?: Record< string, unknown >;
+	} ) => {
 		if ( typeof args?.content !== 'string' ) {
 			throw new Error(
 				'Content argument is missing or invalid for paragraph block.'
 			);
 		}
+
 		try {
 			const content = args.content
 				.replace( /\\n/g, '\n' ) // First replace escaped newlines
 				.replace( /\n/g, '<br>' ); // Then replace actual newlines with <br>
 			const newBlock = createBlock( 'core/paragraph', {
 				content,
+				style: {
+					...( args?.style || {} ),
+				},
 			} );
 			if ( ! newBlock ) {
 				throw new Error( 'Failed to create paragraph block.' );
@@ -98,6 +107,7 @@ export const insertHeadingBlock: Feature = {
 				type: 'integer',
 				description: __( 'Heading level (intended range 1–6).' ),
 			},
+			style: getStyleSchema( 'core/heading' ),
 		},
 		required: [ 'content' ],
 	},
@@ -110,7 +120,11 @@ export const insertHeadingBlock: Feature = {
 		},
 		required: [ 'success', 'blockType', 'level' ],
 	},
-	callback: ( args: { content: string; level?: number } ) => {
+	callback: ( args: {
+		content: string;
+		level?: number;
+		style?: Record< string, unknown >;
+	} ) => {
 		if ( ! args?.content ) {
 			throw new Error( 'Content is required for heading block.' );
 		}
@@ -122,6 +136,9 @@ export const insertHeadingBlock: Feature = {
 			const newBlock = createBlock( 'core/heading', {
 				content: args.content,
 				level: headingLevel,
+				style: {
+					...( args?.style || {} ),
+				},
 			} );
 			if ( ! newBlock ) {
 				throw new Error( 'Failed to create heading block.' );
@@ -166,6 +183,7 @@ export const insertQuoteBlock: Feature = {
 				type: 'string',
 				description: __( 'Optional citation for the quote.' ),
 			},
+			style: getStyleSchema( 'core/quote' ),
 		},
 		required: [ 'value' ],
 	},
@@ -177,7 +195,11 @@ export const insertQuoteBlock: Feature = {
 		},
 		required: [ 'success', 'clientId' ],
 	},
-	callback: ( args: { value: string; citation?: string } ) => {
+	callback: ( args: {
+		value: string;
+		citation?: string;
+		style?: Record< string, unknown >;
+	} ) => {
 		if ( typeof args?.value !== 'string' ) {
 			throw new Error(
 				'Value argument is missing or invalid for quote block.'
@@ -193,6 +215,9 @@ export const insertQuoteBlock: Feature = {
 				'core/quote',
 				{
 					citation: args.citation || '',
+					style: {
+						...( args?.style || {} ),
+					},
 				},
 				[ innerParagraph ]
 			);
@@ -238,6 +263,7 @@ export const insertListBlock: Feature = {
 					'Whether the list should be ordered (numbered).'
 				),
 			},
+			style: getStyleSchema( 'core/list' ),
 		},
 		required: [ 'values' ],
 	},
@@ -249,7 +275,11 @@ export const insertListBlock: Feature = {
 		},
 		required: [ 'success', 'clientId' ],
 	},
-	callback: ( args: { values: string[]; ordered?: boolean } ) => {
+	callback: ( args: {
+		values: string[];
+		ordered?: boolean;
+		style?: Record< string, unknown >;
+	} ) => {
 		if ( ! Array.isArray( args?.values ) || args.values.length === 0 ) {
 			throw new Error(
 				'Values argument must be a non-empty array for list block.'
@@ -266,6 +296,9 @@ export const insertListBlock: Feature = {
 				'core/list',
 				{
 					ordered: !! args.ordered,
+					style: {
+						...( args?.style || {} ),
+					},
 				},
 				innerListItemBlocks
 			);
