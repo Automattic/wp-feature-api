@@ -159,7 +159,7 @@ if ( ! function_exists( 'wp_feature_api_version_resolver' ) ) {
 			define( 'WP_FEATURE_API_PLUGIN_URL', trailingslashit( content_url( $vendor_rel_path ) ) );
 		} else {
 			// Standard plugin installation
-			define( 'WP_FEATURE_API_PLUGIN_URL', plugins_url( '/', $file_to_load ) );
+			define( 'WP_FEATURE_API_PLUGIN_URL', plugin_dir_url( $file_to_load ) );
 		}
 
 		// Now load the API from the highest version.
