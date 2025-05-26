@@ -56,7 +56,7 @@ require_once $_tests_dir . '/includes/functions.php';
  * Manually load the plugin being tested.
  */
 function _manually_load_plugin() {
-	require dirname( __DIR__ ) . '/includes/load.php';
+	require dirname( __DIR__ ) . '/includes/core/load.php';
 }
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 

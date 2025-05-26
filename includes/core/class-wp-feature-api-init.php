@@ -18,7 +18,9 @@ class WP_Feature_API_Init {
 	 */
 	public static function initialize() {
 		// Register REST routes on init. Late execution to ensure features are registered by plugins first.
-		add_action( 'init', array( __CLASS__, 'register_rest_routes' ), 9999 );
+		if ( wp_feature_api_has_component( 'rest-api' ) ) {
+			add_action( 'init', array( __CLASS__, 'register_rest_routes' ), 9999 );
+		}
 
 		// enqueue admin scripts.
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_admin_scripts' ) );

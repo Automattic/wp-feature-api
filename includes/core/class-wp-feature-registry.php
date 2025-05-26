@@ -54,10 +54,10 @@ class WP_Feature_Registry {
 	 * @since 0.1.0
 	 */
 	private function __construct() {
-		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/interface-wp-feature-repository.php';
-		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-repository-memory.php';
-		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-category.php';
-		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-categories.php';
+		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/core/interface-wp-feature-repository.php';
+		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/core/class-wp-feature-repository-memory.php';
+		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/core/class-wp-feature-category.php';
+		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/core/class-wp-feature-categories.php';
 
 		$default_repository = new WP_Feature_Repository_Memory();
 		$repository = apply_filters( 'wp_feature_repository', $default_repository );

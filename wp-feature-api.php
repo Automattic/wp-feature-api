@@ -163,7 +163,7 @@ if ( ! function_exists( 'wp_feature_api_version_resolver' ) ) {
 		}
 
 		// Now load the API from the highest version.
-		require_once $dir . '/includes/load.php';
+		require_once $dir . '/includes/core/load.php';
 	}
 }
 

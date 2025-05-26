@@ -188,7 +188,7 @@ class WP_Feature implements \JsonSerializable {
 	 * @param array  $args The feature arguments.
 	 */
 	public function __construct( $id, $args = array() ) {
-		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-schema-adapter.php';
+		require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/core/class-wp-feature-schema-adapter.php';
 
 		if ( empty( $id ) || ! is_string( $id ) ) {
 			_doing_it_wrong(
