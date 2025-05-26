@@ -2,6 +2,7 @@
  * WordPress dependencies
  */
 import { createReduxStore, dispatch, register } from '@wordpress/data';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -20,11 +21,28 @@ import { store as coreStore } from '@wordpress/core-data';
 declare global {
 	interface Window {
 		__WP_FEATURE_API_STORE_REGISTERED?: boolean;
+		__WP_FEATURE_API_REST_AVAILABLE?: boolean;
 	}
 }
 
 const isStoreRegistered = () => {
 	return window.__WP_FEATURE_API_STORE_REGISTERED === true;
+};
+
+const isRestApiAvailable = async () => {
+	if ( typeof window.__WP_FEATURE_API_REST_AVAILABLE !== 'undefined' ) {
+		return window.__WP_FEATURE_API_REST_AVAILABLE;
+	}
+
+	try {
+		// Try to fetch the features endpoint
+		await apiFetch( { path: '/wp/v2/features' } );
+		window.__WP_FEATURE_API_REST_AVAILABLE = true;
+		return true;
+	} catch ( e ) {
+		window.__WP_FEATURE_API_REST_AVAILABLE = false;
+		return false;
+	}
 };
 
 export const store = createReduxStore( STORE_NAME, {
@@ -39,19 +57,29 @@ if ( ! isStoreRegistered() ) {
 		register( store );
 		window.__WP_FEATURE_API_STORE_REGISTERED = true;
 
-		dispatch( coreStore )?.addEntities( [
-			{
-				name: ENTITY_NAME,
-				kind: ENTITY_KIND,
-				baseURL: '/wp/v2/features',
-				baseURLParams: { context: 'edit' },
-				plural: 'features',
-				label: __( 'Features' ),
-				transientEdits: {
-					callback: true,
-				},
-			},
-		] );
+		// Only register the entity if REST API is available
+		isRestApiAvailable().then( ( available ) => {
+			if ( available ) {
+				dispatch( coreStore )?.addEntities( [
+					{
+						name: ENTITY_NAME,
+						kind: ENTITY_KIND,
+						baseURL: '/wp/v2/features',
+						baseURLParams: { context: 'edit' },
+						plural: 'features',
+						label: __( 'Features' ),
+						transientEdits: {
+							callback: true,
+						},
+					},
+				] );
+			} else {
+				// eslint-disable-next-line no-console
+				console.warn(
+					'Feature API REST endpoints are not available. Backend features cannot be interacted with.'
+				);
+			}
+		} );
 	} catch ( e ) {
 		window.__WP_FEATURE_API_STORE_REGISTERED = true;
 		// eslint-disable-next-line no-console
