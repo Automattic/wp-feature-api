@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$wp_feature_api_version = '0.1.4';
+$wp_feature_api_version = '0.1.5';
 $wp_feature_api_plugin_dir = plugin_dir_path( __FILE__ );
 $wp_feature_api_plugin_url = plugin_dir_url( __FILE__ );
 
@@ -30,6 +30,33 @@ $wp_feature_api_plugin_url = plugin_dir_url( __FILE__ );
  */
 if ( ! defined( 'WP_FEATURE_API_LOAD_DEMO' ) ) {
 	define( 'WP_FEATURE_API_LOAD_DEMO', false );
+}
+
+/**
+ * Checks if a component is available in the current installation.
+ *
+ * @since 0.1.5
+ * @param string $component The component to check. One of: 'rest-api', 'default-features'.
+ * @return bool True if the component is available, false otherwise.
+ */
+function wp_feature_api_has_component( $component ) {
+	static $available_components = null;
+
+	// Initialize the components cache if not already done
+	if ( null === $available_components ) {
+		$cached = get_transient( 'wp_feature_api_components' );
+		if ( false !== $cached ) {
+			$available_components = $cached;
+		} else {
+			$available_components = array(
+				'rest-api' => file_exists( WP_FEATURE_API_PLUGIN_DIR . 'includes/rest-api/class-wp-rest-feature-controller.php' ),
+				'default-features' => file_exists( WP_FEATURE_API_PLUGIN_DIR . 'includes/default-wp-features.php' ),
+			);
+			set_transient( 'wp_feature_api_components', $available_components, DAY_IN_SECONDS );
+		}
+	}
+
+	return isset( $available_components[ $component ] ) ? $available_components[ $component ] : false;
 }
 
 // Version registry.
