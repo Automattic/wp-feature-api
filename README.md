@@ -61,12 +61,20 @@ Plugin developers should include the WordPress Feature API in their plugins usin
 
 #### 1. Add as a Composer dependency
 
+Manually adding to your `composer.json` file:
+
 ```json
 {
   "require": {
     "automattic/wp-feature-api": "^0.1.4" // Make sure to use the latest version
   }
 }
+```
+
+If using the `composer` command in the terminal:
+
+```bash
+composer require automattic/wp-feature-api:"^0.1.4"
 ```
 
 #### 2. Load the Feature API in your plugin
