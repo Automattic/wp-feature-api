@@ -12,10 +12,29 @@ import { store } from './index';
 
 export function getRegisteredFeatures() {
 	return async ( { dispatch, registry } ) => {
-		const features = await registry
-			.resolveSelect( coreStore )
-			.getEntityRecords( ENTITY_KIND, ENTITY_NAME );
-		dispatch( receiveFeatures( features ) );
+		// Start with page 1
+		let page = 1;
+		let allFeatures = [];
+		let hasMore = true;
+
+		// Keep fetching pages until we have all features
+		while ( hasMore ) {
+			const features = await registry
+				.resolveSelect( coreStore )
+				.getEntityRecords( ENTITY_KIND, ENTITY_NAME, {
+					page,
+					per_page: 100,
+				} );
+			
+			if ( ! features || features.length === 0 ) {
+				hasMore = false;
+			} else {
+				allFeatures = [ ...allFeatures, ...features ];
+				page++;
+			}
+		}
+
+		dispatch( receiveFeatures( allFeatures ) );
 	};
 }
 
