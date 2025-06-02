@@ -100,7 +100,7 @@ add_action( 'plugins_loaded', 'my_plugin_init' );
 function my_plugin_register_features() {
     // Register your features here
     wp_register_feature( array(
-		'id' = 'my-plugin/example-feature',
+        'id' = 'my-plugin/example-feature',
         'name' => 'Example Feature',
         'description' => 'An example feature from my plugin',
         'callback' => 'my_plugin_example_feature_callback',
