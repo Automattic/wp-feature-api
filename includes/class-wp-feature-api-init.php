@@ -41,8 +41,16 @@ class WP_Feature_API_Init {
 		if ( ! is_admin() ) {
 			return;
 		}
+
+		if ( ! file_exists( WP_FEATURE_API_PLUGIN_DIR . 'build/index.asset.php' ) ) {
+			if ( WP_DEBUG ) {
+				wp_trigger_error( '', 'Assets file not found, please run the build for the Feature API plugin.' );
+			}
+			return;
+		}
 		$assets = require WP_FEATURE_API_PLUGIN_DIR . 'build/index.asset.php';
 		wp_enqueue_script( 'wp-features', WP_FEATURE_API_PLUGIN_URL . 'build/index.js', $assets['dependencies'], $assets['version'], true );
+
 	}
 
 	/**
