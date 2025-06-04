@@ -44,7 +44,7 @@ class WP_Feature_API_Init {
 		// Check for the file before requiring it.
 		if ( ! file_exists( WP_FEATURE_API_PLUGIN_DIR . 'build/index.asset.php' ) ) {
 			if ( WP_DEBUG ) {
-				wp_trigger_error( '', 'Assets file not found, please run the build for the Feature API plugin.' );
+				wp_trigger_error( '', 'Assets file not found, please run the build for the WordPress Feature API plugin.' );
 			}
 			return;
 		}
