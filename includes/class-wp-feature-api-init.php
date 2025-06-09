@@ -51,9 +51,10 @@ class WP_Feature_API_Init {
 	 */
 	public static function register_rest_routes() {
 		$controller = new WP_REST_Feature_Controller();
-		$controller->register_routes();
 
 		do_action( 'wp_feature_api_init' );
+
+		$controller->register_routes();
 	}
 
 	/**
