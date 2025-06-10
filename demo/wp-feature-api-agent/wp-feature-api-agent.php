@@ -32,24 +32,15 @@ require_once WP_AI_API_PROXY_PATH . 'includes/class-wp-ai-api-options.php';
 // Include the feature registration class.
 require_once WP_AI_API_PROXY_PATH . 'includes/class-wp-feature-register.php';
 
-/**
- * Initializes the plugin.
- *
- * Loads the plugin's main class and registers hooks.
- */
-function wp_ai_api_proxy_init() {
-	$proxy_instance = new A8C\WpFeatureApiAgent\WP_AI_API_Proxy();
-	$proxy_instance->register_hooks();
+$proxy_instance = new A8C\WpFeatureApiAgent\WP_AI_API_Proxy();
+$proxy_instance->register_hooks();
 
-	$options_instance = new A8C\WpFeatureApiAgent\WP_AI_API_Options();
-	$options_instance->init();
+$options_instance = new A8C\WpFeatureApiAgent\WP_AI_API_Options();
+$options_instance->init();
 
-	// Register additional demo features.
-	$feature_register_instance = new A8C\WpFeatureApiAgent\WP_Feature_Register();
-	$feature_register_instance->init();
-}
-
-add_action( 'wp_feature_api_init', 'wp_ai_api_proxy_init' );
+// Register additional demo features.
+$feature_register_instance = new A8C\WpFeatureApiAgent\WP_Feature_Register();
+$feature_register_instance->init();
 
 /**
  * Enqueues scripts and styles for the admin area.
