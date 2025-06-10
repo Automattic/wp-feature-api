@@ -66,7 +66,7 @@ Manually adding to your `composer.json` file:
 ```json
 {
   "require": {
-    "automattic/wp-feature-api": "^0.1.5" // Make sure to use the latest version
+    "automattic/wp-feature-api": "^0.1.6" // Make sure to use the latest version
   }
 }
 ```
@@ -74,7 +74,7 @@ Manually adding to your `composer.json` file:
 If using the `composer` command in the terminal:
 
 ```bash
-composer require automattic/wp-feature-api:"^0.1.5"
+composer require automattic/wp-feature-api:"^0.1.6"
 ```
 
 #### 2. Load the Feature API in your plugin

@@ -1,6 +1,6 @@
 {
 	"name": "wp-feature-api",
-	"version": "0.1.5",
+	"version": "0.1.6",
 	"description": "A system for exposing WordPress functionality in a standardized, discoverable way for both server and client-side use",
 	"main": "src/index.js",
 	"private": true,
