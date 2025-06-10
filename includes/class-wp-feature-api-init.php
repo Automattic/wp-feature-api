@@ -27,8 +27,6 @@ class WP_Feature_API_Init {
 		if ( defined( 'WP_FEATURE_API_LOAD_DEMO' ) && WP_FEATURE_API_LOAD_DEMO ) {
 			self::load_agent_demo();
 		}
-
-		do_action( 'wp_feature_api_init' );
 	}
 
 	/**
@@ -53,6 +51,9 @@ class WP_Feature_API_Init {
 	 */
 	public static function register_rest_routes() {
 		$controller = new WP_REST_Feature_Controller();
+
+		do_action( 'wp_feature_api_init' );
+
 		$controller->register_routes();
 	}
 
