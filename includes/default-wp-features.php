@@ -131,4 +131,4 @@ function wp_feature_api_register_core_features() {
 }
 
 // Register core features on init.
-add_action( 'init', 'wp_feature_api_register_core_features' );
+add_action( 'wp_feature_api_init', 'wp_feature_api_register_core_features' );

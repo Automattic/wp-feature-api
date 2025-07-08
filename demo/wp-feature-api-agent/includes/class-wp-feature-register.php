@@ -15,14 +15,6 @@ use WP_Feature;
 class WP_Feature_Register {
 
 	/**
-	 * Registers WordPress hooks.
-	 */
-	public function init() {
-		// Register features immediately - we're already in the wp_feature_api_init action
-		$this->register_features();
-	}
-
-	/**
 	 * Register features for the AI Agent.
 	 *
 	 * @since 0.1.0
