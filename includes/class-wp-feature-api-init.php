@@ -19,7 +19,7 @@ class WP_Feature_API_Init {
 	public static function initialize() {
 
 		// Run the wp_feature_api_init action after the regular REST routes are registered.
-		add_action( 'rest_api_init', array( __CLASS__, 'run_init_action' ), 100 );
+		add_action( 'rest_api_init', array( __CLASS__, 'run_init_action' ), 110 );
 		add_action( 'parse_request', array( __CLASS__, 'run_init_action' ), 11 );
 
 		// Register REST routes after the regular REST routes are registered
