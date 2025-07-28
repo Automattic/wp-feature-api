@@ -498,20 +498,9 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 						return rest_ensure_response( $result );
 					},
 					'permission_callback' => array( $feature, 'get_permission_callback' ),
-					'args'                => array(
-						'metadata' => array(
-							'description' => __( 'Metadata for executing the feature.', 'wp-feature-api' ),
-							'type'        => 'object',
-							'properties'  => array(
-								'client_features' => array(
-									'type'        => 'array',
-									'items'       => $this->get_item_schema(),
-								),
-							),
-						),
-					),
+					'args'                => $feature->get_input_schema(),
 				),
-				'schema' => array( $feature, 'get_item_schema' ),
+				'schema' => array( $feature, 'get_output_schema' ),
 			)
 		);
 
@@ -528,7 +517,7 @@ class WP_REST_Feature_Controller extends WP_REST_Controller {
 					},
 					'permission_callback' => array( $feature, 'get_permission_callback' ),
 				),
-				'schema' => array( $feature, 'get_output_schema' ),
+				'schema' => array( $this, 'get_item_schema' ),
 			)
 		);
 	}
