@@ -53,8 +53,8 @@ if ( ! function_exists( 'wp_feature_api_register_version' ) ) {
 		// Generate a unique key using version + path hash to prevent overwriting
 		// installations of the same version in different directories. This is so we can
 		// provide a preference for the plugin/developer version over a vendor version.
-		$unique_key = $version . '|' . md5($file);
-		$wp_feature_api_versions[$unique_key] = array(
+		$unique_key = $version . '|' . md5( $file );
+		$wp_feature_api_versions[ $unique_key ] = array(
 			'version' => $version,
 			'file' => $file,
 		);
