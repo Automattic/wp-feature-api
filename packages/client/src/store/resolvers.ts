@@ -9,27 +9,44 @@ import { store as coreStore } from '@wordpress/core-data';
 import { ENTITY_KIND, ENTITY_NAME } from './constants';
 import { receiveFeatures, receiveFeature } from './actions';
 import { store } from './index';
+import { getConfig, getEntityName } from '../config';
 
 export function getRegisteredFeatures() {
 	return async ( { dispatch, registry } ) => {
+		const config = getConfig();
+		const entityName = getEntityName();
+
 		// Start with page 1
 		let page = 1;
 		let allFeatures = [];
 		let hasMore = true;
 
-		// Keep fetching pages until we have all features
+		// Keep fetching pages until we have all features/abilities
 		while ( hasMore ) {
 			const features = await registry
 				.resolveSelect( coreStore )
-				.getEntityRecords( ENTITY_KIND, ENTITY_NAME, {
+				.getEntityRecords( ENTITY_KIND, entityName, {
 					page,
 					per_page: 100,
 				} );
-			
+
 			if ( ! features || features.length === 0 ) {
 				hasMore = false;
 			} else {
-				allFeatures = [ ...allFeatures, ...features ];
+				// If fetching from abilities, convert them to feature format
+				const processedFeatures = config.useAbilitiesBackend
+					? features.map( ( ability ) => ( {
+							...ability,
+							// Ensure abilities have the 'ability/' prefix in their ID
+							id: ability.id.startsWith( 'ability/' )
+								? ability.id
+								: `ability/${ ability.id }`,
+							name: ability.label || ability.name,
+							location: ability.meta?.location || 'server',
+					  } ) )
+					: features;
+
+				allFeatures = [ ...allFeatures, ...processedFeatures ];
 				page++;
 			}
 		}

@@ -31,9 +31,6 @@ class WP_Feature_API_Init {
 		// enqueue admin scripts.
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_admin_scripts' ) );
 
-		// Initialize abilities bridge if enabled.
-		add_action( 'init', array( __CLASS__, 'initialize_abilities_bridge' ), 20 );
-
 		// Load demo plugin if enabled.
 		if ( defined( 'WP_FEATURE_API_LOAD_DEMO' ) && WP_FEATURE_API_LOAD_DEMO ) {
 			self::load_agent_demo();
@@ -59,6 +56,13 @@ class WP_Feature_API_Init {
 		}
 		$assets = require WP_FEATURE_API_PLUGIN_DIR . 'build/index.asset.php';
 		wp_enqueue_script( 'wp-features', WP_FEATURE_API_PLUGIN_URL . 'build/index.js', $assets['dependencies'], $assets['version'], true );
+		
+		// Pass configuration to JavaScript
+		$config = array();
+		if ( defined( 'WP_FEATURE_API_ABILITIES_BACKEND' ) && WP_FEATURE_API_ABILITIES_BACKEND ) {
+			$config['useAbilitiesBackend'] = true;
+		}
+		wp_localize_script( 'wp-features', 'wpFeatureAPIConfig', $config );
 	}
 
 	/**
@@ -87,24 +91,6 @@ class WP_Feature_API_Init {
 		$controller->register_routes();
 	}
 
-	/**
-	 * Initializes the abilities bridge if backend is enabled.
-	 *
-	 * @since 0.1.0
-	 * @return void
-	 */
-	public static function initialize_abilities_bridge() {
-		if ( ! defined( 'WP_FEATURE_API_ABILITIES_BACKEND' ) || ! WP_FEATURE_API_ABILITIES_BACKEND ) {
-			return;
-		}
-
-		try {
-			$bridge = WP_Feature_Abilities_Bridge::get_instance();
-			$bridge->init();
-		} catch ( Exception $e ) {
-			error_log( 'WP Feature API: Bridge initialization failed: ' . $e->getMessage() );
-		}
-	}
 
 	/**
 	 * Loads the WP Feature API Demo plugin.

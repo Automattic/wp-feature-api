@@ -17,7 +17,5 @@ require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/wp-feature.php';
 require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/rest-api/class-wp-rest-feature-controller.php';
 // Include core features.
 require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/default-wp-features.php';
-// Include the WP_Feature_Abilities_Bridge class.
-require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-abilities-bridge.php';
 // Include initialization class.
 require_once WP_FEATURE_API_PLUGIN_DIR . 'includes/class-wp-feature-api-init.php';

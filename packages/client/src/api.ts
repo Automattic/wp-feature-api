@@ -10,6 +10,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { store } from './store';
 import type { Feature } from './types';
 import { removeNullValues } from './utils';
+import { getRunEndpoint, shouldUseAbilitiesBackend } from './config';
 
 /**
  * Registers a feature with the feature registry.
@@ -81,9 +82,12 @@ export async function executeFeature(
 			return await callback( args );
 		}
 
-		// Server-side features
 		const method = feature.type === 'tool' ? 'POST' : 'GET';
-		let requestPath = `/wp/v2/features/${ featureId }/run`;
+		const useAbilities = shouldUseAbilitiesBackend( feature );
+		let requestPath = useAbilities
+			? getRunEndpoint( featureId )
+			: `/wp/v2/features/${ featureId }/run`;
+
 		const options: { method: string; data?: any } = { method };
 
 		// The LLM may pass in a bunch of new values for things, that can cause validation errors for certain
