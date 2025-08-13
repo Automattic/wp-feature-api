@@ -40,7 +40,10 @@ $options_instance->init();
 
 // Register additional demo features.
 $feature_register_instance = new A8C\WpFeatureApiAgent\WP_Feature_Register();
+
+// Register on both hooks to support both APIs
 add_action( 'wp_feature_api_init', array( $feature_register_instance, 'register_features' ) );
+add_action( 'abilities_api_init', array( $feature_register_instance, 'register_features' ) );
 
 /**
  * Enqueues scripts and styles for the admin area.

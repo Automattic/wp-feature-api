@@ -34,17 +34,18 @@ export function getRegisteredFeatures() {
 				hasMore = false;
 			} else {
 				// If fetching from abilities, convert them to feature format
-				const processedFeatures = config.useAbilitiesBackend
-					? features.map( ( ability ) => ( {
-							...ability,
-							// Ensure abilities have the 'ability/' prefix in their ID
-							id: ability.id.startsWith( 'ability/' )
-								? ability.id
-								: `ability/${ ability.id }`,
-							name: ability.label || ability.name,
-							location: ability.meta?.location || 'server',
-					  } ) )
-					: features;
+				const processedFeatures =
+					config.backend === 'abilities'
+						? features.map( ( ability ) => ( {
+								...ability,
+								// Ensure abilities have the 'ability/' prefix in their ID
+								id: ability.id.startsWith( 'ability/' )
+									? ability.id
+									: `ability/${ ability.id }`,
+								name: ability.label || ability.name,
+								location: ability.meta?.location || 'server',
+						  } ) )
+						: features;
 
 				allFeatures = [ ...allFeatures, ...processedFeatures ];
 				page++;

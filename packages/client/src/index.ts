@@ -9,7 +9,6 @@ import {
 	getRegisteredFeature,
 	getRegisteredFeatures,
 } from './api';
-import { configure } from './config';
 
 const publicApi = {
 	store,
@@ -18,7 +17,6 @@ const publicApi = {
 	executeFeature,
 	getRegisteredFeature,
 	getRegisteredFeatures,
-	configure,
 };
 
 export { store };
@@ -29,7 +27,6 @@ export {
 	executeFeature,
 	getRegisteredFeature,
 	getRegisteredFeatures,
-	configure,
 };
 export * from './command-integration';
 export { publicApi as wpFeatures };

@@ -11,67 +11,62 @@ import { ENTITY_NAME } from './store/constants';
 
 export interface FeatureAPIConfig {
 	/**
-	 * Whether to use the Abilities API backend for server features
+	 * Backend to use for server features ('features' or 'abilities')
 	 */
-	useAbilitiesBackend?: boolean;
+	backend: 'features' | 'abilities';
 
 	/**
 	 * Entity name for fetching features/abilities
 	 */
-	entityName?: string;
+	entityName: string;
 }
 
-// Default configuration
-const defaultConfig: FeatureAPIConfig = {
-	useAbilitiesBackend: false,
-	entityName: ENTITY_NAME,
+declare global {
+	interface Window {
+		wpFeatureAPIConfig?: {
+			backend?: string;
+		};
+		wp?: any;
+	}
+}
+
+const backend =
+	window.wpFeatureAPIConfig?.backend === 'abilities'
+		? 'abilities'
+		: 'features';
+
+// Set configuration once at module load
+const currentConfig: FeatureAPIConfig = {
+	backend,
+	entityName: backend === 'abilities' ? 'abilities' : ENTITY_NAME,
 };
 
-// Current configuration
-let currentConfig: FeatureAPIConfig = { ...defaultConfig };
+// Register abilities entity with core-data if using abilities backend
+// wp-data should be available since it's a dependency of wp-features
+if ( backend === 'abilities' ) {
+	registerAbilitiesEntity();
+}
 
-/**
- * Configure the Feature API client
- *
- * @param config Configuration options
- */
-export function configure( config: Partial< FeatureAPIConfig > ): void {
-	currentConfig = {
-		...defaultConfig,
-		...config,
-	};
+function registerAbilitiesEntity() {
+	const { dispatch, select } = ( window as any ).wp.data;
+	const coreStore = ( window as any ).wp.coreData?.store;
 
-	// If using abilities backend, update entity name and paths
-	if ( config.useAbilitiesBackend ) {
-		currentConfig.entityName = 'abilities';
-
-		// Register the abilities entity with core-data if not already registered
-		const { dispatch, select } = ( window as any ).wp.data;
-		const coreStore = ( window as any ).wp.coreData?.store;
-
-		if ( coreStore && dispatch && select ) {
-			// Check if abilities entity is already registered
-			const entities =
-				select( coreStore ).getEntitiesConfig( 'root' ) || [];
-			const abilitiesEntityExists = entities.some(
-				( entity: any ) => entity.name === 'abilities'
-			);
-
-			if ( ! abilitiesEntityExists ) {
-				dispatch( coreStore ).addEntities( [
-					{
-						name: 'abilities',
-						kind: 'root',
-						baseURL: '/wp/v2/abilities',
-						baseURLParams: { context: 'edit' },
-						plural: 'abilities',
-						label: 'Abilities',
-						transientEdits: {
-							callback: true,
-						},
-					},
-				] );
-			}
+	if ( coreStore && dispatch && select ) {
+		const entities = select( coreStore ).getEntitiesConfig( 'root' ) || [];
+		const abilitiesEntityExists = entities.some(
+			( entity: any ) => entity.name === 'abilities'
+		);
+		if ( ! abilitiesEntityExists ) {
+			dispatch( coreStore ).addEntities( [
+				{
+					name: 'abilities',
+					kind: 'root',
+					baseURL: '/wp/v2/abilities',
+					baseURLParams: { context: 'edit' },
+					plural: 'abilities',
+					label: 'Abilities',
+				},
+			] );
 		}
 	}
 }
@@ -106,7 +101,7 @@ export function getRunEndpoint( id: string ): string {
 
 	// For abilities, strip the 'ability/' prefix if present
 	const cleanId =
-		currentConfig.useAbilitiesBackend && id.startsWith( 'ability/' )
+		currentConfig.backend === 'abilities' && id.startsWith( 'ability/' )
 			? id.replace( 'ability/', '' )
 			: id;
 
@@ -120,9 +115,10 @@ export function getRunEndpoint( id: string ): string {
  * @return Whether to use abilities backend
  */
 export function shouldUseAbilitiesBackend( feature: any ): boolean {
-	// If abilities backend is enabled and the feature is server-side
+	// If abilities backend is enabled and the feature is server-side or has ability prefix
 	return (
-		currentConfig.useAbilitiesBackend === true &&
-		feature?.location === 'server'
+		currentConfig.backend === 'abilities' &&
+		( feature?.location === 'server' ||
+			feature?.id?.startsWith( 'ability/' ) )
 	);
 }

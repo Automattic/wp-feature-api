@@ -21,17 +21,47 @@ class WP_Feature_Register {
 	 * @return void
 	 */
 	public function register_features() {
-		/** Global Features */
-		wp_register_feature(
-			array(
-				'id'          => 'demo/site-info',
-				'name'        => __( 'Site Information', 'wp-feature-api-agent' ),
-				'description' => __( 'Get basic information about the WordPress site. This includes the name, description, URL, version, language, timezone, date format, time format, active plugins, and active theme.', 'wp-feature-api-agent' ),
-				'type'        => WP_Feature::TYPE_RESOURCE,
-				'categories'  => array( 'demo', 'site', 'information' ),
-				'callback'    => array( $this, 'site_info_callback' ),
-			)
-		);
+		// Check if we should use abilities API and if it's available
+		$use_abilities = defined( 'WP_FEATURE_API_ABILITIES_BACKEND' ) &&
+		                WP_FEATURE_API_ABILITIES_BACKEND &&
+		                function_exists( 'wp_register_ability' );
+
+		if ( $use_abilities ) {
+			wp_register_ability(
+				'demo/site-info',
+				array(
+					'label'               => __( 'Site Information', 'wp-feature-api-agent' ),
+					'description'         => __( 'Get basic information about the WordPress site. This includes the name, description, URL, version, language, timezone, date format, time format, active plugins, and active theme.', 'wp-feature-api-agent' ),
+					'execute_callback'    => array( $this, 'site_info_callback' ),
+					'permission_callback' => function() {
+						return current_user_can( 'read' );
+					},
+					'input_schema'        => array(
+						'type' => 'object',
+						'properties' => (object) array(),
+					),
+					'output_schema'       => array(
+						'type' => 'object',
+					),
+					'meta'                => array(
+						'type'       => 'resource',
+						'categories' => array( 'demo', 'site', 'information' ),
+						'location'   => 'server',
+					),
+				)
+			);
+		} else {
+			wp_register_feature(
+				array(
+					'id'          => 'demo/site-info',
+					'name'        => __( 'Site Information', 'wp-feature-api-agent' ),
+					'description' => __( 'Get basic information about the WordPress site. This includes the name, description, URL, version, language, timezone, date format, time format, active plugins, and active theme.', 'wp-feature-api-agent' ),
+					'type'        => WP_Feature::TYPE_RESOURCE,
+					'categories'  => array( 'demo', 'site', 'information' ),
+					'callback'    => array( $this, 'site_info_callback' ),
+				)
+			);
+		}
 	}
 
 	/**

@@ -56,11 +56,10 @@ class WP_Feature_API_Init {
 		}
 		$assets = require WP_FEATURE_API_PLUGIN_DIR . 'build/index.asset.php';
 		wp_enqueue_script( 'wp-features', WP_FEATURE_API_PLUGIN_URL . 'build/index.js', $assets['dependencies'], $assets['version'], true );
-		
-		// Pass configuration to JavaScript
+
 		$config = array();
 		if ( defined( 'WP_FEATURE_API_ABILITIES_BACKEND' ) && WP_FEATURE_API_ABILITIES_BACKEND ) {
-			$config['useAbilitiesBackend'] = true;
+			$config['backend'] = 'abilities';
 		}
 		wp_localize_script( 'wp-features', 'wpFeatureAPIConfig', $config );
 	}
