@@ -38,11 +38,14 @@ export function getRegisteredFeatures() {
 					config.backend === 'abilities'
 						? features.map( ( ability ) => ( {
 								...ability,
-								// Ensure abilities have the 'ability/' prefix in their ID
-								id: ability.id.startsWith( 'ability/' )
-									? ability.id
-									: `ability/${ ability.id }`,
+								// Use the ability's name field as the id, with 'ability/' prefix
+								id: ability.name?.startsWith( 'ability/' )
+									? ability.name
+									: `ability/${ ability.name }`,
 								name: ability.label || ability.name,
+								description: ability.description || '',
+								type: ability.meta?.type || 'tool',
+								categories: ability.meta?.categories || [],
 								location: ability.meta?.location || 'server',
 						  } ) )
 						: features;

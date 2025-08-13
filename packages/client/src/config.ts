@@ -65,6 +65,7 @@ function registerAbilitiesEntity() {
 					baseURLParams: { context: 'edit' },
 					plural: 'abilities',
 					label: 'Abilities',
+					key: 'name', // Abilities use 'name' as their identifier, not 'id'
 				},
 			] );
 		}
