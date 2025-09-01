@@ -1,3 +1,7 @@
+This repository will be deprecated as the [Abilities API](https://github.com/WordPress/abilities-api) AI Building Block for WordPress continues releasing stable versions, and becomes a core API in WordPress 6.9.
+
+We encourage all users to migrate to Abilities API. Future work, including new features and fixes, will happen there. This repository will remain available in archived form for historical reference.
+
 # WordPress Feature API
 
 The WordPress Feature API is a system for exposing WordPress functionality in a standardized, discoverable way for both server and client-side use. It's designed to make WordPress functionality accessible to AI systems (particularly LLMs) and developers through a unified registry of resources and tools.
